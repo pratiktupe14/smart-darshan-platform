@@ -1,0 +1,473 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Smart Darshan | TemplePortal Admin</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;family=Poppins:wght@400;600;700&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-tint": "#9b4500",
+              "tertiary-fixed": "#ffdf99",
+              "secondary-fixed": "#ffdcc3",
+              "primary": "#984300",
+              "on-secondary-container": "#693600",
+              "on-primary": "#ffffff",
+              "secondary": "#914d00",
+              "on-tertiary-container": "#fffbff",
+              "inverse-on-surface": "#ffede5",
+              "surface-container": "#ffeadf",
+              "on-surface-variant": "#564339",
+              "on-tertiary": "#ffffff",
+              "on-secondary-fixed-variant": "#6e3900",
+              "surface": "#fff8f5",
+              "primary-fixed-dim": "#ffb68e",
+              "tertiary-fixed-dim": "#ecc15b",
+              "on-error-container": "#93000a",
+              "on-primary-fixed-variant": "#773300",
+              "on-secondary": "#ffffff",
+              "on-tertiary-fixed": "#251a00",
+              "secondary-fixed-dim": "#ffb77e",
+              "secondary-container": "#fc983d",
+              "background": "#fff8f5",
+              "on-primary-container": "#fffbff",
+              "tertiary-container": "#92700b",
+              "on-primary-fixed": "#331200",
+              "on-background": "#321300",
+              "surface-container-low": "#fff1ea",
+              "surface-bright": "#fff8f5",
+              "primary-fixed": "#ffdbca",
+              "inverse-surface": "#4f2505",
+              "error-container": "#ffdad6",
+              "outline": "#897267",
+              "surface-dim": "#ffd1b6",
+              "outline-variant": "#dcc1b4",
+              "on-tertiary-fixed-variant": "#5a4300",
+              "on-surface": "#321300",
+              "surface-container-highest": "#ffdbc8",
+              "tertiary": "#745800",
+              "on-secondary-fixed": "#2f1500",
+              "surface-container-lowest": "#ffffff",
+              "error": "#ba1a1a",
+              "primary-container": "#b85a1a",
+              "on-error": "#ffffff",
+              "inverse-primary": "#ffb68e",
+              "surface-variant": "#ffdbc8",
+              "surface-container-high": "#ffe3d3"
+            },
+            borderRadius: {
+              "DEFAULT": "12px",
+              "lg": "12px",
+              "xl": "16px",
+              "full": "9999px"
+            },
+            spacing: {
+              "sm": "8px",
+              "margin-mobile": "16px",
+              "xxl": "48px",
+              "base": "8px",
+              "margin-desktop": "40px",
+              "lg": "24px",
+              "xs": "4px",
+              "gutter": "24px",
+              "md": "16px",
+              "xl": "32px",
+              "container-padding-mobile": "16px",
+              "container-padding-desktop": "40px",
+              "stack-lg": "48px",
+              "stack-md": "32px"
+            },
+            fontFamily: {
+              "section-title": ["Poppins", "sans-serif"],
+              "hero-title-mobile": ["Poppins", "sans-serif"],
+              "label-sm": ["Inter", "sans-serif"],
+              "caption": ["Inter", "sans-serif"],
+              "button": ["Inter", "sans-serif"],
+              "body": ["Inter", "sans-serif"],
+              "hero-title": ["Poppins", "sans-serif"],
+              "card-title": ["Poppins", "sans-serif"],
+              "headline-md": ["Poppins", "sans-serif"],
+              "label-md": ["Inter", "sans-serif"]
+            },
+            fontSize: {
+              "section-title": ["32px", { lineHeight: "1.3", letterSpacing: "-0.01em", fontWeight: "600" }],
+              "hero-title-mobile": ["32px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "700" }],
+              "label-sm": ["14px", { lineHeight: "1.4", fontWeight: "500" }],
+              "caption": ["12px", { lineHeight: "1.4", fontWeight: "400" }],
+              "button": ["16px", { lineHeight: "1", fontWeight: "600" }],
+              "body": ["16px", { lineHeight: "1.6", fontWeight: "400" }],
+              "hero-title": ["48px", { lineHeight: "1.2", letterSpacing: "-0.02em", fontWeight: "700" }],
+              "card-title": ["20px", { lineHeight: "1.4", fontWeight: "600" }],
+              "headline-md": ["24px", { lineHeight: "1.2", fontWeight: "700" }],
+              "label-md": ["14px", { lineHeight: "1.4", fontWeight: "600" }]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      body {
+        background-color: #fff8f5;
+        color: #321300;
+        overflow-x: hidden;
+      }
+      .ticket-perforation {
+        background-image: radial-gradient(circle at 0 50%, transparent 10px, white 10px);
+        background-size: 20px 20px;
+        background-position: -10px 0;
+      }
+      .glass-card {
+        background: rgba(255, 255, 255, 0.9);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(152, 67, 0, 0.1);
+      }
+    </style>
+</head>
+<body class="font-body text-on-background">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-10 h-16 bg-surface border-b border-outline-variant">
+<div class="flex items-center gap-4">
+<span class="text-xl md:text-2xl font-bold text-primary">User Dashboard</span>
+</div>
+<div class="flex items-center gap-2 md:gap-6">
+<div class="hidden sm:flex items-center bg-surface-container-low px-4 py-2 rounded-full border border-outline-variant">
+<span class="material-symbols-outlined text-on-surface-variant mr-2 text-xl">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-sm w-32 md:w-48" placeholder="Search services..." type="text">
+</div>
+<div class="flex items-center gap-1 md:gap-2">
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors"><span class="material-symbols-outlined text-xl md:text-2xl">language</span></button>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors relative">
+<span class="material-symbols-outlined text-xl md:text-2xl">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors"><span class="material-symbols-outlined text-xl md:text-2xl">account_circle</span></button>
+</div>
+</div>
+</header>
+<!-- SideNavBar (Hidden on Mobile) -->
+<aside class="hidden lg:flex flex-col h-full w-64 fixed left-0 top-0 pt-20 px-4 space-y-2 bg-surface-container-low border-r border-outline-variant z-40">
+<div class="px-4 mb-8">
+
+
+</div>
+<nav class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-secondary-container text-on-secondary-container rounded-lg font-bold transition-transform active:scale-[0.98]" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: &quot;FILL&quot; 1;">home</span>
+<span class="text-sm">Home</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">calendar_add_on</span>
+<span class="text-sm">Book Darshan</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">qr_code</span>
+<span class="text-sm">My Pass</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">speed</span>
+<span class="text-sm">Queue Status</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="text-sm">Announcements</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all" href="#">
+<span class="material-symbols-outlined">account_circle</span>
+<span class="text-sm">Profile</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="lg:ml-64 px-4 md:px-10 pb-12 pt-24 md:pt-32 max-w-[1600px] mx-auto">
+<!-- Welcome Section -->
+<section class="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+<div class="space-y-2">
+<h1 class="text-3xl md:text-4xl lg:text-5xl font-bold text-primary leading-tight">Welcome back, Pratik Tupe</h1>
+<div class="flex flex-wrap items-center gap-2 md:gap-3">
+<span class="px-3 py-1 bg-surface-container-highest text-primary text-xs md:text-sm font-medium rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+                        Darshan Date: Oct 24, 2024
+                    </span>
+<span class="px-3 py-1 bg-green-100 text-green-800 text-xs md:text-sm font-medium rounded-full flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: &quot;FILL&quot; 1;">check_circle</span>
+                        Current Status: Confirmed
+                    </span>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+<button class="flex-1 sm:flex-none h-12 md:h-14 px-6 bg-primary text-on-primary rounded-lg font-semibold flex items-center justify-center gap-3 shadow-md hover:scale-[1.02] transition-transform">
+<span class="material-symbols-outlined">book_online</span>
+                    Book Darshan
+                </button>
+<button class="flex-1 sm:flex-none h-12 md:h-14 px-6 border-2 border-primary text-primary rounded-lg font-semibold flex items-center justify-center gap-3 hover:bg-primary/5 transition-colors">
+<span class="material-symbols-outlined">analytics</span>
+                    Queue Status
+                </button>
+</div>
+</section>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
+<!-- Digital Darshan Pass -->
+<div class="md:col-span-12 xl:col-span-8 flex flex-col">
+<h3 class="text-lg md:text-xl font-semibold text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">confirmation_number</span>
+                    Digital Darshan Pass
+                </h3>
+<div class="relative bg-white rounded-xl shadow-lg overflow-hidden flex flex-col lg:flex-row border border-outline-variant">
+<!-- Ticket Main Body -->
+<div class="flex-grow p-6 md:p-8 bg-white">
+<div class="flex justify-between items-start mb-6 gap-4">
+<div>
+<p class="text-[10px] md:text-xs text-on-surface-variant uppercase tracking-wider mb-1">Devotee Name</p>
+<p class="text-lg md:text-xl font-bold text-on-surface">Rajesh Kumar</p>
+</div>
+<div class="text-right">
+<p class="text-[10px] md:text-xs text-on-surface-variant uppercase tracking-wider mb-1">Token ID</p>
+<p class="text-xl md:text-2xl font-bold text-primary">#A001</p>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-y-4 md:gap-y-6 gap-x-4">
+<div>
+<p class="text-xs text-on-surface-variant mb-0.5 md:mb-1">Mobile</p>
+<p class="text-sm md:text-base font-semibold">+91 98765 43210</p>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant mb-0.5 md:mb-1">Vehicle No.</p>
+<p class="text-sm md:text-base font-semibold">MH-12-AB-1234</p>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant mb-0.5 md:mb-1">Persons</p>
+<p class="text-sm md:text-base font-semibold">04 (Adults)</p>
+</div>
+<div>
+<p class="text-xs text-on-surface-variant mb-0.5 md:mb-1">Reporting Time</p>
+<p class="text-sm md:text-base font-semibold">08:30 AM</p>
+</div>
+</div>
+<div class="mt-6 md:mt-8 pt-6 border-t border-dashed border-outline-variant flex flex-col sm:flex-row gap-3 md:gap-4">
+<button class="flex-1 h-12 bg-surface-container-high text-primary px-4 rounded-lg font-semibold flex items-center justify-center gap-2 hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined text-xl">visibility</span>
+                                View Pass
+                            </button>
+<button class="flex-1 h-12 bg-primary text-on-primary px-4 rounded-lg font-semibold flex items-center justify-center gap-2 shadow-lg shadow-primary/20 hover:opacity-90">
+<span class="material-symbols-outlined text-xl">download</span>
+                                Download Pass
+                            </button>
+</div>
+</div>
+<!-- Ticket QR Section -->
+<div class="bg-surface-container-low p-6 md:p-8 flex flex-col items-center justify-center lg:min-w-[280px] border-t lg:border-t-0 lg:border-l border-dashed border-outline-variant">
+<div class="bg-white p-3 rounded-xl shadow-inner mb-4">
+<img class="w-32 h-32 md:w-40 md:h-40" data-alt="A clean, sharp black and white QR code centered on a white background with a subtle orange border, symbolizing a digital temple pass." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCktjw6ePRAtMz8AG2O4p7Un5fQqhyDi2kOl4XSYNuGhTQcD2Us15YKzpE1YXIpXs7OSjQGliZvRvulpIMqhkwdtkWp6PZe_RswQvJQDdeFGEOj8yxje65tfKhJzidtrQT73mRiZaBsmOG14ILe_OMBFRukwB0BSZMAwMiJJmMAGYnHeMvn6L_wjJacjZeeBDmGqIgDN-HXfyZf9tL1YgfMzCSOAkMi4VVmk0KWwcyvyK0BOKDE5SVUlSmNdNn7RQy4uP9SiBkFEL4">
+</div>
+<p class="text-xs md:text-sm text-on-surface-variant text-center font-medium">Scan at Entrance Gate 3</p>
+<div class="mt-4 w-full max-w-[180px]">
+<div class="h-12 flex items-center justify-center bg-white rounded-lg px-4 border border-outline-variant shadow-sm">
+<span class="font-mono text-base md:text-lg font-bold tracking-widest">A001-RX42</span>
+</div>
+</div>
+<div class="mt-8 pt-6 border-t border-outline-variant/30 w-full">
+    <h4 class="text-xs font-bold text-on-surface-variant uppercase tracking-wider mb-4 flex items-center gap-2">
+        <span class="material-symbols-outlined text-primary text-lg">cloud</span>
+        Current Temple Weather
+    </h4>
+    <div class="bg-white p-4 rounded-lg border border-outline-variant/50 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-2xl">partly_cloudy_day</span>
+                <span class="text-xl font-bold text-on-surface">28°C</span>
+            </div>
+            <span class="text-sm font-medium text-on-surface-variant">Partly Cloudy</span>
+        </div>
+        <p class="text-[10px] md:text-xs text-on-surface-variant font-medium">
+            Oct 24, 2024 | 10:30 AM
+        </p>
+    </div>
+</div></div>
+</div>
+</div>
+<!-- Queue Status Card & Map -->
+<div class="md:col-span-12 xl:col-span-4 flex flex-col gap-6">
+<h3 class="text-lg md:text-xl font-semibold text-on-surface mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">timer</span>
+                    Live Queue
+                </h3>
+<div class="bg-white p-6 rounded-xl shadow-lg border border-outline-variant flex-grow">
+<div class="flex items-center justify-between mb-6">
+<div>
+<p class="text-xs text-on-surface-variant">Current Token</p>
+<p class="text-xl md:text-2xl font-bold text-on-surface">A-045</p>
+</div>
+<div class="text-right">
+<p class="text-xs text-on-surface-variant">Your Token</p>
+<p class="text-xl md:text-2xl font-bold text-primary">A-080</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center text-xs md:text-sm">
+<span class="text-on-surface-variant">Queue Progress</span>
+<span class="text-primary font-bold">56% Complete</span>
+</div>
+<div class="w-full h-3 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-primary to-secondary-container rounded-full transition-all duration-1000" style="width: 56.35%;"></div>
+</div>
+<div class="grid grid-cols-2 gap-3 md:gap-4 mt-6">
+<div class="bg-surface-container-low p-4 rounded-lg text-center">
+<p class="text-[10px] md:text-xs text-on-surface-variant mb-1 uppercase">Queue Position</p>
+<p class="text-base md:text-lg font-bold text-on-surface">35 <span class="text-[10px] md:text-xs font-normal">away</span></p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-lg text-center">
+<p class="text-[10px] md:text-xs text-on-surface-variant mb-1 uppercase">Est. Wait</p>
+<p class="text-base md:text-lg font-bold text-on-surface">35 <span class="text-[10px] md:text-xs font-normal">Mins</span></p>
+</div>
+</div>
+</div>
+<div class="mt-6 p-4 bg-primary/5 rounded-lg border border-primary/10 flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-xl">info</span>
+<p class="text-xs text-on-surface-variant leading-relaxed">Please arrive at the holding area 15 minutes before your estimated time.</p>
+</div>
+</div>
+<!-- Temple Directions Card -->
+<div class="bg-white rounded-xl shadow-lg overflow-hidden border border-outline-variant">
+<div class="h-32 md:h-40 relative group cursor-pointer overflow-hidden">
+<img class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" data-alt="A high-quality satellite map view showing a historic temple complex" data-location="Varanasi, India" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1NtQZMeVBKwdrnShTWtGDF6zEyIndWZEj-W4F7JovzgJVUtPWr9zMBmF9N5WhXlIKUVk08vlfivc3i94CVUsPWf40UCuyI1g37rwIfv666ETz7-VzSF--JXHonZdUs3tac5DA7_ZDLlX2aOBrJLY3tdGaUp1I2ktDnh70dXDzCcVY0fMfHdNta5mSbTGAqReavHWW6ecqYPiCFoGUEf9gGHPkHDQbLNV1c44JQ3dn19P51o4vQaDk6cpTFA8xUa9pjb3oR627dgk">
+<div class="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+<span class="bg-white text-primary px-4 py-2 rounded-full font-semibold text-xs md:text-sm shadow-xl">View Larger Map</span>
+</div>
+</div>
+<div class="p-4">
+<div class="flex items-start justify-between gap-4">
+<div class="min-w-0">
+<p class="text-sm font-semibold text-on-surface truncate">Main Temple Complex</p>
+<p class="text-[10px] md:text-xs text-on-surface-variant truncate">Gate No. 3, North Entrance, Sector 42A</p>
+</div>
+<button class="p-2 bg-primary text-on-primary rounded-full hover:scale-110 transition-transform shrink-0">
+<span class="material-symbols-outlined text-[18px] md:text-[20px]">directions</span>
+</button>
+</div>
+<button class="w-full mt-3 h-10 border border-outline text-on-surface-variant rounded-lg text-xs font-medium hover:bg-surface-container-low transition-colors">
+                            Open in Google Maps
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Secondary Info Row -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 mt-8 md:mt-12">
+<!-- Darshan Timings -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant h-full">
+<h4 class="text-lg font-semibold text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">schedule</span>
+                    Darshan Timings
+                </h4>
+<div class="space-y-1">
+<div class="flex justify-between items-center py-3 border-b border-outline-variant/30">
+<span class="text-sm md:text-base font-medium">Morning Aarti</span>
+<span class="font-mono text-primary font-bold text-sm md:text-base">04:30 AM</span>
+</div>
+<div class="flex justify-between items-center py-3 border-b border-outline-variant/30">
+<span class="text-sm md:text-base font-medium">Public Darshan (AM)</span>
+<span class="font-mono text-primary font-bold text-sm md:text-base">06:00 - 12:00</span>
+</div>
+<div class="flex justify-between items-center py-3 border-b border-outline-variant/30">
+<span class="text-sm md:text-base font-medium">Mid-day Break</span>
+<span class="font-mono text-on-surface-variant text-sm md:text-base">12:30 - 04:00</span>
+</div>
+<div class="flex justify-between items-center py-3">
+<span class="text-sm md:text-base font-medium">Evening Aarti</span>
+<span class="font-mono text-primary font-bold text-sm md:text-base">07:00 PM</span>
+</div>
+</div>
+</div>
+<!-- Festival Notices -->
+<div class="bg-white p-6 rounded-xl border border-outline-variant h-full">
+<h4 class="text-lg font-semibold text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">campaign</span>
+                    Festival Notices
+                </h4>
+<div class="space-y-4">
+<div class="flex gap-4 p-3 hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer group">
+<div class="bg-secondary-container/20 p-2 h-fit rounded text-secondary shrink-0">
+<span class="material-symbols-outlined">event_repeat</span>
+</div>
+<div>
+<p class="text-sm md:text-base font-semibold group-hover:text-primary transition-colors">Sharad Purnima Utsav</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Special night darshan available from Oct 27-29. Pre-booking mandatory.</p>
+</div>
+</div>
+<div class="flex gap-4 p-3 hover:bg-surface-container-low rounded-lg transition-colors cursor-pointer group">
+<div class="bg-secondary-container/20 p-2 h-fit rounded text-secondary shrink-0">
+<span class="material-symbols-outlined">warning</span>
+</div>
+<div>
+<p class="text-sm md:text-base font-semibold group-hover:text-primary transition-colors">Parking Maintenance</p>
+<p class="text-xs text-on-surface-variant leading-relaxed">Parking Lot B will be closed on Oct 25. Please use Multi-level Lot C.</p>
+</div>
+</div>
+</div>
+<button class="w-full mt-4 py-2 text-primary font-semibold text-sm hover:underline">View All Announcements</button>
+</div>
+<!-- Quick Links / Support -->
+<div class="bg-primary-container p-6 rounded-xl text-on-primary-container flex flex-col justify-between md:col-span-2 lg:col-span-1 min-h-[300px]">
+<div>
+<h4 class="text-lg md:text-xl font-bold mb-2">Need Assistance?</h4>
+<p class="text-sm opacity-90 leading-relaxed mb-6">Our dedicated volunteer team is here to help you with your spiritual journey.</p>
+<div class="space-y-3">
+<a class="flex items-center gap-3 bg-white/10 p-3.5 rounded-lg hover:bg-white/20 transition-colors" href="tel:1800-123-456">
+<span class="material-symbols-outlined">call</span>
+<span class="text-sm md:text-base font-medium">Helpline: 1800-123-456</span>
+</a>
+<a class="flex items-center gap-3 bg-white/10 p-3.5 rounded-lg hover:bg-white/20 transition-colors" href="#">
+<span class="material-symbols-outlined">chat</span>
+<span class="text-sm md:text-base font-medium">Live Chat with Admin</span>
+</a>
+</div>
+</div>
+<div class="mt-8 flex justify-center">
+<img class="w-24 md:w-32 h-auto opacity-30" data-alt="A soft, watercolor-style illustration of a temple peak" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB8qfQInAEaN3batfDnJ9OjU4ukVGdF8ttc4C3jocmoZn8XD_A7m8NsUhJTzym2O0_OtOVX5e4Ziyzlca8cgNF8f-MJLUIZrBHFzTNPjQF1gydbwSSC-l5ux2mSU-yJr6M0vb8bwpVnX9ZEkJdR_Q6D7mFUnegA5cLSj5rKuvqo4DJEGkcE-Okbwa65NROxPmA4qA2IWtSlmrzEnbCv5rPavgREwTh_DxDat_JrMi1CnpzRLc-9fHiH_1Loxyb_HLs3gPwiHs-Ikog">
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="w-full mt-12 py-10 px-4 md:px-10 bg-surface-container-highest border-t border-outline-variant">
+<div class="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
+<div class="flex flex-col gap-2">
+<h2 class="text-2xl font-extrabold text-primary">Temple&nbsp; &nbsp; Portal</h2>
+<p class="text-sm text-on-surface-variant">© 2024 Mo&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dern Temple Trust. All Rights Reserved.</p>
+</div>
+<div class="flex flex-wrap justify-center gap-4 md:gap-8">
+<a class="text-on-surface-variant hover:underline decoration-primary transition-opacity text-sm font-medium" href="#">Contact Us</a>
+<a class="text-on-surface-variant hover:underline decoration-primary transition-opacity text-sm font-medium" href="#">Privacy Policy</a>
+<a class="text-on-surface-variant hover:underline decoration-primary transition-opacity text-sm font-medium" href="#">Terms of Service</a>
+</div>
+<div class="flex gap-4">
+<button class="text-primary font-bold text-sm hover:underline">English</button>
+<button class="text-on-surface-variant text-sm hover:text-primary transition-colors">Hindi</button>
+<button class="text-on-surface-variant text-sm hover:text-primary transition-colors">Marathi</button>
+</div>
+</div>
+</footer>
+<script>
+        // Simple interactivity for the queue progress
+        const progressBar = document.querySelector('.h-full.bg-gradient-to-r');
+        let progress = 56;
+        
+        setInterval(() => {
+            if (progress < 100) {
+                progress += 0.05;
+                if (progressBar) progressBar.style.width = `${progress}%`;
+            }
+        }, 3000);
+    </script>
+
+
+
+
+</body></html>

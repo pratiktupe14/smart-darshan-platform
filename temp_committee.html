@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Committee Member Dashboard - Smart Darshan Manager</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#231a12",
+                        "inverse-surface": "#392e26",
+                        "on-surface-variant": "#554335",
+                        "tertiary-fixed": "#c2e8ff",
+                        "error": "#ba1a1a",
+                        "on-primary-container": "#663500",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "surface-bright": "#fff8f5",
+                        "background": "#fff8f5",
+                        "secondary-container": "#febf8d",
+                        "on-tertiary-container": "#004760",
+                        "on-error": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#f8ba88",
+                        "inverse-on-surface": "#ffede3",
+                        "secondary": "#82542b",
+                        "primary-fixed-dim": "#ffb77d",
+                        "surface-tint": "#914d00",
+                        "secondary-fixed": "#ffdcc3",
+                        "on-secondary-container": "#794c24",
+                        "surface-container-highest": "#f2dfd3",
+                        "tertiary": "#006688",
+                        "on-tertiary-fixed": "#001e2c",
+                        "on-background": "#231a12",
+                        "surface-container-high": "#f8e5d8",
+                        "surface": "#fff8f5",
+                        "on-primary-fixed-variant": "#6e3900",
+                        "surface-container": "#feeade",
+                        "tertiary-fixed-dim": "#76d1ff",
+                        "surface-dim": "#e9d6ca",
+                        "on-secondary-fixed": "#2f1500",
+                        "on-secondary-fixed-variant": "#673d16",
+                        "outline-variant": "#dcc2af",
+                        "tertiary-container": "#00bbf7",
+                        "outline": "#897363",
+                        "primary": "#914d00",
+                        "primary-container": "#ff9328",
+                        "on-primary": "#ffffff",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#004d67",
+                        "inverse-primary": "#ffb77d",
+                        "primary-fixed": "#ffdcc3",
+                        "surface-container-low": "#fff1e9",
+                        "on-primary-fixed": "#2f1500",
+                        "surface-variant": "#f2dfd3"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-lg": "32px",
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "unit": "8px",
+                        "container-padding-mobile": "16px",
+                        "container-padding-desktop": "40px",
+                        "gutter": "24px"
+                    },
+                    "fontFamily": {
+                        "display": ["Manrope", "sans-serif"],
+                        "headline-lg": ["Manrope", "sans-serif"],
+                        "headline-md": ["Manrope", "sans-serif"],
+                        "body-lg": ["Manrope", "sans-serif"],
+                        "body-md": ["Manrope", "sans-serif"],
+                        "label-md": ["IBM Plex Sans", "sans-serif"],
+                        "label-sm": ["IBM Plex Sans", "sans-serif"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Manrope', sans-serif; background-color: #fff8f5; color: #231a12; }
+        .sidebar-active { background-color: #f4ede6; border-radius: 0.5rem; }
+        .glass-card { background: white; border: 1px solid #eadbcd; box-shadow: 0 4px 6px -1px rgba(145, 77, 0, 0.05); }
+    </style>
+</head>
+<body class="min-h-screen">
+<div class="flex flex-col lg:flex-row h-screen overflow-hidden">
+<!-- Side Navigation -->
+<aside class="hidden lg:flex w-72 flex-col bg-[#fcfaf8] border-r border-[#eadbcd] p-6 shrink-0">
+<div class="flex items-center gap-3 mb-10">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10" data-alt="A professional circular logo for a temple management organization, featuring abstract geometric patterns in deep amber and warm earth tones. The background is a clean, bright cream white, reflecting a modern-spiritual aesthetic that is both sacred and technologically systematic. High resolution and minimalist design style." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAkwmm5nPYZZgksOt1MUun7468-DN6Rod97dADhCeUPw02rfbeCv83FY8F0YHpMwH79hAc0Ko3MJgfugnnkuZyMlYJp-_xL0PPMlH7FIVtfxDLMd8fGyk5pxDFMblSQN0QcMdKbURKYCquQrg-JE07Ypj8ihbzxluHlkQCn_-YpfWTuYRyo0VFSyWUA2Sv4F8zniF2RKH52DIJWqepQSyDx1F47d9lRYc_7S956dmXmuSYlPazftV5JqirMFbbM5N4aGDqUMGCKqtU");'>
+</div>
+<div class="flex flex-col">
+<h1 class="text-on-surface text-base font-bold leading-tight">Smart Darshan</h1>
+<p class="text-primary text-xs font-medium uppercase tracking-wider">Management System</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 flex-grow">
+<a class="flex items-center gap-3 px-4 py-3 sidebar-active text-on-surface" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-sm font-semibold">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface hover:bg-surface-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">queue_play_next</span>
+<span class="text-sm font-medium">Queue Management</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface hover:bg-surface-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+<span class="text-sm font-medium">QR Scanner</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface hover:bg-surface-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">person_add</span>
+<span class="text-sm font-medium">Offline Verification</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface hover:bg-surface-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">local_parking</span>
+<span class="text-sm font-medium">Parking Management</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface hover:bg-surface-container transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">campaign</span>
+<span class="text-sm font-medium">Announcements</span>
+</a>
+</nav>
+<div class="mt-auto pt-6 border-t border-[#eadbcd]">
+<a class="flex items-center gap-3 px-4 py-3 text-error hover:bg-error-container/20 transition-colors rounded-lg" href="#">
+<span class="material-symbols-outlined">logout</span>
+<span class="text-sm font-bold">Logout</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-grow flex flex-col overflow-y-auto">
+<!-- Header -->
+<header class="flex items-center justify-between px-6 lg:px-10 py-5 bg-white border-b border-[#eadbcd] sticky top-0 z-10">
+<div class="flex flex-col">
+<h2 class="text-on-surface text-xl lg:text-2xl font-bold tracking-tight">Welcome Committee Member</h2>
+<div class="flex items-center gap-2 mt-1">
+<span class="material-symbols-outlined text-primary text-sm">temple_hindu</span>
+<span class="text-on-surface-variant text-sm font-medium">Sri Mahalakshmi Temple</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<div class="hidden md:flex flex-col items-end mr-4">
+<span class="text-on-surface text-sm font-bold" id="current-date">October 24, 2023</span>
+<span class="text-on-surface-variant text-xs" id="current-time">10:30 AM</span>
+</div>
+<button class="relative p-2 bg-surface-container hover:bg-surface-container-high rounded-full transition-all">
+<span class="material-symbols-outlined text-on-surface">notifications</span>
+<span class="absolute top-0 right-0 w-3 h-3 bg-primary border-2 border-white rounded-full"></span>
+</button>
+<div class="size-10 rounded-full border-2 border-primary bg-cover bg-center" data-alt="A clean, professional headshot portrait of a south Asian man in a semi-formal outfit, looking friendly and approachable. The lighting is soft and studio-quality, with a warm, minimalist office background that aligns with the professional-spiritual theme of the temple management dashboard. High-key light-mode aesthetic." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAWo9xA2dTKUU2OuNrJ4V4IvnyHBUFe6xM2MHw-Qg2NAi9JG_-A8Lh28TmbwmUS5Xq1EhlHhxYRMVw0OCYQbROOC3K0MV1Hqz5B50_QkQkk1D3Z7mqGpwHR1ZFN3adLcGXlESoTVZutEMbZCkIUpXrKzSCH2LFg7CCntbyqUCAr-noesb65_CH2wye-rPWLPq4DGiEENgFIvRjdBL7rlCc4XDmGDVD56yDTMFCx0UpJB3mu62Mn7mtUYxY6y1uarsM0Puxoo8CwBYo')">
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<div class="p-6 lg:p-10 max-w-7xl mx-auto w-full flex flex-col gap-8">
+<!-- Summary Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+<div class="glass-card p-6 rounded-xl flex flex-col gap-1 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 text-primary/10 group-hover:text-primary/20 transition-colors">
+<span class="material-symbols-outlined text-7xl">group</span>
+</div>
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm">Visitors Today</p>
+<p class="text-on-surface text-3xl font-extrabold">8,930</p>
+<div class="mt-2 flex items-center gap-1 text-green-600 text-xs font-bold">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+<span>12% from yesterday</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col gap-1 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 text-primary/10 group-hover:text-primary/20 transition-colors">
+<span class="material-symbols-outlined text-7xl">hourglass_empty</span>
+</div>
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm">Current Queue</p>
+<p class="text-on-surface text-3xl font-extrabold">3,822</p>
+<div class="mt-2 flex items-center gap-1 text-on-surface-variant text-xs font-medium">
+<span>Avg. wait: 45 mins</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col gap-1 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 text-primary/10 group-hover:text-primary/20 transition-colors">
+<span class="material-symbols-outlined text-7xl">confirmation_number</span>
+</div>
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm">Current Token</p>
+<p class="text-primary text-3xl font-extrabold">#T-8829</p>
+<div class="mt-2 flex items-center gap-1 text-on-surface-variant text-xs font-medium">
+<span>Last updated 2m ago</span>
+</div>
+</div>
+<div class="glass-card p-6 rounded-xl flex flex-col gap-1 relative overflow-hidden group">
+<div class="absolute -right-4 -top-4 text-primary/10 group-hover:text-primary/20 transition-colors">
+<span class="material-symbols-outlined text-7xl">qr_code_2</span>
+</div>
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm">QR Scans Today</p>
+<p class="text-on-surface text-3xl font-extrabold">5,420</p>
+<div class="mt-2 flex items-center gap-1 text-on-surface-variant text-xs font-medium">
+<span>Digital entry active</span>
+</div>
+</div>
+</div>
+<!-- Quick Actions -->
+<section>
+<h3 class="text-on-surface text-lg font-bold mb-4 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">bolt</span>
+                    Quick Actions
+                </h3>
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+<button class="flex flex-col items-center justify-center gap-3 p-6 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all transform hover:-translate-y-1">
+<span class="material-symbols-outlined text-3xl">qr_code_scanner</span>
+<span class="text-sm font-bold">Scan QR Code</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-3 p-6 bg-secondary text-white rounded-xl shadow-lg shadow-secondary/20 hover:bg-secondary/90 transition-all transform hover:-translate-y-1">
+<span class="material-symbols-outlined text-3xl">person_add</span>
+<span class="text-sm font-bold">Register Visitor</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-3 p-6 bg-surface-container-high border border-outline-variant text-on-surface rounded-xl hover:bg-surface-variant transition-all transform hover:-translate-y-1">
+<span class="material-symbols-outlined text-3xl text-primary">local_parking</span>
+<span class="text-sm font-bold">Manage Parking</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-3 p-6 bg-surface-container-high border border-outline-variant text-on-surface rounded-xl hover:bg-surface-variant transition-all transform hover:-translate-y-1">
+<span class="material-symbols-outlined text-3xl text-tertiary">arrow_circle_right</span>
+<span class="text-sm font-bold">Next Token</span>
+</button>
+</div>
+</section>
+<!-- Bottom Section: Activity and Announcements -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Recent Activity -->
+<div class="lg:col-span-2 glass-card rounded-xl p-6">
+<div class="flex items-center justify-between mb-6">
+<h3 class="text-on-surface text-lg font-bold">Recent Activity</h3>
+<button class="text-primary text-sm font-bold hover:underline">View All</button>
+</div>
+<div class="flex flex-col gap-4">
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-low rounded-lg transition-colors border-l-4 border-green-500">
+<div class="size-10 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-green-600">check_circle</span>
+</div>
+<div class="flex flex-col flex-grow">
+<p class="text-on-surface text-sm font-bold">Token #T-8845 Verified</p>
+<p class="text-on-surface-variant text-xs">Primary Gate • Just now</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-low rounded-lg transition-colors border-l-4 border-primary">
+<div class="size-10 rounded-full bg-primary-container/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary">person_add_alt</span>
+</div>
+<div class="flex flex-col flex-grow">
+<p class="text-on-surface text-sm font-bold">New Offline Entry: Manoj Deshmukh</p>
+<p class="text-on-surface-variant text-xs">Counter #4 • 5 mins ago</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-low rounded-lg transition-colors border-l-4 border-tertiary">
+<div class="size-10 rounded-full bg-tertiary-container/20 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary">update</span>
+</div>
+<div class="flex flex-col flex-grow">
+<p class="text-on-surface text-sm font-bold">Queue Update: Block A moving fast</p>
+<p class="text-on-surface-variant text-xs">Operations • 12 mins ago</p>
+</div>
+</div>
+<div class="flex items-center gap-4 p-3 hover:bg-surface-container-low rounded-lg transition-colors border-l-4 border-error">
+<div class="size-10 rounded-full bg-error-container flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-error">warning</span>
+</div>
+<div class="flex flex-col flex-grow">
+<p class="text-on-surface text-sm font-bold">Entry Denied: Invalid QR</p>
+<p class="text-on-surface-variant text-xs">Secondary Gate • 25 mins ago</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Announcements Widget -->
+<div class="glass-card rounded-xl p-6 bg-surface-container">
+<h3 class="text-on-surface text-lg font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">campaign</span>
+                        Announcements
+                    </h3>
+<div class="flex flex-col gap-5">
+<div class="p-4 bg-white rounded-lg border border-outline-variant shadow-sm relative overflow-hidden">
+<div class="w-1 h-full absolute left-0 top-0 bg-primary"></div>
+<p class="text-on-surface text-sm font-bold leading-tight">Temple Notice: Evening Aarti schedule change</p>
+<p class="text-on-surface-variant text-xs mt-2">Starting Oct 25, Aarti will begin at 6:45 PM instead of 7:00 PM.</p>
+<p class="text-primary text-[10px] font-bold uppercase tracking-widest mt-3">Posted 2h ago</p>
+</div>
+<div class="p-4 bg-white rounded-lg border border-outline-variant shadow-sm relative overflow-hidden">
+<div class="w-1 h-full absolute left-0 top-0 bg-error"></div>
+<p class="text-on-surface text-sm font-bold leading-tight">Crowd Alert: East Gate congestion</p>
+<p class="text-on-surface-variant text-xs mt-2">East gate is experiencing high volume. Directing devotees to North gate.</p>
+<p class="text-error text-[10px] font-bold uppercase tracking-widest mt-3">Priority: High</p>
+</div>
+<button class="w-full py-3 bg-white border border-dashed border-primary/40 rounded-lg text-primary text-sm font-bold hover:bg-primary-container/10 transition-colors">
+                            + Add New Notice
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Mobile Bottom Nav (Replaces Sidebar on Small Screens) -->
+<nav class="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-[#eadbcd] flex justify-around items-center py-3 px-4 z-50">
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-[10px] font-bold">Dash</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">queue_play_next</span>
+<span class="text-[10px] font-medium">Queue</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<div class="p-3 bg-primary text-white rounded-full -mt-10 border-4 border-background shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+</div>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">local_parking</span>
+<span class="text-[10px] font-medium">Parking</span>
+</a>
+<a class="flex flex-col items-center gap-1 text-on-surface-variant" href="#">
+<span class="material-symbols-outlined">menu</span>
+<span class="text-[10px] font-medium">Menu</span>
+</a>
+</nav>
+<script>
+    // Lightweight interactivity for date/time
+    function updateDateTime() {
+        const now = new Date();
+        const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', options);
+        
+        const timeOptions = { hour: '2-digit', minute: '2-digit', hour12: true };
+        document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', timeOptions);
+    }
+    
+    updateDateTime();
+    setInterval(updateDateTime, 30000); // Update every 30 seconds
+
+    // Button click simulation
+    document.querySelectorAll('button').forEach(btn => {
+        btn.addEventListener('click', () => {
+            btn.classList.add('scale-95');
+            setTimeout(() => btn.classList.remove('scale-95'), 100);
+        });
+    });
+</script>
+</body></html>

@@ -1,0 +1,579 @@
+<!DOCTYPE html><html class="light" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Smart Darshan Manager - Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "inverse-on-surface": "#ffede3",
+                        "tertiary": "#006688",
+                        "on-surface": "#231a12",
+                        "tertiary-container": "#00bbf7",
+                        "on-background": "#231a12",
+                        "surface-variant": "#f2dfd3",
+                        "primary-fixed-dim": "#ffb77d",
+                        "surface-tint": "#914d00",
+                        "on-primary-fixed-variant": "#6e3900",
+                        "inverse-primary": "#ffb77d",
+                        "secondary-fixed": "#ffdcc3",
+                        "surface-bright": "#fff8f5",
+                        "on-error": "#ffffff",
+                        "background": "#fff8f5",
+                        "on-secondary-container": "#794c24",
+                        "error": "#ba1a1a",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed": "#001e2c",
+                        "inverse-surface": "#392e26",
+                        "surface-container-highest": "#f2dfd3",
+                        "surface-container": "#feeade",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#f8e5d8",
+                        "on-tertiary-container": "#004760",
+                        "secondary-fixed-dim": "#f8ba88",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed": "#2f1500",
+                        "outline-variant": "#dcc2af",
+                        "surface-container-low": "#fff1e9",
+                        "secondary": "#82542b",
+                        "on-secondary-fixed": "#2f1500",
+                        "on-primary-container": "#663500",
+                        "tertiary-fixed": "#c2e8ff",
+                        "on-surface-variant": "#554335",
+                        "secondary-container": "#febf8d",
+                        "primary-container": "#ff9328",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed-variant": "#673d16",
+                        "surface": "#fff8f5",
+                        "surface-dim": "#e9d6ca",
+                        "primary-fixed": "#ffdcc3",
+                        "outline": "#897363",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed-dim": "#76d1ff",
+                        "on-tertiary-fixed-variant": "#004d67",
+                        "primary": "#914d00"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.5rem",
+                        "lg": "0.75rem",
+                        "xl": "1rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "container-padding-mobile": "16px",
+                        "unit": "8px",
+                        "container-padding-desktop": "40px",
+                        "stack-lg": "32px",
+                        "stack-sm": "8px",
+                        "stack-md": "16px"
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Manrope', sans-serif; background-color: #fff8f5; color: #231a12; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .nav-item-active { background-color: #ff9328; color: #663500; font-weight: 600; }
+        .stat-card { transition: transform 0.2s ease-in-out; }
+        .stat-card:hover { transform: translateY(-2px); }
+        .glass-header { backdrop-filter: blur(8px); background: rgba(255, 248, 245, 0.8); }
+    </style>
+</head>
+<body class="flex min-h-screen overflow-x-hidden">
+<!-- Sidebar Navigation -->
+<aside class="w-72 bg-surface border-r border-outline-variant flex flex-col fixed inset-y-0 z-50">
+<div class="p-stack-md flex items-center gap-3 border-b border-outline-variant">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">temple_hindu</span>
+</div>
+<div>
+<h2 class="text-on-surface font-bold text-sm leading-tight">Smart Darshan</h2>
+<p class="text-on-surface-variant text-xs font-medium">Sri Devi Temple Admin</p>
+</div>
+</div>
+<nav class="flex-1 overflow-y-auto py-stack-md px-3 space-y-1">
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg nav-item-active" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="text-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">calendar_month</span>
+<span class="text-sm">Bookings</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">groups</span>
+<span class="text-sm">Queue Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">data_usage</span>
+<span class="text-sm">Capacity Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">stars</span>
+<span class="text-sm">VIP Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">badge</span>
+<span class="text-sm">Staff Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-sm">User Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">campaign</span>
+<span class="text-sm">Announcements</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">festival</span>
+<span class="text-sm">Festival Management</span>
+</a>
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">bar_chart</span>
+<span class="text-sm">Reports &amp; Analytics</span>
+</a>
+
+<a class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="text-sm">Settings</span>
+</a>
+</nav>
+<div class="p-4 border-t border-outline-variant">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-cover bg-center" data-alt="A high-quality professional portrait of a senior administrator in a minimalist office setting with soft, warm golden hour lighting and a background suggesting a clean, modern digital interface." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAHX3U8v3DR2Oj810xEqK2uZUP2MEaxzEc-RN2F1TQ8k7o9SYDGfoWKdbgnxl-lTq4GPYZRT-gataEhUVN8wsFuxvmDTZqutoEkq7po979e9Saqg5CjM47-qD0hSZCXkXFvzHkBaJtMb97h5KLr1IQZRVmFUXOd2-vqIRF59W3nwxZtuI2yorIeWXY-W0eabCpAazJZ-Er4CEe4IU6-wjxMxTdgdUL2DLkOyG4CuwQv-ZHSZJ5JiI7SWgJX3oNZ_ch3ipjgsT3L_98')"></div>
+<div class="overflow-hidden">
+<p class="text-sm font-bold truncate">Pratik Tupe</p>
+
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="ml-72 flex-1 min-h-screen">
+<!-- Top Nav Bar -->
+<header class="h-16 glass-header border-b border-outline-variant flex items-center justify-between px-container-padding-desktop sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<h1 class="text-xl font-bold">Welcome Admin</h1>
+<span class="w-px h-6 bg-outline-variant"></span>
+<p class="text-on-surface-variant text-sm font-medium" id="current-time">Jun 20 | 2026, 09:47 PM</p>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex flex-col items-end">
+<p class="text-sm font-bold text-primary">Sri Devi Temple</p>
+<p class="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant font-label-sm">Udaipur, India</p>
+</div>
+<button class="bg-primary text-on-primary h-10 px-6 rounded-lg font-bold text-sm flex items-center gap-2 hover:bg-opacity-90 transition-all shadow-sm" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<span class="material-symbols-outlined text-lg">add</span>
+                    New Entry
+                </button>
+</div>
+</header>
+<!-- Content Area -->
+<div class="p-container-padding-desktop space-y-stack-lg">
+<!-- Statistics Grid -->
+<section class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant stat-card shadow-sm" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm mb-1">Total Bookings Today</p>
+<div class="flex items-end justify-between">
+<h3 class="text-2xl font-bold">1,250</h3>
+<span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+5.2%</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant stat-card shadow-sm" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm mb-1">Total Visitors Today</p>
+<div class="flex items-end justify-between">
+<h3 class="text-2xl font-bold">3,400</h3>
+<span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+12%</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant stat-card shadow-sm border-l-4 border-l-primary" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm mb-1">Visitors Inside Temple</p>
+<div class="flex items-end justify-between">
+<h3 class="text-2xl font-bold">450</h3>
+<div class="flex items-center gap-1 text-on-surface-variant">
+<span class="material-symbols-outlined text-sm">person</span>
+<span class="text-xs font-medium">85% Cap.</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant stat-card shadow-sm" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm mb-1">Queue Count</p>
+<div class="flex items-end justify-between">
+<h3 class="text-2xl font-bold">120</h3>
+<span class="text-xs font-bold text-primary">Avg 22m/hr</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant stat-card shadow-sm" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm mb-1">VIP Visitors Today</p>
+<div class="flex items-end justify-between">
+<h3 class="text-2xl font-bold">45</h3>
+<span class="text-xs font-bold text-secondary">Verified</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant stat-card shadow-sm" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm mb-1">Parking Occupancy</p>
+<div class="flex items-end justify-between">
+<h3 class="text-2xl font-bold">65%</h3>
+<div class="w-16 h-1.5 bg-outline-variant rounded-full overflow-hidden">
+<div class="bg-primary h-full" style="width: 65%; opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;"></div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant stat-card shadow-sm" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm mb-1">Completed Darshans</p>
+<div class="flex items-end justify-between">
+<h3 class="text-2xl font-bold">2,850</h3>
+<span class="text-xs font-bold text-green-600">83% Success</span>
+</div>
+</div>
+<div class="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant stat-card shadow-sm" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<p class="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm mb-1">Cancelled Bookings</p>
+<div class="flex items-end justify-between">
+<h3 class="text-2xl font-bold">12</h3>
+<span class="text-xs font-bold text-error">0.4% Rate</span>
+</div>
+</div>
+</section>
+<!-- Main Dashboard Content -->
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Live Queue & Progress -->
+<div class="col-span-12 lg:col-span-5 flex flex-col gap-gutter">
+<div class="bg-surface-container-lowest p-stack-md rounded-xl border border-outline-variant shadow-sm h-full flex flex-col" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<div class="flex items-center justify-between mb-stack-md">
+<h2 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">bolt</span>
+                                Live Queue Overview
+                            </h2>
+<div class="bg-primary-container px-3 py-1 rounded-full text-[10px] font-bold text-on-primary-container uppercase">Live Updates</div>
+</div>
+<div class="bg-surface-container flex flex-col items-center justify-center p-6 rounded-lg mb-6 text-center">
+<p class="text-xs font-bold text-on-surface-variant uppercase tracking-widest font-label-sm mb-1">Current Serving Token</p>
+<h3 class="text-4xl font-extrabold text-primary">#T-8829</h3>
+<div class="mt-4 flex items-center gap-6">
+<div class="text-center">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase">Avg Wait</p>
+<p class="text-lg font-bold">45 mins</p>
+</div>
+<span class="w-px h-8 bg-outline-variant"></span>
+<div class="text-center">
+<p class="text-[10px] font-bold text-on-surface-variant uppercase">Throughput</p>
+<p class="text-lg font-bold">120/hr</p>
+</div>
+</div>
+</div>
+<div class="space-y-4 flex-1">
+<p class="text-xs font-bold text-on-surface-variant uppercase font-label-sm">Next 5 Tokens</p>
+<div class="grid grid-cols-5 gap-2">
+<div class="bg-surface-container-low p-2 rounded text-center border border-outline-variant">
+<p class="text-[10px] font-bold opacity-50">NEXT</p>
+<p class="text-sm font-bold">8830</p>
+</div>
+<div class="bg-surface-container-low p-2 rounded text-center border border-outline-variant opacity-80">
+<p class="text-[10px] font-bold opacity-50">+2</p>
+<p class="text-sm font-bold">8831</p>
+</div>
+<div class="bg-surface-container-low p-2 rounded text-center border border-outline-variant opacity-60">
+<p class="text-[10px] font-bold opacity-50">+3</p>
+<p class="text-sm font-bold">8832</p>
+</div>
+<div class="bg-surface-container-low p-2 rounded text-center border border-outline-variant opacity-40">
+<p class="text-[10px] font-bold opacity-50">+4</p>
+<p class="text-sm font-bold">8833</p>
+</div>
+<div class="bg-surface-container-low p-2 rounded text-center border border-outline-variant opacity-30">
+<p class="text-[10px] font-bold opacity-50">+5</p>
+<p class="text-sm font-bold">8834</p>
+</div>
+</div>
+<div class="pt-4">
+<div class="flex items-center justify-between mb-2">
+<p class="text-xs font-bold text-on-surface-variant">Queue Flow Rate</p>
+<p class="text-xs font-bold text-primary">78% Optimal</p>
+</div>
+<div class="h-2 w-full bg-outline-variant rounded-full overflow-hidden">
+<div class="bg-primary h-full" style="width: 78%; opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;"></div>
+</div>
+</div>
+</div>
+<button class="mt-6 w-full py-2.5 rounded-lg border border-primary text-primary font-bold text-sm hover:bg-primary-container transition-colors">
+                            View Full Live Queue
+                        </button>
+</div>
+</div>
+<!-- Booking Analytics Visualization -->
+<div class="col-span-12 lg:col-span-7 h-full">
+<div class="bg-surface-container-lowest p-stack-md rounded-xl border border-outline-variant shadow-sm h-full flex flex-col" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<div class="flex items-center justify-between mb-6">
+<h2 class="text-lg font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">query_stats</span>
+                                Booking Analytics
+                            </h2>
+<div class="flex gap-2">
+<button class="px-3 py-1 rounded text-xs font-bold bg-surface-container text-on-surface">Daily</button>
+<button class="px-3 py-1 rounded text-xs font-bold text-on-surface-variant hover:bg-surface-container">Weekly</button>
+</div>
+</div>
+<div class="flex-1 relative min-h-[300px] flex items-center justify-center">
+<!-- Placeholder for actual chart -->
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-low to-transparent rounded-lg flex flex-col items-center justify-center border border-dashed border-outline-variant p-8">
+<div class="flex items-end gap-3 h-40 w-full px-4">
+<div class="flex-1 bg-primary-container rounded-t-md h-[40%] opacity-40"></div>
+<div class="flex-1 bg-primary-container rounded-t-md h-[60%] opacity-50"></div>
+<div class="flex-1 bg-primary-container rounded-t-md h-[30%] opacity-30"></div>
+<div class="flex-1 bg-primary rounded-t-md h-[95%]" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;"></div>
+<div class="flex-1 bg-primary-container rounded-t-md h-[55%] opacity-45"></div>
+<div class="flex-1 bg-primary-container rounded-t-md h-[70%] opacity-60"></div>
+<div class="flex-1 bg-primary-container rounded-t-md h-[85%] opacity-70"></div>
+</div>
+<div class="w-full h-px bg-outline mt-1"></div>
+<div class="flex w-full justify-between mt-2 px-4 text-[10px] font-bold text-on-surface-variant uppercase">
+<span class="">Mon</span><span class="">Tue</span><span class="">Wed</span><span class="text-primary">Thu</span><span class="">Fri</span><span class="">Sat</span><span class="">Sun</span>
+</div>
+<div class="mt-8 flex gap-8 items-center">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;"></span>
+<span class="text-xs font-medium">Festival Bookings</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary-container opacity-50"></span>
+<span class="text-xs font-medium">Normal Days</span>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-6 grid grid-cols-2 gap-4">
+<div class="p-3 bg-tertiary-container rounded-lg bg-opacity-10 border border-tertiary border-opacity-20">
+<p class="text-[10px] font-bold uppercase text-tertiary-container font-label-sm">Projected Capacity</p>
+<p class="text-lg font-bold">15,000 / Day</p>
+</div>
+<div class="p-3 bg-secondary-container rounded-lg bg-opacity-10 border border-secondary border-opacity-20">
+<p class="text-[10px] font-bold uppercase text-on-secondary-container font-label-sm">Slot Utilization</p>
+<p class="text-lg font-bold">92.4%</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Middle Section: Recent Activity -->
+<div class="col-span-12 lg:col-span-8">
+<div class="bg-surface-container-lowest p-stack-md rounded-xl border border-outline-variant shadow-sm h-full" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<div class="flex items-center justify-between mb-stack-md">
+<h2 class="text-lg font-bold">Recent Activities</h2>
+<button class="text-sm font-bold text-primary hover:underline">View All Logs</button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="text-xs font-bold text-on-surface-variant uppercase font-label-sm border-b border-outline-variant">
+<tr>
+<th class="py-3">Devotee / ID</th>
+<th class="py-3">Type</th>
+<th class="py-3">Action</th>
+<th class="py-3">Timestamp</th>
+<th class="py-3">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr>
+<td class="py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-xs font-bold">AS</div>
+<div>
+<p class="text-sm font-bold">Amit Sharma</p>
+<p class="text-[10px] text-on-surface-variant">#BK-9921</p>
+</div>
+</div>
+</td>
+<td class="py-4 text-sm">General</td>
+<td class="py-4">
+<span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-variant">Check-In</span>
+</td>
+<td class="py-4 text-xs font-medium text-on-surface-variant">10:28 AM</td>
+<td class="py-4">
+<span class="text-xs font-bold text-green-600 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Verified
+                                            </span>
+</td>
+</tr>
+<tr>
+<td class="py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-xs font-bold">VB</div>
+<div>
+<p class="text-sm font-bold">Vikas Bansal</p>
+<p class="text-[10px] text-on-surface-variant">#BK-V004</p>
+</div>
+</div>
+</td>
+<td class="py-4 text-sm font-bold text-primary">VIP</td>
+<td class="py-4">
+<span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-variant">Entry Approved</span>
+</td>
+<td class="py-4 text-xs font-medium text-on-surface-variant">10:25 AM</td>
+<td class="py-4">
+<span class="text-xs font-bold text-green-600 flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">check_circle</span> Verified
+                                            </span>
+</td>
+</tr>
+<tr>
+<td class="py-4">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-xs font-bold">RM</div>
+<div>
+<p class="text-sm font-bold">Reema Malhotra</p>
+<p class="text-[10px] text-on-surface-variant">#BK-9918</p>
+</div>
+</div>
+</td>
+<td class="py-4 text-sm">Special Pooja</td>
+<td class="py-4">
+<span class="text-xs font-medium px-2 py-0.5 rounded-full bg-surface-variant">Slot Changed</span>
+</td>
+<td class="py-4 text-xs font-medium text-on-surface-variant">10:18 AM</td>
+<td class="py-4">
+<span class="text-xs font-bold text-primary">Pending</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Middle Section: Festival Overview -->
+<div class="col-span-12 lg:col-span-4">
+<div class="bg-primary p-stack-md rounded-xl shadow-lg h-full text-on-primary relative overflow-hidden" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<!-- Decorative glow -->
+<div class="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-10 rounded-full blur-3xl"></div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined">celebration</span>
+<p class="text-xs font-bold uppercase tracking-widest font-label-sm">Upcoming Festival</p>
+</div>
+<h3 class="text-3xl font-extrabold mb-2">Ram Navami</h3>
+<p class="text-sm opacity-90 mb-6">Peak event expected on 17th April. High capacity management required.</p>
+<div class="space-y-4 mb-auto">
+<div class="flex justify-between items-center text-xs border-b border-white border-opacity-20 pb-2">
+<span class="font-medium">Total Capacity</span>
+<span class="font-bold">50,000 / Day</span>
+</div>
+<div class="flex justify-between items-center text-xs border-b border-white border-opacity-20 pb-2">
+<span class="font-medium">Advance Bookings</span>
+<span class="font-bold">34,290 (68%)</span>
+</div>
+<div class="flex justify-between items-center text-xs">
+<span class="font-medium">Special Pooja Slots</span>
+<span class="font-bold">Fully Booked</span>
+</div>
+</div>
+<div class="mt-8 flex gap-3">
+<button class="flex-1 bg-white text-primary font-bold py-2 rounded-lg text-sm shadow-sm hover:bg-opacity-90 transition-all">Adjust Capacity</button>
+<button class="p-2 border border-white border-opacity-40 rounded-lg hover:bg-white hover:bg-opacity-10">
+<span class="material-symbols-outlined">settings_suggest</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Section: Quick Actions -->
+<div class="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant hover:border-primary transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">add_box</span>
+</div>
+<p class="font-bold text-sm">Add Booking</p>
+<p class="text-[10px] text-on-surface-variant mt-1">Direct portal entry</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant hover:border-primary transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+</div>
+<p class="font-bold text-sm">Add VIP Entry</p>
+<p class="text-[10px] text-on-surface-variant mt-1">Manual clearance</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant hover:border-primary transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">manage_accounts</span>
+</div>
+<p class="font-bold text-sm">Manage Staff</p>
+<p class="text-[10px] text-on-surface-variant mt-1">Roster &amp; Attendance</p>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant hover:border-primary transition-colors cursor-pointer group">
+<div class="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-primary">notification_add</span>
+</div>
+<p class="font-bold text-sm">Create Announcement</p>
+<p class="text-[10px] text-on-surface-variant mt-1">App &amp; SMS alerts</p>
+</div>
+</div>
+<!-- Bottom Section: Notifications Center -->
+<div class="col-span-12 lg:col-span-4">
+<div class="bg-surface-container-lowest p-stack-md rounded-xl border border-outline-variant shadow-sm" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;">
+<h2 class="text-sm font-bold uppercase tracking-wider font-label-sm text-on-surface-variant mb-4">Notification Center</h2>
+<div class="space-y-4">
+<div class="flex gap-3">
+<div class="mt-1 w-2 h-2 rounded-full bg-error flex-shrink-0"></div>
+<div>
+<p class="text-sm font-bold leading-tight">Server Delay Alert</p>
+<p class="text-[10px] text-on-surface-variant mt-1">Verification system lag detected at South Gate.</p>
+<p class="text-[10px] font-medium text-outline mt-1">2 mins ago</p>
+</div>
+</div>
+<div class="flex gap-3">
+<div class="mt-1 w-2 h-2 rounded-full bg-primary flex-shrink-0" style="opacity: 1; transform: translateY(0px); transition: 0.4s ease-out;"></div>
+<div>
+<p class="text-sm font-bold leading-tight">Capacity Warning</p>
+<p class="text-[10px] text-on-surface-variant mt-1">90% of afternoon slots filled for tomorrow.</p>
+<p class="text-[10px] font-medium text-outline mt-1">1 hour ago</p>
+</div>
+</div>
+<div class="flex gap-3 opacity-60">
+<div class="mt-1 w-2 h-2 rounded-full bg-outline flex-shrink-0"></div>
+<div>
+<p class="text-sm font-bold leading-tight">System Backup Complete</p>
+<p class="text-[10px] text-on-surface-variant mt-1">Weekly data archive successful.</p>
+<p class="text-[10px] font-medium text-outline mt-1">3 hours ago</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Update live clock
+        function updateTime() {
+            const now = new Date();
+            const options = { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+            document.getElementById('current-time').innerText = now.toLocaleString('en-US', options).replace(',', ' |');
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+
+        // Dashboard Animation Entry
+        document.addEventListener('DOMContentLoaded', () => {
+            const cards = document.querySelectorAll('.stat-card, .bg-surface-container-lowest, .bg-primary');
+            cards.forEach((card, index) => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(10px)';
+                card.style.transition = 'all 0.4s ease-out';
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, index * 50);
+            });
+        });
+    </script>
+
+
+
+
+</body></html>

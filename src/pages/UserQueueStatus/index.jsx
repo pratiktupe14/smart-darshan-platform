@@ -1,0 +1,225 @@
+import React from 'react';
+import { useLanguage } from '../../context/LanguageContext';
+
+export default function UserQueueStatus() {
+  const { t } = useLanguage();
+
+  return (
+    <main className="max-w-[1280px] mx-auto px-4 md:px-10 py-8 space-y-8 w-full">
+      {/* Hero Header */}
+      <div className="space-y-2 pt-4">
+        <h2 className="text-3xl font-semibold text-on-surface">{t('liveQueue')}</h2>
+        <p className="text-base text-on-surface-variant max-w-2xl">
+          Track your queue position and waiting time for darshan.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {/* Left Column: Personal Status & Progress */}
+        <div className="lg:col-span-8 space-y-6">
+          {/* My Queue Card */}
+          <div className="bg-surface-container-lowest border border-outline/10 rounded-xl p-8 shadow-sm relative overflow-hidden group hover:-translate-y-0.5 transition-all duration-300">
+            <div className="absolute top-0 right-0 w-32 h-32 -mr-8 -mt-8 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-500"></div>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+              <div className="space-y-4">
+                <div className="flex items-center gap-3">
+                  <span className="bg-primary-container/10 text-primary-container px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wider">In Queue</span>
+                  <span className="text-on-surface-variant text-sm font-medium">Oct 24, 2024</span>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-on-surface-variant font-medium">{t('yourToken')}</p>
+                  <h3 className="text-7xl font-black text-primary tracking-tighter">A080</h3>
+                </div>
+              </div>
+              
+              <div className="bg-surface-container border border-primary/10 rounded-xl p-6 text-center min-w-[200px] shadow-sm">
+                <p className="text-3xl font-bold text-primary">35</p>
+                <p className="text-on-surface-variant font-medium">People Ahead</p>
+                <div className="mt-4 pt-4 border-t border-primary/10 flex items-center justify-center gap-2 text-primary font-semibold">
+                  <span className="material-symbols-outlined text-sm">trending_down</span>
+                  <span>Moving Fast</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Queue Progress Visual Tracker */}
+          <div className="bg-surface-container-lowest border border-outline/10 rounded-xl p-8 shadow-sm space-y-10 hover:-translate-y-0.5 transition-all duration-300">
+            <div className="flex justify-between items-center">
+              <h4 className="text-xl font-semibold text-on-surface">Live Journey Tracker</h4>
+              <span className="text-primary font-bold">65% Progress</span>
+            </div>
+            
+            <div className="relative px-2">
+              {/* Background Line */}
+              <div className="absolute top-1/2 left-0 w-full h-1.5 bg-surface-container-high -translate-y-1/2 rounded-full overflow-hidden">
+                <div className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" style={{ width: '65%' }}></div>
+              </div>
+              
+              {/* Steps */}
+              <div className="relative flex justify-between">
+                {/* Step 1 */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md z-10">
+                    <span className="material-symbols-outlined text-sm font-bold">check</span>
+                  </div>
+                  <span className="text-xs font-bold text-on-surface text-center">Booked</span>
+                </div>
+                
+                {/* Step 2 */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md z-10">
+                    <span className="material-symbols-outlined text-sm font-bold">check</span>
+                  </div>
+                  <span className="text-xs font-bold text-on-surface text-center">Entered</span>
+                </div>
+                
+                {/* Step 3 (Active) */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-10 h-10 -mt-1 rounded-full bg-white border-4 border-primary text-primary flex items-center justify-center shadow-lg z-10 animate-pulse">
+                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>hourglass_top</span>
+                  </div>
+                  <span className="text-sm font-black text-primary text-center">In Queue</span>
+                </div>
+                
+                {/* Step 4 */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center z-10">
+                    <span className="text-xs font-bold">4</span>
+                  </div>
+                  <span className="text-xs font-medium text-on-surface-variant text-center">Your Turn</span>
+                </div>
+                
+                {/* Step 5 */}
+                <div className="flex flex-col items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center z-10">
+                    <span className="material-symbols-outlined text-sm">temple_hindu</span>
+                  </div>
+                  <span className="text-xs font-medium text-on-surface-variant text-center">Darshan</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Quick Actions */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <button className="flex items-center justify-center gap-3 bg-primary text-white py-4 rounded-xl font-bold hover:bg-primary/90 transition-all shadow-md active:scale-95">
+              <span className="material-symbols-outlined">qr_code_2</span>
+              {t('viewPass')}
+            </button>
+            <button className="flex items-center justify-center gap-3 bg-white border-2 border-primary/20 text-primary py-4 rounded-xl font-bold hover:bg-primary/5 transition-all active:scale-95">
+              <span className="material-symbols-outlined">download</span>
+              {t('downloadPass')}
+            </button>
+            <button className="flex items-center justify-center gap-3 bg-white border-2 border-primary/20 text-primary py-4 rounded-xl font-bold hover:bg-primary/5 transition-all active:scale-95">
+              <span className="material-symbols-outlined">near_me</span>
+              Open Directions
+            </button>
+          </div>
+        </div>
+
+        {/* Right Column: Live Data & Info */}
+        <div className="lg:col-span-4 space-y-6">
+          {/* Active Status Card */}
+          <div className="bg-inverse-surface text-surface rounded-xl p-6 shadow-lg space-y-6">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-green-500 animate-ping"></span>
+              <h4 className="text-sm font-bold uppercase tracking-widest text-primary-fixed">Live Counters</h4>
+            </div>
+            
+            <div className="flex justify-between items-end border-b border-surface-variant/10 pb-6">
+              <div>
+                <p className="text-surface-variant text-sm">Active Token</p>
+                <h5 className="text-4xl font-bold text-white">A045</h5>
+              </div>
+              <div className="text-right">
+                <p className="text-surface-variant text-sm">Est. Wait</p>
+                <h5 className="text-xl font-bold text-primary-fixed">40 Mins</h5>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <p className="text-xs font-bold text-surface-variant uppercase">Next Upcoming</p>
+              <div className="flex flex-wrap gap-2">
+                <span className="bg-surface-variant/10 border border-surface-variant/20 px-3 py-1.5 rounded-lg text-sm font-semibold">A046</span>
+                <span className="bg-surface-variant/10 border border-surface-variant/20 px-3 py-1.5 rounded-lg text-sm font-semibold">A047</span>
+                <span className="bg-surface-variant/10 border border-surface-variant/20 px-3 py-1.5 rounded-lg text-sm font-semibold">A048</span>
+                <span className="bg-surface-variant/10 border border-surface-variant/20 px-3 py-1.5 rounded-lg text-sm font-semibold">A049</span>
+                <span className="bg-surface-variant/10 border border-surface-variant/20 px-3 py-1.5 rounded-lg text-sm font-semibold">A050</span>
+              </div>
+            </div>
+            
+            <div className="bg-surface-container-highest/10 rounded-lg p-4 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-primary-fixed">schedule</span>
+                <span className="text-sm">Estimated Darshan Time</span>
+              </div>
+              <span className="font-bold text-white">10:45 AM</span>
+            </div>
+          </div>
+
+          {/* Statistics */}
+          <div className="bg-surface-container-lowest border border-outline/10 rounded-xl p-6 shadow-sm space-y-4">
+            <div className="flex justify-between items-center">
+              <h4 className="text-sm font-bold text-on-surface">Queue Metrics</h4>
+              <span className="text-[10px] text-on-surface-variant flex items-center gap-1">
+                <span className="material-symbols-outlined text-[12px]">sync</span>
+                Updated 1 min ago
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 bg-surface-container-low rounded-lg">
+                <p className="text-[10px] uppercase font-bold text-on-surface-variant">Queue Speed</p>
+                <p className="text-lg font-bold text-primary">1.5 <span className="text-xs font-medium">tkns/m</span></p>
+              </div>
+              <div className="p-3 bg-surface-container-low rounded-lg">
+                <p className="text-[10px] uppercase font-bold text-on-surface-variant">Avg. Time</p>
+                <p className="text-lg font-bold text-primary">12 <span className="text-xs font-medium">mins</span></p>
+              </div>
+            </div>
+          </div>
+
+          {/* Temple Notice */}
+          <div className="bg-tertiary-fixed text-on-tertiary-fixed rounded-xl p-6 shadow-sm relative overflow-hidden">
+            <div className="absolute -right-4 -bottom-4 opacity-10">
+              <span className="material-symbols-outlined text-8xl">campaign</span>
+            </div>
+            <div className="flex items-center gap-3 mb-3">
+              <span className="material-symbols-outlined text-tertiary">campaign</span>
+              <h4 className="font-bold">Temple Notice</h4>
+            </div>
+            <p className="text-sm leading-relaxed mb-4">Maha-Aarti scheduled for 11:30 AM today. Queue processing may slow down for 20 minutes during the ceremony. We appreciate your patience.</p>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-2 text-xs font-medium">
+                <span className="material-symbols-outlined text-sm">history</span>
+                Temple Hours: 4:00 AM - 10:00 PM
+              </div>
+              <div className="flex items-center gap-2 text-xs font-medium">
+                <span className="material-symbols-outlined text-sm">call</span>
+                Helpline: +91 1234567890
+              </div>
+            </div>
+          </div>
+
+          {/* Temple Map Snippet */}
+          <div className="bg-surface-container-lowest border border-outline/10 rounded-xl p-4 shadow-sm">
+            <div 
+              className="h-32 w-full rounded-lg mb-3 bg-cover bg-center overflow-hidden" 
+              style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCsFT3IFfq63Xzd8M_ArrBfFX7jyZMTp2IHBjaNMtTRZBNuemS8ZpmEmSbKR8VURvlZHxa0gWKEBeROxiq-_plqaAi9wH-aBOkeQrltkexzlxWbMHye7YasrstqyXOSszFzL85_wP2W7280jLISnD-0X6BTksHlSH8VezPrJemCgmN75bs7OD8GqCDEgDgD_kGdakZjSWVCXAMgfiBfq64ffLBNFgLBeiJTNt-Lv6kTPVCv6GpgsPon53fYxKd2OrcOhEerxJ8ap4k')" }}
+            ></div>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="text-xs font-bold text-on-surface">Queue Hall B</p>
+                <p className="text-[10px] text-on-surface-variant">Current Location: Near Entrance Gate 3</p>
+              </div>
+              <button className="bg-primary/10 text-primary p-2 rounded-lg hover:bg-primary/20 transition-colors">
+                <span className="material-symbols-outlined">explore</span>
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  );
+}

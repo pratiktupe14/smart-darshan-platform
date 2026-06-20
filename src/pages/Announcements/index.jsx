@@ -1,0 +1,509 @@
+import React, { useEffect, useState } from 'react';
+import { useLanguage } from '../../context/LanguageContext';
+import { supabase } from '../../lib/supabase';
+
+export default function Announcements() {
+  const { t } = useLanguage();
+  const [announcements, setAnnouncements] = useState([]);
+  const [showModal, setShowModal] = useState(false);
+  const [modalType, setModalType] = useState('create'); // 'create' or 'edit'
+  const [editingId, setEditingId] = useState(null);
+  const [newTitle, setNewTitle] = useState('');
+  const [newContent, setNewContent] = useState('');
+  const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '');
+
+  // Fetch user role from supabase auth or localStorage
+  useEffect(() => {
+    const fetchUser = async () => {
+      const localRole = localStorage.getItem('userRole');
+      if (localRole) {
+        setUserRole(localRole);
+      }
+      const { data } = await supabase.auth.getUser();
+      if (data?.user) {
+        const role = data.user.user_metadata?.role || '';
+        setUserRole(role);
+        localStorage.setItem('userRole', role);
+      }
+    };
+    fetchUser();
+  }, []);
+
+  // Helper to load/save mock local storage data
+  const getInitialAnnouncements = () => {
+    const defaultAnnouncements = [
+      {
+        id: '1',
+        title: 'Maha Shivratri Special Timings',
+        content: 'Temple will remain open throughout the night for special prayers and Abhishekam ceremonies.',
+        published: true,
+        created_at: new Date('2026-03-08').toISOString()
+      },
+      {
+        id: '2',
+        title: 'Live Stream for Morning Aarti',
+        content: 'Experience the divine energy from home. Live streaming starts daily at 5:30 AM on our portal.',
+        published: true,
+        created_at: new Date('2026-03-05').toISOString()
+      },
+      {
+        id: '3',
+        title: 'Annadanam Donation Portal',
+        content: 'We have launched a simplified portal for sponsoring meals for devotees. Contribute now.',
+        published: true,
+        created_at: new Date('2026-03-01').toISOString()
+      }
+    ];
+    const stored = localStorage.getItem('announcements');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch (e) {
+        return defaultAnnouncements;
+      }
+    }
+    localStorage.setItem('announcements', JSON.stringify(defaultAnnouncements));
+    return defaultAnnouncements;
+  };
+
+  // Fetch announcements from Supabase with localStorage fallback
+  const fetchAnnouncements = async () => {
+    const { data, error } = await supabase
+      .from('announcements')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.warn('Supabase fetch failed, falling back to localStorage:', error.message);
+      const localData = getInitialAnnouncements();
+      setAnnouncements(localData);
+    } else {
+      setAnnouncements(data || []);
+      localStorage.setItem('announcements', JSON.stringify(data || []));
+    }
+  };
+
+  useEffect(() => {
+    fetchAnnouncements();
+
+    // Subscribe to realtime updates if any changes happen in Supabase
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'announcements' },
+        () => {
+          fetchAnnouncements();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+
+  const handleCreate = async () => {
+    if (!newTitle) return;
+    const newAnn = {
+      title: newTitle,
+      content: newContent,
+      published: true
+    };
+
+    const { data, error } = await supabase
+      .from('announcements')
+      .insert(newAnn)
+      .select();
+
+    if (error) {
+      console.warn('Supabase insert failed, falling back to localStorage:', error.message);
+      const localData = getInitialAnnouncements();
+      const localNewAnn = {
+        id: crypto.randomUUID(),
+        title: newTitle,
+        content: newContent,
+        published: true,
+        created_at: new Date().toISOString()
+      };
+      const updated = [localNewAnn, ...localData];
+      localStorage.setItem('announcements', JSON.stringify(updated));
+      setAnnouncements(updated);
+    } else {
+      if (data && data.length > 0) {
+        setAnnouncements([data[0], ...announcements]);
+      } else {
+        fetchAnnouncements();
+      }
+    }
+
+    setShowModal(false);
+    setNewTitle('');
+    setNewContent('');
+  };
+
+  const handleEdit = async () => {
+    if (!newTitle || !editingId) return;
+
+    const { data, error } = await supabase
+      .from('announcements')
+      .update({ title: newTitle, content: newContent })
+      .eq('id', editingId)
+      .select();
+
+    if (error) {
+      console.warn('Supabase update failed, falling back to localStorage:', error.message);
+      const localData = getInitialAnnouncements();
+      const updated = localData.map(ann =>
+        ann.id === editingId
+          ? { ...ann, title: newTitle, content: newContent }
+          : ann
+      );
+      localStorage.setItem('announcements', JSON.stringify(updated));
+      setAnnouncements(updated);
+    } else {
+      if (data && data.length > 0) {
+        setAnnouncements(announcements.map(ann => ann.id === editingId ? data[0] : ann));
+      } else {
+        fetchAnnouncements();
+      }
+    }
+
+    setShowModal(false);
+    setNewTitle('');
+    setNewContent('');
+    setEditingId(null);
+  };
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this announcement?')) return;
+
+    const { error } = await supabase
+      .from('announcements')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.warn('Supabase delete failed, falling back to localStorage:', error.message);
+      const localData = getInitialAnnouncements();
+      const updated = localData.filter(ann => ann.id !== id);
+      localStorage.setItem('announcements', JSON.stringify(updated));
+      setAnnouncements(updated);
+    } else {
+      setAnnouncements(announcements.filter(ann => ann.id !== id));
+    }
+  };
+
+  const handleTogglePublish = async (ann) => {
+    const nextPublishedState = !ann.published;
+
+    const { data, error } = await supabase
+      .from('announcements')
+      .update({ published: nextPublishedState })
+      .eq('id', ann.id)
+      .select();
+
+    if (error) {
+      console.warn('Supabase toggle publish failed, falling back to localStorage:', error.message);
+      const localData = getInitialAnnouncements();
+      const updated = localData.map(item =>
+        item.id === ann.id
+          ? { ...item, published: nextPublishedState }
+          : item
+      );
+      localStorage.setItem('announcements', JSON.stringify(updated));
+      setAnnouncements(updated);
+    } else {
+      if (data && data.length > 0) {
+        setAnnouncements(announcements.map(item => item.id === ann.id ? data[0] : item));
+      } else {
+        fetchAnnouncements();
+      }
+    }
+  };
+
+  // Filter based on roles
+  const displayedAnnouncements = userRole === 'admin'
+    ? announcements
+    : announcements.filter(ann => ann.published === true || ann.published === undefined);
+
+  return (
+    <main className="pt-8 pb-12 px-4 md:px-10 max-w-7xl mx-auto w-full">
+      {/* Header Section */}
+      <div className="mb-10">
+        <h1 className="text-3xl md:text-5xl font-bold text-on-surface">{t('announcementsTitle')}</h1>
+        <p className="text-on-surface-variant mt-2 max-w-2xl text-base">Stay informed about temple notices, festivals, events, and important updates in real-time.</p>
+      </div>
+
+      {/* Layout Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* Left Content: 8 Columns */}
+        <div className="lg:col-span-8 space-y-10">
+          
+          {/* Admin Create Button */}
+          {userRole === 'admin' && (
+            <button 
+              className="mb-4 px-4 py-2.5 bg-primary text-on-primary rounded-xl hover:brightness-110 transition-all font-bold flex items-center gap-2 shadow-md active:scale-95 cursor-pointer" 
+              onClick={() => {
+                setModalType('create');
+                setEditingId(null);
+                setNewTitle('');
+                setNewContent('');
+                setShowModal(true);
+              }}
+            >
+              <span className="material-symbols-outlined text-sm">add</span>
+              {t('createAnnouncement') || 'Create Announcement'}
+            </button>
+          )}
+
+          {/* Create / Edit Modal */}
+          {showModal && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
+              <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl border border-outline-variant/30 text-on-surface">
+                <h2 className="text-xl font-bold mb-4">
+                  {modalType === 'create' ? (t('createAnnouncement') || 'Create Announcement') : 'Edit Announcement'}
+                </h2>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-bold text-on-surface-variant mb-2">Title</label>
+                    <input 
+                      className="w-full p-3 bg-surface-container-low border border-outline-variant/50 rounded-lg outline-none focus:border-primary transition-all text-sm font-semibold" 
+                      placeholder="Enter announcement title" 
+                      value={newTitle} 
+                      onChange={(e) => setNewTitle(e.target.value)} 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-on-surface-variant mb-2">Content</label>
+                    <textarea 
+                      className="w-full p-3 bg-surface-container-low border border-outline-variant/50 rounded-lg outline-none focus:border-primary transition-all text-sm font-semibold h-32 resize-none" 
+                      placeholder="Enter announcement content" 
+                      value={newContent} 
+                      onChange={(e) => setNewContent(e.target.value)} 
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-outline-variant/10">
+                  <button 
+                    className="px-4 py-2 border border-outline-variant rounded-lg hover:bg-surface-container-low text-xs font-bold text-on-surface-variant transition-colors" 
+                    onClick={() => setShowModal(false)}
+                  >
+                    {t('cancel') || 'Cancel'}
+                  </button>
+                  <button 
+                    className="px-5 py-2 bg-primary text-white rounded-lg hover:brightness-110 text-xs font-bold transition-all shadow-md" 
+                    onClick={modalType === 'create' ? handleCreate : handleEdit}
+                  >
+                    {t('submit') || 'Submit'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Search & Filters */}
+          <div className="flex flex-col md:flex-row gap-4 items-center overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex gap-2 flex-wrap">
+              <button className="px-4 py-2 rounded-full bg-primary text-on-primary font-medium text-sm shadow-sm hover:brightness-110 transition-all">{t('viewAllNotices')}</button>
+              <button className="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-medium text-sm border border-outline-variant/30 hover:bg-surface-variant transition-all">General Notice</button>
+              <button className="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-medium text-sm border border-outline-variant/30 hover:bg-surface-variant transition-all">Festival Update</button>
+              <button className="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-medium text-sm border border-outline-variant/30 hover:bg-surface-variant transition-all">Darshan Update</button>
+              <button className="px-4 py-2 rounded-full bg-surface-container text-on-surface-variant font-medium text-sm border border-outline-variant/30 hover:bg-surface-variant transition-all">Queue Alert</button>
+            </div>
+          </div>
+
+          {/* Featured Announcement */}
+          <section className="relative overflow-hidden rounded-[24px] shadow-lg group">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10"></div>
+            <div 
+              className="h-[400px] w-full bg-cover bg-center" 
+              style={{ backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCtoIkp_BE5TonuFZSs7TPovUm6LifRyQ7FLNu1NNh13TFpCPYpmzlg8qpbVTLntHzUXJzJ77FByPaCFjnFstYpWYvzZHobuH_8yRL7xOejdA1JylS-WJ7gHnRwJ9f5W_oAIkL1DvcwiLPehBUIrG8ZvwoVf4Bjtp2nYiIEXazk0FLOFpz3H5sQC-R1Tlij_Bh8wD7bLS6eTN3-pAbu-3yc3fHYhr_le9Z4u_wiw7byDvgLDnhXb4ezvqWVbRaHwtHh-FyRqepoaZ4')" }}
+            ></div>
+            <div className="absolute bottom-0 left-0 p-8 z-20 w-full">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-semibold text-xs tracking-wide uppercase">Festival Update</span>
+                <span className="text-white/90 text-sm flex items-center gap-1">
+                  <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+                  March 8, 2024
+                </span>
+              </div>
+              <h2 className="text-white text-3xl md:text-4xl font-bold mb-4">Maha Shivratri 2024 Celebration</h2>
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <p className="text-white/80 max-w-2xl flex-1 text-base md:text-lg">Join us for the most auspicious night of the year with non-stop prayers, four-prahara abhishekas, and spiritual cultural programs.</p>
+                <button className="bg-primary text-on-primary px-8 py-3 rounded-xl font-bold hover:shadow-xl transition-all active:scale-95 shrink-0 w-fit">{t('readDetails')}</button>
+              </div>
+            </div>
+          </section>
+
+          {/* Latest Announcements Grid */}
+          <section>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-semibold text-on-surface">{t('latestAnnouncements')}</h3>
+              <a className="text-primary font-semibold text-sm hover:underline" href="#">{t('viewAll')}</a>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {displayedAnnouncements.map((ann) => (
+                <div key={ann.id} className="bg-white rounded-xl p-6 shadow-[0_4px_20px_0_rgba(152,67,0,0.06)] border border-outline-variant/20 hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-4">
+                      <div className="flex flex-col gap-1.5">
+                        <span className="px-3 py-1 rounded-full bg-surface-container-high text-primary font-semibold text-xs w-fit">{ann.title}</span>
+                        {userRole === 'admin' && (
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded w-fit ${ann.published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                            {ann.published ? 'Published' : 'Draft/Unpublished'}
+                          </span>
+                        )}
+                      </div>
+                      <span className="text-on-surface-variant text-[12px]">{new Date(ann.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <p className="text-on-surface-variant text-sm mb-4 line-clamp-2">{ann.content}</p>
+                  </div>
+                  <div className="flex justify-between items-center mt-4 pt-4 border-t border-outline-variant/10">
+                    <button className="text-primary font-bold text-sm flex items-center gap-1 group">
+                      {t('details')} <span className="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                    </button>
+                    {userRole === 'admin' && (
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => handleTogglePublish(ann)}
+                          title={ann.published ? "Unpublish" : "Publish"}
+                          className={`p-1.5 rounded-lg border transition-colors ${ann.published ? 'border-yellow-200 text-yellow-700 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
+                        >
+                          <span className="material-symbols-outlined text-sm">{ann.published ? 'unpublished' : 'publish'}</span>
+                        </button>
+                        <button 
+                          onClick={() => {
+                            setEditingId(ann.id);
+                            setNewTitle(ann.title);
+                            setNewContent(ann.content);
+                            setModalType('edit');
+                            setShowModal(true);
+                          }}
+                          title="Edit"
+                          className="p-1.5 rounded-lg border border-outline-variant text-on-surface-variant hover:bg-surface-container-low transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">edit</span>
+                        </button>
+                        <button 
+                          onClick={() => handleDelete(ann.id)}
+                          title="Delete"
+                          className="p-1.5 rounded-lg border border-error/20 text-error hover:bg-error/5 transition-colors"
+                        >
+                          <span className="material-symbols-outlined text-sm">delete</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Festival Updates Section */}
+          <section className="bg-surface-container rounded-2xl p-8 border border-outline-variant/30">
+            <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="relative w-40 h-40 flex-shrink-0">
+                <div className="absolute inset-0 rounded-full border-4 border-primary/20"></div>
+                <div className="absolute inset-0 rounded-full border-4 border-primary border-t-transparent animate-spin duration-[10s]"></div>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <span className="font-bold text-4xl text-primary">45</span>
+                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">Days Left</span>
+                </div>
+              </div>
+              <div className="flex-grow text-center md:text-left">
+                <h3 className="text-2xl font-semibold text-on-surface mb-2">Ram Navami Preparation</h3>
+                <p className="text-on-surface-variant mb-6">Preparations are underway for the grand Shobha Yatra and special Rama Janmotsav prayers. Registered volunteers please check your assigned zones.</p>
+                <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                  <button className="bg-secondary text-on-secondary px-6 py-2.5 rounded-lg font-bold text-sm active:scale-95 transition-all shadow-md">View Details</button>
+                  <button className="border border-secondary text-secondary px-6 py-2.5 rounded-lg font-bold text-sm hover:bg-secondary/5 transition-all">Volunteer Registration</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+        </div>
+
+        {/* Right Sidebar: 4 Columns */}
+        <aside className="lg:col-span-4 space-y-6">
+          
+          {/* Important Notices Sidebar */}
+          <div className="bg-white rounded-xl shadow-[0_4px_20px_0_rgba(152,67,0,0.06)] border border-outline-variant/20 overflow-hidden">
+            <div className="bg-surface-container-high px-6 py-4 flex items-center gap-2">
+              <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>priority_high</span>
+              <h3 className="font-bold text-on-surface">Important Notices</h3>
+            </div>
+            <div className="divide-y divide-outline-variant/20">
+              
+              {/* High Priority */}
+              <div className="p-6 bg-error/5 group cursor-pointer hover:bg-error/10 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2 py-0.5 rounded bg-error text-white text-[10px] font-extrabold uppercase tracking-tight">High Priority</span>
+                </div>
+                <p className="text-on-surface font-semibold text-sm leading-snug">TEMPLE CLOSED for 2 hours on Feb 25 (Solar Eclipse)</p>
+                <div className="flex items-center gap-2 mt-2 text-on-surface-variant text-[11px]">
+                  <span className="material-symbols-outlined text-[14px]">schedule</span>
+                  1:30 PM - 3:30 PM
+                </div>
+              </div>
+              
+              {/* Medium Priority */}
+              <div className="p-6 group cursor-pointer hover:bg-surface-container/50 transition-colors">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container text-[10px] font-extrabold uppercase tracking-tight">Medium Priority</span>
+                </div>
+                <p className="text-on-surface font-semibold text-sm leading-snug">VIP Visit Scheduled for Feb 22</p>
+                <p className="text-on-surface-variant text-[11px] mt-2">Expect minor delays in General Darshan queues between 10 AM - 12 PM.</p>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Quick Info Card */}
+          <div className="bg-primary text-on-primary rounded-xl p-6 shadow-lg relative overflow-hidden">
+            <div className="absolute -right-4 -bottom-4 opacity-10">
+              <span className="material-symbols-outlined text-[120px]">temple_hindu</span>
+            </div>
+            <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
+              <span className="material-symbols-outlined">info</span> Quick Information
+            </h3>
+            <div className="space-y-4 relative z-10">
+              <div className="flex items-center gap-4 border-b border-on-primary/20 pb-3">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <span className="material-symbols-outlined">schedule</span>
+                </div>
+                <div>
+                  <p className="text-white/70 text-xs font-medium uppercase tracking-wider">Temple Hours</p>
+                  <p className="font-bold">4:00 AM - 10:00 PM</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="p-2 bg-white/20 rounded-lg">
+                  <span className="material-symbols-outlined">call</span>
+                </div>
+                <div>
+                  <p className="text-white/70 text-xs font-medium uppercase tracking-wider">Helpline Number</p>
+                  <p className="font-bold">1800-123-4567</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Social & Feedback */}
+          <div className="bg-surface-container-low rounded-xl p-6 border border-outline-variant/30 text-center">
+            <p className="text-on-surface-variant text-sm mb-4">Want to receive updates on your phone?</p>
+            <button className="w-full flex items-center justify-center gap-2 bg-[#25D366] text-white py-3 rounded-lg font-bold text-sm shadow-md active:scale-95 transition-all hover:bg-opacity-90">
+              <span className="material-symbols-outlined text-[20px]">chat</span> Join WhatsApp Channel
+            </button>
+            <div className="mt-6 flex justify-center gap-4">
+              <a className="p-2 bg-white rounded-full text-primary hover:scale-110 transition-transform shadow-sm" href="#"><span className="material-symbols-outlined">share</span></a>
+              <a className="p-2 bg-white rounded-full text-primary hover:scale-110 transition-transform shadow-sm" href="#"><span className="material-symbols-outlined">mail</span></a>
+            </div>
+          </div>
+
+        </aside>
+      </div>
+    </main>
+  );
+}

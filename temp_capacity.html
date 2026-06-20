@@ -1,0 +1,508 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Capacity Management | Smart Darshan Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-fixed": "#c2e8ff",
+                    "secondary-fixed": "#ffdcc3",
+                    "surface-tint": "#914d00",
+                    "surface-container": "#feeade",
+                    "on-surface-variant": "#554335",
+                    "on-primary": "#ffffff",
+                    "primary": "#914d00",
+                    "on-secondary-container": "#794c24",
+                    "on-tertiary-container": "#004760",
+                    "inverse-on-surface": "#ffede3",
+                    "secondary": "#82542b",
+                    "primary-fixed-dim": "#ffb77d",
+                    "tertiary-fixed-dim": "#76d1ff",
+                    "on-tertiary": "#ffffff",
+                    "surface": "#fff8f5",
+                    "on-secondary-fixed-variant": "#673d16",
+                    "on-secondary": "#ffffff",
+                    "on-tertiary-fixed": "#001e2c",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed-variant": "#6e3900",
+                    "tertiary-container": "#00bbf7",
+                    "on-primary-fixed": "#2f1500",
+                    "surface-container-low": "#fff1e9",
+                    "surface-bright": "#fff8f5",
+                    "primary-fixed": "#ffdcc3",
+                    "inverse-surface": "#392e26",
+                    "error-container": "#ffdad6",
+                    "on-background": "#231a12",
+                    "secondary-container": "#febf8d",
+                    "background": "#fff8f5",
+                    "secondary-fixed-dim": "#f8ba88",
+                    "on-primary-container": "#663500",
+                    "outline": "#897363",
+                    "surface-dim": "#e9d6ca",
+                    "outline-variant": "#dcc2af",
+                    "on-tertiary-fixed-variant": "#004d67",
+                    "surface-container-highest": "#f2dfd3",
+                    "on-surface": "#231a12",
+                    "surface-variant": "#f2dfd3",
+                    "surface-container-high": "#f8e5d8",
+                    "on-secondary-fixed": "#2f1500",
+                    "tertiary": "#006688",
+                    "primary-container": "#ff9328",
+                    "on-error": "#ffffff",
+                    "inverse-primary": "#ffb77d",
+                    "surface-container-lowest": "#ffffff",
+                    "error": "#ba1a1a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "gutter": "24px",
+                    "stack-md": "16px",
+                    "container-padding-mobile": "16px",
+                    "container-padding-desktop": "40px",
+                    "stack-sm": "8px",
+                    "stack-lg": "32px",
+                    "unit": "8px"
+            },
+            "fontFamily": {
+                    "headline-lg-mobile": ["Manrope"],
+                    "headline-lg": ["Manrope"],
+                    "body-lg": ["Manrope"],
+                    "label-md": ["IBM Plex Sans"],
+                    "headline-md": ["Manrope"],
+                    "label-sm": ["IBM Plex Sans"],
+                    "display": ["Manrope"],
+                    "body-md": ["Manrope"]
+            },
+            "fontSize": {
+                    "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                    "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                    "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                    "display": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                    "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #dcc2af;
+            border-radius: 10px;
+        }
+        @keyframes pulse-green {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 187, 247, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(0, 187, 247, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 187, 247, 0); }
+        }
+        .pulse-indicator {
+            animation: pulse-green 2s infinite;
+        }
+        /* Mobile adjustment for header width when sidebar is fixed */
+        @media (min-width: 768px) {
+            .main-content { margin-left: 16rem; width: calc(100% - 16rem); }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body-md overflow-x-hidden">
+<!-- Sidebar Navigation -->
+<aside class="flex flex-col fixed left-0 top-0 h-full h-screen w-64 rounded-r-xl bg-surface dark:bg-surface-dim border-r border-outline-variant dark:border-outline shadow-sm z-50 transition-all duration-200 ease-in-out">
+<div class="p-stack-md flex flex-col gap-stack-sm">
+<div class="flex items-center gap-3 px-4 py-6">
+<div class="w-10 h-10 bg-primary-container rounded-lg flex items-center justify-center text-on-primary-container shadow-sm">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">temple_hindu</span>
+</div>
+<div>
+<h1 class="text-headline-md font-headline-md font-bold text-primary dark:text-primary-fixed-dim leading-none">Smart Darshan</h1>
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-70">Temple Admin</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1 px-2">
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+<span class="font-label-md text-label-md">Dashboard</span>
+</a>
+
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined">groups</span>
+
+</a>
+<a class="flex items-center gap-3 px-4 py-3 rounded-lg text-primary font-bold border-r-4 border-primary bg-secondary-fixed/20" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">analytics</span>
+<span class="font-label-md text-label-md">Capacity Management</span>
+</a>
+</nav>
+</div>
+<div class="mt-auto p-4 border-t border-outline-variant/30">
+<div class="flex flex-col gap-1 px-2 mb-6">
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label-md text-label-md">Settings</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-2 rounded-lg text-on-surface-variant hover:text-primary transition-colors hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+<span class="font-label-md text-label-md">Support</span>
+</a>
+</div>
+<div class="flex items-center gap-3 p-3 bg-surface-container rounded-xl">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant">
+<img class="w-full h-full object-cover" data-alt="A professional headshot of a temple administrator in a modern minimalist office, high-key soft lighting, warm earth tones, corporate yet spiritual aesthetic, 8k resolution, photorealistic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCg_1T95n7ZwOUYNJLMftnI-bQ2hQi7-ZYNelfRJy2UvIoleYw4CQNfZ-zYxlUGI_Ap3tmGHS0-ddap2sLB074twiYdbhp1A--QlhzEeInCdZmwkfo-YRQv3eyQB155HYzmZlsuv7JXPRO_BFBJYu0njYjopDrWOQieHuQsTHWmRTpH7EY1gunvPbLHB76wcJ2BETIkuHyBeSeJgespEvu-NjoX6Hw-z87aN46qNALqvSyiZM18lKNksBZB52RY8gbe2i9YEToTlCQ">
+</div>
+<div class="overflow-hidden">
+<p class="text-label-md font-bold truncate">Aditi Sharma</p>
+<p class="text-[10px] text-on-surface-variant uppercase tracking-wider">Chief Admin</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Header Navigation -->
+<header class="flex justify-between items-center w-full px-gutter h-16 ml-64 max-w-[calc(100%-16rem)] bg-surface/90 dark:bg-surface-dim/90 backdrop-blur-md border-b border-outline-variant dark:border-outline shadow-sm fixed top-0 z-40 hidden md:flex">
+<div class="flex items-center gap-4">
+<div class="relative w-64">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-sm">search</span>
+<input class="w-full pl-10 pr-4 py-2 bg-surface-container-low border-none rounded-full text-label-sm focus:ring-2 focus:ring-primary/20 transition-all" placeholder="Search facilities or slots..." type="text">
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<button class="p-2 text-on-surface-variant hover:text-primary transition-transform active:scale-90 relative">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
+</button>
+<button class="p-2 text-on-surface-variant hover:text-primary transition-transform active:scale-90">
+<span class="material-symbols-outlined">location_on</span>
+</button>
+</div>
+<div class="h-8 w-[1px] bg-outline-variant/50"></div>
+<div class="flex items-center gap-3 cursor-pointer group">
+<div class="text-right">
+<p class="text-label-sm font-semibold group-hover:text-primary transition-colors">Smart Darshan Manager</p>
+<p class="text-[10px] text-on-surface-variant">v2.1.0 Online</p>
+</div>
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary group-active:scale-90 transition-transform">
+<span class="material-symbols-outlined">account_circle</span>
+</div>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="main-content pt-24 px-gutter pb-12 transition-all duration-300 min-h-screen flex flex-col gap-stack-lg max-md:ml-0 max-md:w-full max-md:pt-8">
+<!-- Page Title & Header -->
+<section class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-background tracking-tight">Capacity Management</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Manage daily booking limits, visitor thresholds, and real-time slot availability.</p>
+</div>
+<div class="flex gap-3">
+<button class="px-5 py-2.5 rounded-xl border-1.5 border-secondary text-secondary font-label-md hover:bg-secondary/5 transition-colors flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">download</span>
+                    Export Report
+                </button>
+<button class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-sm">add</span>
+                    Override Limit
+                </button>
+</div>
+</section>
+<!-- Capacity Overview Cards (Bento Style) -->
+<section class="grid grid-cols-1 md:grid-cols-4 gap-stack-md">
+<!-- Total Daily Capacity -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-primary/5 rounded-lg">
+<span class="material-symbols-outlined text-primary">diversity_3</span>
+</div>
+<span class="bg-surface-variant text-on-surface-variant px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">Max Limit</span>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant font-medium">Total Daily Capacity</p>
+<h3 class="text-headline-md font-bold mt-1">50,000</h3>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/30">
+<p class="text-label-sm text-on-surface-variant italic">Configured in global settings</p>
+</div>
+</div>
+<!-- Total Bookings Today -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-secondary/5 rounded-lg">
+<span class="material-symbols-outlined text-secondary">confirmation_number</span>
+</div>
+<div class="flex items-center text-tertiary font-bold text-[12px]">
+<span class="material-symbols-outlined text-[14px]">trending_up</span>
+                        +5.2%
+                    </div>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant font-medium">Total Bookings Today</p>
+<h3 class="text-headline-md font-bold mt-1">34,290</h3>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/30">
+<div class="w-full bg-outline-variant/20 h-1.5 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 68.6%;"></div>
+</div>
+</div>
+</div>
+<!-- Available Slots -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
+<div class="flex justify-between items-start mb-4">
+<div class="p-2 bg-tertiary/5 rounded-lg">
+<span class="material-symbols-outlined text-tertiary">event_seat</span>
+</div>
+<div class="w-2 h-2 rounded-full bg-tertiary animate-pulse"></div>
+</div>
+<div>
+<p class="text-label-sm text-on-surface-variant font-medium">Available Slots</p>
+<h3 class="text-headline-md font-bold mt-1">15,710</h3>
+</div>
+<div class="mt-4 pt-4 border-t border-outline-variant/30">
+<p class="text-label-sm text-tertiary font-bold">Refreshing in 14s</p>
+</div>
+</div>
+<!-- Capacity Utilization (Circular Indicator) -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-sm flex flex-col items-center justify-center hover:shadow-md transition-shadow relative overflow-hidden">
+<div class="relative w-28 h-28 flex items-center justify-center">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-outline-variant opacity-20" cx="56" cy="56" fill="transparent" r="48" stroke="currentColor" stroke-width="8"></circle>
+<circle class="text-primary" cx="56" cy="56" fill="transparent" r="48" stroke="currentColor" stroke-dasharray="301.59" stroke-dashoffset="94.7" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center">
+<span class="text-headline-md font-extrabold text-primary">68.6%</span>
+<span class="text-[10px] text-on-surface-variant font-bold uppercase">Utilized</span>
+</div>
+</div>
+<p class="text-label-sm font-medium mt-4">Capacity Utilization</p>
+</div>
+</section>
+<!-- Main Capacity Controls & Visuals -->
+<section class="grid grid-cols-1 lg:grid-cols-12 gap-stack-lg">
+<!-- Left: Capacity Progress Visualization -->
+<div class="lg:col-span-8 flex flex-col gap-stack-md">
+<div class="bg-surface-container-lowest p-stack-lg rounded-2xl border border-outline-variant shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 left-0 w-full h-1 bg-primary"></div>
+<div class="flex justify-between items-center mb-6">
+<h3 class="text-headline-md font-bold">Live Capacity Status</h3>
+<div class="flex items-center gap-4 text-label-sm">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm bg-primary"></span>
+<span class="text-on-surface-variant">Booked</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-sm bg-outline-variant/30"></span>
+<span class="text-on-surface-variant">Remaining</span>
+</div>
+</div>
+</div>
+<!-- Progress Visualization -->
+<div class="flex flex-col gap-4">
+<div class="relative h-12 w-full bg-outline-variant/20 rounded-xl overflow-hidden shadow-inner flex">
+<div class="h-full bg-primary transition-all duration-700 ease-out flex items-center px-4" style="width: 56%;">
+<span class="text-on-primary text-[11px] font-bold truncate">Online Bookings (28k)</span>
+</div>
+<div class="h-full bg-primary-container transition-all duration-700 ease-out flex items-center px-4" style="width: 12.6%;">
+<span class="text-on-primary-container text-[11px] font-bold truncate">Offline (6.3k)</span>
+</div>
+</div>
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-1">Online</p>
+<p class="text-headline-md font-bold text-primary">28,000</p>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-1">Walk-ins</p>
+<p class="text-headline-md font-bold text-on-secondary-container">6,290</p>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-1">Cancelled</p>
+<p class="text-headline-md font-bold text-error">1,120</p>
+</div>
+<div class="p-4 rounded-xl bg-surface-container-low border border-outline-variant/30">
+<p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-1">VIP/Special</p>
+<p class="text-headline-md font-bold text-tertiary">450</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Daily Capacity Settings Card -->
+<div class="bg-surface-container-lowest p-stack-lg rounded-2xl border border-outline-variant shadow-sm relative overflow-hidden">
+<div class="flex items-center gap-3 mb-6">
+<span class="material-symbols-outlined text-primary">settings_applications</span>
+<h3 class="text-headline-md font-bold">Capacity Configuration</h3>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+<div class="space-y-4">
+<div>
+<label class="block text-label-md font-bold text-on-surface mb-2">Maximum Visitors Per Day</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-60">person</span>
+<input class="w-full pl-10 pr-4 py-3 rounded-xl border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary transition-all text-body-md font-bold" type="number" value="50000">
+</div>
+<p class="text-label-sm text-on-surface-variant mt-2 italic">Standard limit based on temple floor space analysis.</p>
+</div>
+<div>
+<label class="block text-label-md font-bold text-on-surface mb-2">Maximum Vehicles Per Day</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-60">directions_car</span>
+<input class="w-full pl-10 pr-4 py-3 rounded-xl border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary transition-all text-body-md font-bold" type="number" value="1200">
+</div>
+</div>
+</div>
+<div class="space-y-4">
+<div>
+<label class="block text-label-md font-bold text-on-surface mb-2">Maximum Persons Per Booking</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-60">group_add</span>
+<select class="w-full pl-10 pr-10 py-3 rounded-xl border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary appearance-none transition-all text-body-md font-bold">
+<option value="5">5 Persons</option>
+<option selected="" value="10">10 Persons</option>
+<option value="15">15 Persons</option>
+<option value="20">20 Persons</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
+</div>
+</div>
+<div class="pt-4 flex items-center justify-end gap-3">
+<button class="px-6 py-3 rounded-xl text-on-surface-variant font-label-md hover:bg-surface-variant transition-colors">Reset to Defaults</button>
+<button class="px-8 py-3 rounded-xl bg-primary text-on-primary font-label-md hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all">Save Changes</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Status and Quick Actions -->
+<div class="lg:col-span-4 flex flex-col gap-stack-md">
+<!-- Capacity Status Card -->
+<div class="bg-surface-container-lowest p-stack-lg rounded-2xl border border-outline-variant shadow-sm relative overflow-hidden flex flex-col gap-6">
+<div class="flex flex-col items-center text-center gap-2">
+<div class="w-20 h-20 rounded-full bg-tertiary/10 flex items-center justify-center mb-2">
+<div class="w-12 h-12 rounded-full bg-tertiary/20 flex items-center justify-center pulse-indicator">
+<span class="material-symbols-outlined text-tertiary text-3xl" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+</div>
+<h4 class="text-label-md font-bold text-on-surface-variant uppercase tracking-widest">Current Status</h4>
+<div class="bg-tertiary-fixed text-on-tertiary-fixed px-4 py-1.5 rounded-full font-bold text-label-md">Open for Booking</div>
+</div>
+<div class="bg-surface-container-low p-4 rounded-xl border border-outline-variant/30 flex items-start gap-4">
+<span class="material-symbols-outlined text-primary mt-1">trending_up</span>
+<div>
+<p class="text-body-md font-medium text-on-surface">Booking Rate</p>
+<p class="text-label-sm text-on-surface-variant">Slots are currently being booked at a rate of <span class="font-bold text-primary">120/hr</span>.</p>
+</div>
+</div>
+<div class="flex flex-col gap-3 pt-4">
+<button class="w-full py-4 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
+<span class="material-symbols-outlined">update</span>
+                            Update Capacity
+                        </button>
+<div class="grid grid-cols-2 gap-3">
+<button class="py-3 px-2 rounded-xl border border-outline text-on-surface-variant font-label-md hover:bg-error/5 hover:text-error hover:border-error transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">block</span>
+                                Stop
+                            </button>
+<button class="py-3 px-2 rounded-xl bg-surface-container-highest text-on-surface-variant opacity-40 font-label-md flex items-center justify-center gap-2 cursor-not-allowed" disabled="">
+<span class="material-symbols-outlined text-sm">play_arrow</span>
+                                Resume
+                            </button>
+</div>
+</div>
+</div>
+<!-- Recent Alerts -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-sm flex flex-col gap-4">
+<h4 class="text-label-md font-bold flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg">notification_important</span>
+                        System Alerts
+                    </h4>
+<div class="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+<div class="flex gap-4 p-3 rounded-xl bg-surface hover:bg-surface-variant transition-colors cursor-pointer border-l-4 border-primary">
+<div class="shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-sm">warning</span>
+</div>
+<div>
+<p class="text-label-sm font-bold">Afternoon Slot Spike</p>
+<p class="text-[11px] text-on-surface-variant leading-tight mt-0.5">14:00 - 15:00 slots reaching 90% capacity. Recommended: Open standby queue.</p>
+</div>
+</div>
+<div class="flex gap-4 p-3 rounded-xl bg-surface hover:bg-surface-variant transition-colors cursor-pointer border-l-4 border-tertiary">
+<div class="shrink-0 w-8 h-8 rounded-full bg-tertiary/10 flex items-center justify-center">
+<span class="material-symbols-outlined text-tertiary text-sm">cloud_done</span>
+</div>
+<div>
+<p class="text-label-sm font-bold">API Sync Successful</p>
+<p class="text-[11px] text-on-surface-variant leading-tight mt-0.5">Online booking partner 'DharmaTravels' capacity synced 5 mins ago.</p>
+</div>
+</div>
+<div class="flex gap-4 p-3 rounded-xl bg-surface hover:bg-surface-variant transition-colors cursor-pointer border-l-4 border-outline-variant">
+<div class="shrink-0 w-8 h-8 rounded-full bg-outline-variant/30 flex items-center justify-center">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">info</span>
+</div>
+<div>
+<p class="text-label-sm font-bold">Night Limit Auto-Applied</p>
+<p class="text-[11px] text-on-surface-variant leading-tight mt-0.5">Night darshan limits reduced to 2,000 per hour as per scheduled maintenance.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- Footer -->
+<footer class="flex justify-between items-center px-gutter mt-auto w-full py-4 bg-surface-container-lowest border-t border-outline-variant/50 max-md:flex-col max-md:gap-4 max-md:text-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant opacity-80">© 2024 Smart Darshan Manager. <span class="font-bold text-primary">System Version 2.1.0</span></p>
+<div class="flex gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Terms of Service</a>
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Security Compliance</a>
+</div>
+</footer>
+</main>
+<!-- Mobile FAB for Quick Status Toggle -->
+<button class="md:hidden fixed bottom-8 right-8 w-14 h-14 bg-primary text-on-primary rounded-full shadow-2xl flex items-center justify-center z-[100] active:scale-90 transition-transform">
+<span class="material-symbols-outlined">edit_attributes</span>
+</button>
+<script>
+        // Simple Interaction logic
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', () => {
+                button.classList.add('scale-95');
+            });
+            button.addEventListener('mouseup', () => {
+                button.classList.remove('scale-95');
+            });
+            button.addEventListener('mouseleave', () => {
+                button.classList.remove('scale-95');
+            });
+        });
+
+        // Numeric entry validation for mobile
+        const numberInputs = document.querySelectorAll('input[type="number"]');
+        numberInputs.forEach(input => {
+            input.addEventListener('input', (e) => {
+                if (e.target.value < 0) e.target.value = 0;
+            });
+        });
+    </script>
+
+
+</body></html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>VIP Management | Smart Darshan Manager</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=IBM+Plex+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline": "#897363",
+                        "on-primary": "#ffffff",
+                        "secondary": "#82542b",
+                        "on-secondary-fixed-variant": "#673d16",
+                        "on-primary-fixed": "#2f1500",
+                        "background": "#fff8f5",
+                        "secondary-container": "#febf8d",
+                        "on-background": "#231a12",
+                        "on-surface-variant": "#554335",
+                        "on-surface": "#231a12",
+                        "surface-container-low": "#fff1e9",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-fixed-dim": "#f8ba88",
+                        "primary-container": "#ff9328",
+                        "on-tertiary-fixed-variant": "#004d67",
+                        "on-error-container": "#93000a",
+                        "inverse-primary": "#ffb77d",
+                        "tertiary": "#006688",
+                        "primary-fixed-dim": "#ffb77d",
+                        "surface-container-high": "#f8e5d8",
+                        "on-secondary-fixed": "#2f1500",
+                        "inverse-on-surface": "#ffede3",
+                        "tertiary-fixed": "#c2e8ff",
+                        "outline-variant": "#dcc2af",
+                        "surface-dim": "#e9d6ca",
+                        "on-tertiary-container": "#004760",
+                        "error-container": "#ffdad6",
+                        "surface-bright": "#fff8f5",
+                        "primary-fixed": "#ffdcc3",
+                        "on-primary-container": "#663500",
+                        "on-secondary": "#ffffff",
+                        "on-secondary-container": "#794c24",
+                        "on-tertiary": "#ffffff",
+                        "on-primary-fixed-variant": "#6e3900",
+                        "surface-container-highest": "#f2dfd3",
+                        "error": "#ba1a1a",
+                        "on-tertiary-fixed": "#001e2c",
+                        "tertiary-container": "#00bbf7",
+                        "on-error": "#ffffff",
+                        "surface-container": "#feeade",
+                        "surface": "#fff8f5",
+                        "secondary-fixed": "#ffdcc3",
+                        "primary": "#914d00",
+                        "tertiary-fixed-dim": "#76d1ff",
+                        "surface-variant": "#f2dfd3",
+                        "surface-tint": "#914d00",
+                        "inverse-surface": "#392e26"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "12px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "gutter": "24px",
+                        "stack-sm": "8px",
+                        "stack-md": "16px",
+                        "stack-lg": "32px",
+                        "container-padding-desktop": "40px",
+                        "unit": "8px",
+                        "container-padding-mobile": "16px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["IBM Plex Sans"],
+                        "label-md": ["IBM Plex Sans"],
+                        "headline-lg": ["Manrope"],
+                        "display": ["Manrope"],
+                        "body-md": ["Manrope"],
+                        "headline-md": ["Manrope"],
+                        "body-lg": ["Manrope"],
+                        "headline-lg-mobile": ["Manrope"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "500"}],
+                        "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "fontWeight": "700"}],
+                        "display": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "800"}],
+                        "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "600"}],
+                        "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "fontWeight": "700"}]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            vertical-align: middle;
+        }
+        .filled-icon {
+            font-variation-settings: 'FILL' 1;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #dcc2af;
+            border-radius: 10px;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(163, 115, 99, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface selection:bg-primary-container selection:text-on-primary-container">
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="flex flex-col h-screen sticky top-0 h-full w-64 border-r border-outline-variant bg-surface-container-lowest dark:bg-surface-container-low shrink-0 hidden md:flex">
+<div class="p-6">
+<h1 class="font-headline-md text-headline-md font-bold text-secondary dark:text-secondary-fixed-dim">Darshan Admin</h1>
+<p class="text-label-sm font-label-sm text-on-surface-variant opacity-70 uppercase tracking-widest mt-1">Management Suite</p>
+</div>
+<nav class="flex-1 px-4 space-y-1 overflow-y-auto custom-scrollbar">
+<div class="flex items-center px-4 py-3 cursor-pointer transition-all active:scale-95 text-on-surface-variant dark:text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-200 font-label-md text-label-md rounded-xl">
+<span class="material-symbols-outlined mr-3">dashboard</span>
+<span>Dashboard</span>
+</div>
+<div class="flex items-center px-4 py-3 cursor-pointer transition-all active:scale-95 text-on-surface-variant dark:text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-200 font-label-md text-label-md rounded-xl">
+<span class="material-symbols-outlined mr-3">calendar_today</span>
+<span>Bookings</span>
+</div>
+<div class="flex items-center px-4 py-3 cursor-pointer transition-all active:scale-95 text-on-surface-variant dark:text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-200 font-label-md text-label-md rounded-xl">
+<span class="material-symbols-outlined mr-3">groups</span>
+<span>Queue Management</span>
+</div>
+<div class="flex items-center px-4 py-3 cursor-pointer transition-all active:scale-95 text-on-surface-variant dark:text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-200 font-label-md text-label-md rounded-xl">
+<span class="material-symbols-outlined mr-3">analytics</span>
+<span>Capacity Management</span>
+</div>
+<!-- ACTIVE TAB -->
+<div class="flex items-center px-4 py-3 cursor-pointer transition-all active:scale-95 text-primary dark:text-inverse-primary font-bold border-r-4 border-primary bg-surface-container-high font-label-md text-label-md rounded-l-xl">
+<span class="material-symbols-outlined mr-3 filled-icon" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+<span>VIP Management</span>
+</div>
+<div class="flex items-center px-4 py-3 cursor-pointer transition-all active:scale-95 text-on-surface-variant dark:text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-200 font-label-md text-label-md rounded-xl">
+<span class="material-symbols-outlined mr-3">badge</span>
+<span>Staff Management</span>
+</div>
+<div class="flex items-center px-4 py-3 cursor-pointer transition-all active:scale-95 text-on-surface-variant dark:text-on-surface-variant hover:text-primary hover:bg-surface-container-high transition-colors duration-200 font-label-md text-label-md rounded-xl">
+<span class="material-symbols-outlined mr-3">settings</span>
+<span>Settings</span>
+</div>
+</nav>
+<div class="p-4 border-t border-outline-variant">
+<div class="flex items-center p-2 rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="A portrait-style close-up of a professional temple administrator with a serene expression, dressed in formal ethnic attire, set against a soft-focus background of traditional temple architecture under gentle sunlight." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAGxd4KH4rmy9FswYpdwI0ycVGHnLo6AE6DF8I5Gog8-FFCUqsNaJvvdOXkE5IQMiUlPII6QJsRRUaug4qe6i4LOj0TZy4lEd5AjPV-CDnSGmJFI42TO9f_rMWFQCel9cl9O44Fjuky-hnkgvEZ8ee9rOc_BdYW4ipYWH6GEPvDFkYbJFEH0uYa0hmH-BVIt18za4-0XbYQjXNzY-X8Su_KeN8a7Iir5X41qxdWBxk4UzAXx2e9y-QZLpsTb7RA8v85-WHDrmKJV5k"/>
+</div>
+<div class="ml-3 overflow-hidden">
+<p class="text-label-md font-label-md text-on-surface truncate">Admin Account</p>
+<p class="text-label-sm font-label-sm text-on-surface-variant truncate">Master Access</p>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col h-screen overflow-hidden">
+<!-- TopNavBar -->
+<header class="flex justify-between items-center w-full px-container-padding-desktop py-4 sticky top-0 z-40 bg-surface/80 backdrop-blur-md border-b border-outline-variant shrink-0">
+<div class="flex items-center gap-6">
+<div class="md:hidden">
+<span class="material-symbols-outlined text-on-surface">menu</span>
+</div>
+<h2 class="font-headline-md text-headline-md font-extrabold text-primary dark:text-inverse-primary leading-tight">Smart Darshan Manager</h2>
+<div class="hidden lg:flex items-center bg-surface-container-low border border-outline-variant rounded-full px-4 py-2 w-96">
+<span class="material-symbols-outlined text-on-surface-variant text-[20px]">search</span>
+<input class="bg-transparent border-none focus:ring-0 text-body-md font-body-md ml-2 w-full text-on-surface placeholder-on-surface-variant/60" placeholder="Search visitors, queue ID, or staff..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant active:opacity-80">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors text-on-surface-variant active:opacity-80">
+<span class="material-symbols-outlined">help_outline</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<div class="flex items-center gap-3 bg-primary/10 px-4 py-2 rounded-full cursor-pointer hover:bg-primary/20 transition-all">
+<span class="text-label-md font-label-md text-primary">Admin Panel</span>
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+</div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto custom-scrollbar p-gutter space-y-stack-lg">
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
+<div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface">VIP Management</h1>
+<p class="text-body-lg font-body-lg text-on-surface-variant">Manage VIP visitors, priority darshan entries, and VIP queue access.</p>
+</div>
+<div class="flex gap-stack-md">
+<button class="flex items-center px-6 py-2.5 bg-secondary text-on-primary rounded-xl font-label-md text-label-md transition-all active:scale-95 shadow-lg shadow-secondary/20">
+<span class="material-symbols-outlined mr-2">download</span>
+                            Export List
+                        </button>
+<button class="flex items-center px-6 py-2.5 bg-primary text-on-primary rounded-xl font-label-md text-label-md transition-all active:scale-95 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined mr-2">add</span>
+                            Add VIP Entry
+                        </button>
+</div>
+</div>
+<!-- VIP Overview Stats -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-gutter">
+<!-- Stat Card 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant flex items-center gap-4 transition-all hover:shadow-md">
+<div class="w-12 h-12 rounded-xl bg-primary-container/20 flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined filled-icon" style="font-variation-settings: 'FILL' 1;">stars</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Total VIP Visitors Today</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">156</h3>
+</div>
+</div>
+<!-- Stat Card 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant flex items-center gap-4 transition-all hover:shadow-md">
+<div class="w-12 h-12 rounded-xl bg-tertiary-container/20 flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined">running_with_errors</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Active VIP Entries</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">12</h3>
+</div>
+</div>
+<!-- Stat Card 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant flex items-center gap-4 transition-all hover:shadow-md">
+<div class="w-12 h-12 rounded-xl bg-green-100 flex items-center justify-center text-green-700">
+<span class="material-symbols-outlined filled-icon" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Completed VIP Visits</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">140</h3>
+</div>
+</div>
+<!-- Stat Card 4 -->
+<div class="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant flex items-center gap-4 transition-all hover:shadow-md">
+<div class="w-12 h-12 rounded-xl bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">event</span>
+</div>
+<div>
+<p class="text-label-sm font-label-sm text-on-surface-variant uppercase tracking-wider">Upcoming VIP Visits</p>
+<h3 class="text-headline-md font-headline-md text-on-surface">4</h3>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-gutter">
+<!-- Left Column: Queue Control & Entry Form -->
+<div class="lg:col-span-1 space-y-stack-lg">
+<!-- VIP Queue Control -->
+<div class="bg-surface-container-lowest rounded-xl border-t-2 border-primary border-x border-b border-outline-variant p-6 shadow-sm overflow-hidden relative">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary">traffic</span>
+                                    Queue Control
+                                </h2>
+<div class="flex items-center gap-2 px-3 py-1 bg-green-50 rounded-full">
+<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+<span class="text-label-sm font-label-sm text-green-700">LIVE</span>
+</div>
+</div>
+<div class="space-y-4">
+<button class="w-full flex items-center justify-center gap-2 py-4 bg-primary text-on-primary rounded-xl font-label-md text-label-md transition-all hover:opacity-90 active:scale-[0.98]">
+<span class="material-symbols-outlined">bolt</span>
+                                    Activate VIP Entry
+                                </button>
+<button class="w-full flex items-center justify-center gap-2 py-4 border-2 border-secondary text-secondary rounded-xl font-label-md text-label-md transition-all hover:bg-secondary/5 active:scale-[0.98]">
+<span class="material-symbols-outlined">stop_circle</span>
+                                    End VIP Entry
+                                </button>
+<button class="w-full flex items-center justify-center gap-2 py-3 text-on-surface-variant font-label-md text-label-md hover:text-primary transition-colors">
+<span class="material-symbols-outlined">refresh</span>
+                                    Resume Normal Queue
+                                </button>
+</div>
+<div class="mt-6 pt-6 border-t border-outline-variant/30 text-center">
+<p class="text-label-sm font-label-sm text-on-surface-variant mb-1">CURRENT STATUS</p>
+<p class="text-body-md font-body-md text-primary font-bold">Intermittent VIP Access Active</p>
+</div>
+</div>
+<!-- Add VIP Entry Form -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm">
+<h2 class="font-headline-md text-headline-md text-on-surface mb-6 flex items-center">
+<span class="material-symbols-outlined mr-2 text-primary">person_add</span>
+                                Add VIP Entry
+                            </h2>
+<form class="space-y-4">
+<div class="space-y-1">
+<label class="text-label-md font-label-md text-on-surface-variant">VIP Name</label>
+<input class="w-full px-4 py-2 rounded-xl border border-outline-variant focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-body-md" placeholder="Full name of the VIP" type="text"/>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-label-md font-label-md text-on-surface-variant">Mobile Number</label>
+<input class="w-full px-4 py-2 rounded-xl border border-outline-variant focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-body-md" placeholder="+91 00000 00000" type="tel"/>
+</div>
+<div class="space-y-1">
+<label class="text-label-md font-label-md text-on-surface-variant">Vehicle No.</label>
+<input class="w-full px-4 py-2 rounded-xl border border-outline-variant focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-body-md" placeholder="AB 01 CD 2345" type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-label-md font-label-md text-on-surface-variant">VIP Category</label>
+<select class="w-full px-4 py-2 rounded-xl border border-outline-variant focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-body-md bg-transparent">
+<option>Gold</option>
+<option>Platinum</option>
+<option>State Guest</option>
+</select>
+</div>
+<div class="space-y-1">
+<label class="text-label-md font-label-md text-on-surface-variant">Visit Date</label>
+<input class="w-full px-4 py-2 rounded-xl border border-outline-variant focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-body-md" type="date"/>
+</div>
+</div>
+<div class="space-y-1">
+<label class="text-label-md font-label-md text-on-surface-variant">Number of Persons</label>
+<input class="w-full px-4 py-2 rounded-xl border border-outline-variant focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-body-md" min="1" type="number" value="1"/>
+</div>
+<div class="space-y-1">
+<label class="text-label-md font-label-md text-on-surface-variant">Remarks</label>
+<textarea class="w-full px-4 py-2 rounded-xl border border-outline-variant focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-body-md" placeholder="Special requirements or notes..." rows="2"></textarea>
+</div>
+<button class="w-full py-3 bg-primary text-on-primary rounded-xl font-label-md text-label-md transition-all active:scale-[0.98] mt-2" type="button">
+                                    Add VIP Entry
+                                </button>
+</form>
+</div>
+</div>
+<!-- Right Column: List and Activities -->
+<div class="lg:col-span-2 space-y-stack-lg">
+<!-- Search & Filter Row -->
+<div class="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant flex flex-col md:flex-row items-center gap-4">
+<div class="flex-1 relative w-full">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full pl-11 pr-4 py-2.5 rounded-xl border border-outline-variant focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-body-md" placeholder="Search by Name or Mobile..." type="text"/>
+</div>
+<div class="flex items-center gap-3 w-full md:w-auto">
+<input class="px-4 py-2.5 rounded-xl border border-outline-variant focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none text-body-md" type="date"/>
+<button class="p-2.5 rounded-xl border border-outline-variant hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</div>
+<!-- VIP List Table -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant shadow-sm overflow-hidden">
+<div class="p-6 border-b border-outline-variant">
+<h2 class="font-headline-md text-headline-md text-on-surface">VIP Visitors Registry</h2>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead class="bg-surface-container-low text-label-md font-label-md text-on-surface-variant">
+<tr>
+<th class="px-6 py-4">VIP Name</th>
+<th class="px-6 py-4">Mobile Number</th>
+<th class="px-6 py-4">Visit Date</th>
+<th class="px-6 py-4 text-center">Persons</th>
+<th class="px-6 py-4">Status</th>
+<th class="px-6 py-4">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant/30 text-body-md font-body-md">
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-secondary-container/30 text-secondary flex items-center justify-center mr-3 font-bold text-[12px]">AS</div>
+<span class="font-bold">Amit Shah</span>
+</div>
+</td>
+<td class="px-6 py-4">+91 98765 43210</td>
+<td class="px-6 py-4">Oct 24, 2023</td>
+<td class="px-6 py-4 text-center">4</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-primary-container/20 text-on-primary-container text-label-sm font-label-sm border border-primary-container/40">Active</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-primary hover:underline font-label-md text-label-md">Details</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center mr-3 font-bold text-[12px]">RM</div>
+<span class="font-bold">Rajnath Singh</span>
+</div>
+</td>
+<td class="px-6 py-4">+91 98765 00112</td>
+<td class="px-6 py-4">Oct 24, 2023</td>
+<td class="px-6 py-4 text-center">2</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-surface-container-high text-on-surface-variant text-label-sm font-label-sm border border-outline-variant/50">Scheduled</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-primary hover:underline font-label-md text-label-md">Details</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center mr-3 font-bold text-[12px]">NS</div>
+<span class="font-bold">Nirmala Sitharaman</span>
+</div>
+</td>
+<td class="px-6 py-4">+91 98765 55443</td>
+<td class="px-6 py-4">Oct 23, 2023</td>
+<td class="px-6 py-4 text-center">3</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-green-100 text-green-700 text-label-sm font-label-sm border border-green-200">Completed</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-primary hover:underline font-label-md text-label-md">Details</button>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/50 transition-colors">
+<td class="px-6 py-4">
+<div class="flex items-center">
+<div class="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center mr-3 font-bold text-[12px]">VG</div>
+<span class="font-bold">V.K. Singh</span>
+</div>
+</td>
+<td class="px-6 py-4">+91 98765 88990</td>
+<td class="px-6 py-4">Oct 22, 2023</td>
+<td class="px-6 py-4 text-center">5</td>
+<td class="px-6 py-4">
+<span class="px-3 py-1 rounded-full bg-red-50 text-red-600 text-label-sm font-label-sm border border-red-100">Cancelled</span>
+</td>
+<td class="px-6 py-4">
+<button class="text-primary hover:underline font-label-md text-label-md">Details</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="p-4 border-t border-outline-variant flex justify-between items-center bg-surface-container-low/30">
+<p class="text-label-sm font-label-sm text-on-surface-variant">Showing 1 to 4 of 156 entries</p>
+<div class="flex gap-2">
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<button class="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Recent VIP Activities -->
+<div class="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h2 class="font-headline-md text-headline-md text-on-surface">Recent Activities</h2>
+<button class="text-label-md font-label-md text-primary">View All</button>
+</div>
+<div class="space-y-6">
+<!-- Activity 1 -->
+<div class="flex gap-4">
+<div class="mt-1">
+<div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+</div>
+</div>
+<div class="flex-1 pb-4 border-b border-outline-variant/30">
+<p class="text-body-md font-body-md text-on-surface">
+<span class="font-bold">VIP Amit Shah</span> entry activated by Gate 2 Operator.
+                                        </p>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-1">10:30 AM • System Log</p>
+</div>
+</div>
+<!-- Activity 2 -->
+<div class="flex gap-4">
+<div class="mt-1">
+<div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-700">
+<span class="material-symbols-outlined text-[18px]">check</span>
+</div>
+</div>
+<div class="flex-1 pb-4 border-b border-outline-variant/30">
+<p class="text-body-md font-body-md text-on-surface">
+<span class="font-bold">Nirmala Sitharaman</span> visit status updated to Completed.
+                                        </p>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-1">09:15 AM • Auto Updated</p>
+</div>
+</div>
+<!-- Activity 3 -->
+<div class="flex gap-4">
+<div class="mt-1">
+<div class="w-8 h-8 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">add_task</span>
+</div>
+</div>
+<div class="flex-1 pb-4 border-b border-outline-variant/30">
+<p class="text-body-md font-body-md text-on-surface">
+                                            New VIP booking added for <span class="font-bold">Rajnath Singh</span> (Platinum Category).
+                                        </p>
+<p class="text-label-sm font-label-sm text-on-surface-variant mt-1">Yesterday, 06:45 PM • Admin Panel</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer Spacer -->
+<div class="h-8"></div>
+</div>
+</main>
+</div>
+<!-- Micro-interaction Script -->
+<script>
+        document.querySelectorAll('button').forEach(button => {
+            button.addEventListener('mousedown', function() {
+                this.classList.add('scale-[0.97]');
+            });
+            button.addEventListener('mouseup', function() {
+                this.classList.remove('scale-[0.97]');
+            });
+            button.addEventListener('mouseleave', function() {
+                this.classList.remove('scale-[0.97]');
+            });
+        });
+
+        // Simple live status simulation
+        const liveIndicator = document.querySelector('.animate-pulse');
+        let isPulsing = true;
+        setInterval(() => {
+            isPulsing = !isPulsing;
+            liveIndicator.style.opacity = isPulsing ? '1' : '0.5';
+        }, 1000);
+    </script>
+</body></html>
