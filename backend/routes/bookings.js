@@ -65,12 +65,16 @@ router.get('/', async (req, res) => {
 // Get bookings by user mobile or userId
 router.get('/user/:identifier', async (req, res) => {
   try {
-    // Identifier could be mobile number or userId
+    const identifier = req.params.identifier;
+    const query = [{ mobile: identifier }];
+    
+    // Only query by userId if the identifier is a valid ObjectId
+    if (/^[0-9a-fA-F]{24}$/.test(identifier)) {
+      query.push({ userId: identifier });
+    }
+
     const bookings = await Booking.find({
-      $or: [
-        { mobile: req.params.identifier },
-        { userId: req.params.identifier }
-      ]
+      $or: query
     }).sort({ createdAt: -1 });
     res.json(bookings);
   } catch (err) {

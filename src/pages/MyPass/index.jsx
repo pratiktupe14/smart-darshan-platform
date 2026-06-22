@@ -169,84 +169,94 @@ export default function MyPass() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
         {/* Active Pass Column */}
         <div className="lg:col-span-8 space-y-6 md:space-y-8">
-          {/* Premium Ticket Card */}
-          <div className="bg-surface-container-lowest rounded-xl premium-ticket-glow overflow-hidden border border-outline/10">
-            <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8">
-              {/* QR Code Section */}
-              <div className="flex flex-col items-center justify-center space-y-4 shrink-0">
-                <div className="bg-white p-4 rounded-xl border border-outline-variant shadow-sm w-48 h-48 flex items-center justify-center">
-                  <QRCode 
-                    value={activeBooking ? JSON.stringify({ token: queueInfo.userTokenNumber, bookingId: activeBooking._id, name: activeBooking.fullName, mobile: activeBooking.mobile }) : '{"token":"NONE"}'} 
-                    size={160} 
-                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                  />
-                </div>
-                <span className="bg-primary-container text-on-primary-container px-4 py-1 rounded-full text-xs font-bold">Active Pass</span>
-                <div className="text-center">
-                  <p className="text-sm text-on-surface-variant font-medium">{t('tokenId')}</p>
-                  <p className="text-3xl text-primary font-bold">#{queueInfo.userTokenNumber}</p>
-                </div>
-              </div>
-              
-              {/* Ticket Details Section */}
-              <div className="flex-grow space-y-6">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h2 className="text-xl font-bold text-on-surface">Sri Meenakshi Temple</h2>
-                    <p className="text-primary font-medium">Main Sanctum Darshan</p>
+          {activeBooking ? (
+            <div className="bg-surface-container-lowest rounded-xl premium-ticket-glow overflow-hidden border border-outline/10">
+              <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8">
+                {/* QR Code Section */}
+                <div className="flex flex-col items-center justify-center space-y-4 shrink-0">
+                  <div className="bg-white p-4 rounded-xl border border-outline-variant shadow-sm w-48 h-48 flex items-center justify-center">
+                    <QRCode 
+                      value={JSON.stringify({ token: queueInfo.userTokenNumber !== 'N/A' ? queueInfo.userTokenNumber : activeBooking.qrCode, bookingId: activeBooking._id, name: activeBooking.fullName, mobile: activeBooking.mobile })} 
+                      size={160} 
+                      style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                    />
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm text-on-surface-variant font-medium">Date & Time</p>
-                    <p className="text-base font-bold">{activeBooking ? new Date(activeBooking.darshanDate).toLocaleDateString() : 'N/A'}</p>
-                    <p className="text-base text-primary font-bold">{activeBooking ? new Date(activeBooking.darshanDate).toLocaleTimeString() : 'N/A'}</p>
+                  <span className="bg-primary-container text-on-primary-container px-4 py-1 rounded-full text-xs font-bold">Active Pass</span>
+                  <div className="text-center">
+                    <p className="text-sm text-on-surface-variant font-medium">{t('tokenId')}</p>
+                    <p className="text-3xl text-primary font-bold">#{queueInfo.userTokenNumber !== 'N/A' ? queueInfo.userTokenNumber : activeBooking.qrCode.split('-')[1]}</p>
                   </div>
                 </div>
+                
+                {/* Ticket Details Section */}
+                <div className="flex-grow space-y-6">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-xl font-bold text-on-surface">Sri Meenakshi Temple</h2>
+                      <p className="text-primary font-medium">Main Sanctum Darshan</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-on-surface-variant font-medium">Date & Time</p>
+                      <p className="text-base font-bold">{new Date(activeBooking.darshanDate).toLocaleDateString()}</p>
+                      <p className="text-base text-primary font-bold">{new Date(activeBooking.darshanDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-2 gap-y-4 gap-x-6">
-                  <div>
-                    <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t('devoteeName')}</p>
-                    <p className="text-base font-semibold">{activeBooking ? activeBooking.fullName : (user?.fullName || 'User')}</p>
+                  <div className="grid grid-cols-2 gap-y-4 gap-x-6">
+                    <div>
+                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t('devoteeName')}</p>
+                      <p className="text-base font-semibold">{activeBooking.fullName}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Email / Contact</p>
+                      <p className="text-base font-semibold">{activeBooking.mobile}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Vehicle No</p>
+                      <p className="text-base font-semibold">{activeBooking.vehicleNumber || 'None'}</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t('persons')}</p>
+                      <p className="text-base font-semibold">{activeBooking.persons} Persons</p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">City</p>
+                      <p className="text-base font-semibold">{activeBooking.placeCity || 'N/A'}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Email / Contact</p>
-                    <p className="text-base font-semibold">{activeBooking ? activeBooking.mobile : (user?.mobileNumber || user?.mobile || 'N/A')}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Vehicle No</p>
-                    <p className="text-base font-semibold">{activeBooking ? (activeBooking.vehicleNumber || 'None') : 'None'}</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t('persons')}</p>
-                    <p className="text-base font-semibold">{activeBooking ? activeBooking.persons : 0} Persons</p>
-                  </div>
-                  <div>
-                    <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">City</p>
-                    <p className="text-base font-semibold">{activeBooking ? activeBooking.placeCity : 'N/A'}</p>
-                  </div>
-                </div>
 
-                <div className="dash-line pt-6 border-t border-dashed border-outline-variant">
-                  <div className="flex flex-wrap gap-2">
-                    <button 
-                      onClick={downloadPDF}
-                      className="flex items-center gap-1 bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">download</span>
-                      Download PDF
-                    </button>
-                    <button className="flex items-center gap-1 border-2 border-primary text-primary px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/5 transition-all">
-                      <span className="material-symbols-outlined text-[18px]">share</span>
-                      Share
-                    </button>
-                    <button className="flex items-center gap-1 bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md">
-                      <span className="material-symbols-outlined text-[18px]">wallet</span>
-                      Add to Wallet
-                    </button>
+                  <div className="dash-line pt-6 border-t border-dashed border-outline-variant">
+                    <div className="flex flex-wrap gap-2">
+                      <button 
+                        onClick={downloadPDF}
+                        className="flex items-center gap-1 bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md"
+                      >
+                        <span className="material-symbols-outlined text-[18px]">download</span>
+                        Download PDF
+                      </button>
+                      <button className="flex items-center gap-1 border-2 border-primary text-primary px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/5 transition-all">
+                        <span className="material-symbols-outlined text-[18px]">share</span>
+                        Share
+                      </button>
+                      <button className="flex items-center gap-1 bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md">
+                        <span className="material-symbols-outlined text-[18px]">wallet</span>
+                        Add to Wallet
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="bg-surface-container-lowest rounded-xl border border-outline/10 p-12 flex flex-col items-center justify-center text-center shadow-sm h-[400px]">
+              <span className="material-symbols-outlined text-6xl text-outline-variant mb-4">confirmation_number</span>
+              <h2 className="text-2xl font-bold text-on-surface mb-2">No Active Pass Found</h2>
+              <p className="text-on-surface-variant mb-6 max-w-md">You don't have any active darshan bookings at the moment. Book a slot to generate your digital pass.</p>
+              <a href="/book-darshan" className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-md">
+                Book Darshan Now
+              </a>
+            </div>
+          )}
 
           {/* Pass History */}
           <section className="space-y-4">
