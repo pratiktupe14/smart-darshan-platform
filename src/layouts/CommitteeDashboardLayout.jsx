@@ -1,17 +1,14 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { supabase } from '../lib/supabase';
-
 export default function CommitteeDashboardLayout() {
   const location = useLocation();
   const navigate = useNavigate();
   const { t, currentLanguage, setLanguage } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     if (window.confirm(t('confirmLogout'))) {
-      await supabase.auth.signOut();
       localStorage.clear();
       sessionStorage.clear();
       navigate('/login');
@@ -21,31 +18,80 @@ export default function CommitteeDashboardLayout() {
 
   // --- STATES PRESERVED ACROSS CHILDREN ---
   // Serving Controller States
-  const [activeToken, setActiveToken] = useState('B-42');
-  const [activeName, setActiveName] = useState('Rameshwar Kulkarni');
-  const [activeType, setActiveType] = useState('VIP DARSHAN');
+  const [activeToken, setActiveToken] = useState('None');
+  const [activeName, setActiveName] = useState('N/A');
+  const [activeType, setActiveType] = useState('N/A');
   const [isNextLoading, setIsNextLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [isPaused, setIsPaused] = useState(false);
 
   // Queue List State
-  const [queueList, setQueueList] = useState([
-    { id: 'B-43', name: 'Mahesh Patil', type: 'Regular', checkIn: '10:42 AM', wait: '12m', isVip: false },
-    { id: 'V-11', name: 'Kavita Gupta', type: 'VIP Member', checkIn: '10:45 AM', wait: '9m', isVip: true },
-    { id: 'B-44', name: 'Rahul Sharma', type: 'Regular', checkIn: '10:48 AM', wait: '6m', isVip: false },
-    { id: 'B-45', name: 'Nitin Kamble', type: 'Regular', checkIn: '10:50 AM', wait: '4m', isVip: false },
-    { id: 'B-46', name: 'Priya Verma', type: 'Regular', checkIn: '10:52 AM', wait: '2m', isVip: false },
-  ]);
+  const [queueList, setQueueList] = useState([]);
 
   // VIP Pool State
-  const [vipPool, setVipPool] = useState([
-    { id: 'V-09', name: 'Anjali Deshmukh', type: 'VIP Member', checkIn: '10:35 AM', wait: '16m', members: 'Family (4 Members)', isVip: true },
-    { id: 'V-10', name: 'Suresh Prabhu', type: 'VIP Member', checkIn: '10:38 AM', wait: '13m', members: 'Senior Citizen', isVip: true },
-  ]);
+  const [vipPool, setVipPool] = useState([]);
 
   // Metrics State
-  const [totalToday, setTotalToday] = useState(1284);
-  const [currentlyInside, setCurrentlyInside] = useState(142);
+  const [totalToday, setTotalToday] = useState(0);
+  const [currentlyInside, setCurrentlyInside] = useState(0);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const statsRes = await fetch('http://localhost:5000/api/stats');
+        const queueRes = await fetch('http://localhost:5000/api/queue');
+        const vipRes = await fetch('http://localhost:5000/api/vip');
+        
+        if (statsRes.ok) {
+          const stats = await statsRes.json();
+          setTotalToday(stats.visitorsToday);
+          setCurrentlyInside(stats.visitorsInside);
+        }
+        
+        if (queueRes.ok) {
+          const queue = await queueRes.json();
+          const waiting = queue.filter(q => q.status === 'waiting');
+          const serving = queue.filter(q => q.status === 'serving');
+          
+          if (serving.length > 0) {
+            setActiveToken(serving[0].tokenNumber);
+            setActiveName(serving[0].bookingId ? serving[0].bookingId.fullName : 'Guest');
+            setActiveType('DARSHAN');
+          } else {
+            setActiveToken('None');
+            setActiveName('N/A');
+          }
+          
+          setQueueList(waiting.map(q => ({
+            id: q.tokenNumber,
+            name: q.bookingId ? q.bookingId.fullName : 'Guest',
+            type: 'Regular',
+            checkIn: new Date(q.createdAt).toLocaleTimeString(),
+            wait: '...',
+            isVip: false
+          })));
+        }
+        
+        if (vipRes.ok) {
+          const vips = await vipRes.json();
+          setVipPool(vips.map(v => ({
+            id: v._id.substring(0, 8),
+            name: v.name,
+            members: `${v.partySize} Members`,
+            checkIn: new Date(v.expectedArrivalTime).toLocaleTimeString(),
+            type: 'VIP Member',
+            isVip: true
+          })));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    
+    fetchData();
+    const timer = setInterval(fetchData, 10000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Modal States
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);

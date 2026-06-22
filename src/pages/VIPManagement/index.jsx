@@ -6,12 +6,30 @@ export default function VIPManagement() {
   const [filterDate, setFilterDate] = useState('');
   
   // VIP Registry State
-  const [vipRegistry, setVipRegistry] = useState([
-    { id: 1, name: 'Amit Shah', mobile: '+91 98765 43210', date: '2026-06-20', persons: 4, status: 'Active', category: 'Gold' },
-    { id: 2, name: 'Rajnath Singh', mobile: '+91 98765 00112', date: '2026-06-20', persons: 2, status: 'Scheduled', category: 'Platinum' },
-    { id: 3, name: 'Nirmala Sitharaman', mobile: '+91 98765 55443', date: '2026-06-19', persons: 3, status: 'Completed', category: 'Platinum' },
-    { id: 4, name: 'V.K. Singh', mobile: '+91 98765 88990', date: '2026-06-18', persons: 5, status: 'Cancelled', category: 'State Guest' }
-  ]);
+  const [vipRegistry, setVipRegistry] = useState([]);
+
+  React.useEffect(() => {
+    const fetchVIPs = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/vip');
+        if (res.ok) {
+          const data = await res.json();
+          setVipRegistry(data.map(v => ({
+            id: v._id,
+            name: v.name,
+            mobile: v.mobileNumber,
+            date: new Date(v.expectedArrivalTime).toISOString().split('T')[0],
+            persons: v.partySize,
+            status: v.status.charAt(0).toUpperCase() + v.status.slice(1),
+            category: 'VIP'
+          })));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchVIPs();
+  }, []);
 
   // Recent Activities State
   const [activities, setActivities] = useState([
@@ -36,49 +54,71 @@ export default function VIPManagement() {
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleAddVIP = (e) => {
+  const handleAddVIP = async (e) => {
     e.preventDefault();
     if (!form.name || !form.mobile || !form.date) {
       alert('Please fill in Name, Mobile Number, and Visit Date.');
       return;
     }
 
-    const newVIP = {
-      id: vipRegistry.length + 1,
-      name: form.name,
-      mobile: form.mobile,
-      date: form.date,
-      persons: parseInt(form.persons, 10) || 1,
-      status: 'Scheduled',
-      category: form.category
-    };
+    try {
+        const payload = {
+            name: form.name,
+            mobileNumber: form.mobile,
+            vehicleNumber: form.vehicleNo,
+            partySize: parseInt(form.persons, 10) || 1,
+            expectedArrivalTime: form.date,
+            specialRequests: form.remarks
+        };
+        const res = await fetch('http://localhost:5000/api/vip', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        
+        if (res.ok) {
+            const added = await res.json();
+            const newVIP = {
+              id: added._id,
+              name: added.name,
+              mobile: added.mobileNumber,
+              date: new Date(added.expectedArrivalTime).toISOString().split('T')[0],
+              persons: added.partySize,
+              status: added.status.charAt(0).toUpperCase() + added.status.slice(1),
+              category: form.category
+            };
 
-    setVipRegistry(prev => [newVIP, ...prev]);
+            setVipRegistry(prev => [newVIP, ...prev]);
 
-    // Add activity log
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const newActivity = {
-      id: activities.length + 1,
-      text: `New VIP booking added for ${form.name} (${form.category} Category).`,
-      time: timeStr,
-      source: 'Admin Panel',
-      type: 'add'
-    };
-    setActivities(prev => [newActivity, ...prev]);
+            // Add activity log
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const newActivity = {
+              id: activities.length + 1,
+              text: `New VIP booking added for ${form.name} (${form.category} Category).`,
+              time: timeStr,
+              source: 'Admin Panel',
+              type: 'add'
+            };
+            setActivities(prev => [newActivity, ...prev]);
 
-    // Reset Form
-    setForm({
-      name: '',
-      mobile: '',
-      vehicleNo: '',
-      category: 'Gold',
-      date: '',
-      persons: '1',
-      remarks: ''
-    });
+            // Reset Form
+            setForm({
+              name: '',
+              mobile: '',
+              vehicleNo: '',
+              category: 'Gold',
+              date: '',
+              persons: '1',
+              remarks: ''
+            });
 
-    alert('VIP Entry added successfully to registry!');
+            alert('VIP Entry added successfully to registry!');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('Failed to add VIP entry');
+    }
   };
 
   const triggerQueueAction = (actionType) => {
@@ -111,7 +151,7 @@ export default function VIPManagement() {
   };
 
   // Stats calculation
-  const totalToday = vipRegistry.filter(v => v.date === '2026-06-20').length;
+  const totalToday = vipRegistry.filter(v => v.date === new Date().toISOString().split('T')[0]).length;
   const activeCount = vipRegistry.filter(v => v.status === 'Active').length;
   const completedCount = vipRegistry.filter(v => v.status === 'Completed').length;
   const upcomingCount = vipRegistry.filter(v => v.status === 'Scheduled').length;

@@ -1,8 +1,75 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import QRCode from 'react-qr-code';
 import { useLanguage } from '../../context/LanguageContext';
 
 export default function MyPass() {
   const { t } = useLanguage();
+  const [user, setUser] = useState({});
+  const [activeBooking, setActiveBooking] = useState(null);
+  const [passHistory, setPassHistory] = useState([]);
+  const [queueInfo, setQueueInfo] = useState({
+    currentServingToken: 'None',
+    userTokenNumber: 'N/A',
+    position: 0,
+    estWait: 0
+  });
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('user');
+    let currentUser = {};
+    if (userStr) {
+      try {
+        currentUser = JSON.parse(userStr);
+        setUser(currentUser);
+      } catch (e) {}
+    }
+
+    const fetchData = async () => {
+      if (!currentUser.mobile && !currentUser._id) return;
+      try {
+        const identifier = currentUser._id || currentUser.mobile;
+        const res = await fetch(`http://localhost:5000/api/bookings/user/${identifier}`);
+        if (res.ok) {
+          const bookings = await res.json();
+          const active = bookings.find(b => b.status === 'confirmed');
+          const history = bookings.filter(b => b.status !== 'confirmed');
+          
+          setActiveBooking(active);
+          setPassHistory(history);
+
+          // Fetch queue status
+          const qRes = await fetch(`http://localhost:5000/api/queue`);
+          const queueList = await qRes.json();
+          
+          const currentServing = queueList.filter(q => q.status === 'serving');
+          
+          let userToken = null;
+          let pos = 0;
+          let waitingQueue = queueList.filter(q => q.status === 'waiting');
+          if (active) {
+              userToken = queueList.find(q => q.bookingId && q.bookingId._id === active._id);
+              if (userToken && userToken.status === 'waiting') {
+                  pos = waitingQueue.findIndex(q => q._id === userToken._id) + 1;
+              }
+          }
+          
+          setQueueInfo({
+              currentServingToken: currentServing.length > 0 ? currentServing[0].tokenNumber : 'None',
+              userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
+              position: pos,
+              estWait: pos * 2,
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
+    const timer = setInterval(fetchData, 10000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <main className="max-w-7xl mx-auto px-4 md:px-10 py-8 md:py-12 w-full">
@@ -21,16 +88,16 @@ export default function MyPass() {
               {/* QR Code Section */}
               <div className="flex flex-col items-center justify-center space-y-4 shrink-0">
                 <div className="bg-white p-4 rounded-xl border border-outline-variant shadow-sm w-48 h-48 flex items-center justify-center">
-                  <img 
-                    className="w-full h-full object-contain" 
-                    alt="QR code" 
-                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuDVzYKnMQ3jaH4gun067quZa1LDy94pMcGOl0m4q29pc6pcKauNUb3fQoQFwp7mxJUDFQg4uVYh2uVwU1ZRaiIXxoXVVFLVu9H43gNd0Rz1gkM0hNrJ_HNEF1VcPkM_WwCUCsp13i19CN3m6HwhdSE8KFvaZnf6KlG2LSw4Rjq3yrC3w-wijwjXhOaFNLbTnrV8gyRmMcMynpz2_9P6IZtOHOmrRKiDGWt4zZgExzYIdZEbcwlaB5kta7etBBzdOS5Y9KWH1af-yr8"
+                  <QRCode 
+                    value={activeBooking ? JSON.stringify({ token: queueInfo.userTokenNumber, bookingId: activeBooking._id, name: activeBooking.fullName, mobile: activeBooking.mobile }) : '{"token":"NONE"}'} 
+                    size={160} 
+                    style={{ height: "auto", maxWidth: "100%", width: "100%" }}
                   />
                 </div>
                 <span className="bg-primary-container text-on-primary-container px-4 py-1 rounded-full text-xs font-bold">Active Pass</span>
                 <div className="text-center">
                   <p className="text-sm text-on-surface-variant font-medium">{t('tokenId')}</p>
-                  <p className="text-3xl text-primary font-bold">#A001</p>
+                  <p className="text-3xl text-primary font-bold">#{queueInfo.userTokenNumber}</p>
                 </div>
               </div>
               
@@ -43,31 +110,31 @@ export default function MyPass() {
                   </div>
                   <div className="text-right">
                     <p className="text-sm text-on-surface-variant font-medium">Date & Time</p>
-                    <p className="text-base font-bold">Oct 25, 2024</p>
-                    <p className="text-base text-primary font-bold">08:30 AM</p>
+                    <p className="text-base font-bold">{activeBooking ? new Date(activeBooking.darshanDate).toLocaleDateString() : 'N/A'}</p>
+                    <p className="text-base text-primary font-bold">{activeBooking ? new Date(activeBooking.darshanDate).toLocaleTimeString() : 'N/A'}</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-y-4 gap-x-6">
                   <div>
                     <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t('devoteeName')}</p>
-                    <p className="text-base font-semibold">Pratik Tupe</p>
+                    <p className="text-base font-semibold">{activeBooking ? activeBooking.fullName : user.fullName || 'User'}</p>
                   </div>
                   <div>
-                    <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t('mobile')}</p>
-                    <p className="text-base font-semibold">+91 9876543210</p>
+                    <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Email / Contact</p>
+                    <p className="text-base font-semibold">{activeBooking ? activeBooking.mobile : user.mobile || 'N/A'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Vehicle No</p>
-                    <p className="text-base font-semibold">MH-12-AB-1234 (SUV)</p>
+                    <p className="text-base font-semibold">{activeBooking ? (activeBooking.vehicleNumber || 'None') : 'None'}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t('persons')}</p>
-                    <p className="text-base font-semibold">4 Persons</p>
+                    <p className="text-base font-semibold">{activeBooking ? activeBooking.persons : 0} Persons</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">City</p>
-                    <p className="text-base font-semibold">Pune</p>
+                    <p className="text-base font-semibold">{activeBooking ? activeBooking.placeCity : 'N/A'}</p>
                   </div>
                 </div>
 
@@ -98,29 +165,24 @@ export default function MyPass() {
               <table className="w-full text-left border-collapse">
                 <thead className="bg-surface-container-low border-b border-outline/10">
                   <tr>
-                    <th className="px-6 py-4 text-sm font-medium text-on-surface-variant">Token</th>
                     <th className="px-6 py-4 text-sm font-medium text-on-surface-variant">Date</th>
                     <th className="px-6 py-4 text-sm font-medium text-on-surface-variant">Temple</th>
                     <th className="px-6 py-4 text-sm font-medium text-on-surface-variant text-right">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline/5">
-                  <tr className="hover:bg-surface-bright transition-colors cursor-pointer group">
-                    <td className="px-6 py-4 font-bold text-on-surface">#B882</td>
-                    <td className="px-6 py-4 text-on-surface-variant">Oct 10, 2024</td>
-                    <td className="px-6 py-4 text-on-surface">Sri Meenakshi Temple</td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="bg-on-tertiary-container text-tertiary px-4 py-1 rounded-full text-xs font-bold inline-block">Completed</span>
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-surface-bright transition-colors cursor-pointer group">
-                    <td className="px-6 py-4 font-bold text-on-surface">#C991</td>
-                    <td className="px-6 py-4 text-on-surface-variant">Sept 15, 2024</td>
-                    <td className="px-6 py-4 text-on-surface">Sri Meenakshi Temple</td>
-                    <td className="px-6 py-4 text-right">
-                      <span className="bg-on-tertiary-container text-tertiary px-4 py-1 rounded-full text-xs font-bold inline-block">Completed</span>
-                    </td>
-                  </tr>
+                  {passHistory.map(pass => (
+                    <tr key={pass._id} className="hover:bg-surface-bright transition-colors cursor-pointer group">
+                      <td className="px-6 py-4 text-on-surface-variant">{new Date(pass.darshanDate).toLocaleDateString()}</td>
+                      <td className="px-6 py-4 text-on-surface">Sri Meenakshi Temple</td>
+                      <td className="px-6 py-4 text-right">
+                        <span className="bg-on-tertiary-container text-tertiary px-4 py-1 rounded-full text-xs font-bold inline-block capitalize">{pass.status}</span>
+                      </td>
+                    </tr>
+                  ))}
+                  {passHistory.length === 0 && (
+                    <tr><td colSpan="3" className="px-6 py-4 text-center text-on-surface-variant">No previous passes found.</td></tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -140,33 +202,33 @@ export default function MyPass() {
               <div className="flex justify-between items-end">
                 <div>
                   <p className="text-sm font-medium text-on-surface-variant">{t('currentToken')}</p>
-                  <p className="text-3xl font-bold text-on-surface">A045</p>
+                  <p className="text-3xl font-bold text-on-surface">{queueInfo.currentServingToken}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-on-surface-variant">{t('yourToken')}</p>
-                  <p className="text-3xl font-bold text-primary">A001</p>
+                  <p className="text-3xl font-bold text-primary">{queueInfo.userTokenNumber}</p>
                 </div>
               </div>
               
               {/* Progress Bar */}
               <div className="relative h-3 w-full bg-surface-container-high rounded-full overflow-hidden">
-                <div className="absolute top-0 left-0 h-full bg-primary transition-all duration-1000" style={{ width: '100%' }}></div>
+                <div className="absolute top-0 left-0 h-full bg-primary transition-all duration-1000" style={{ width: queueInfo.position === 0 ? (queueInfo.userTokenNumber !== 'N/A' ? '100%' : '0%') : `${Math.max(10, 100 - (queueInfo.position * 5))}%` }}></div>
               </div>
               
               <div className="grid grid-cols-2 gap-4 pt-2 border-t border-outline/10">
                 <div>
                   <p className="text-sm font-medium text-on-surface-variant">{t('queuePosition')}</p>
-                  <p className="text-base font-bold text-primary">At Entry Point</p>
+                  <p className="text-base font-bold text-primary">{queueInfo.position} away</p>
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-on-surface-variant">{t('estWait')}</p>
-                  <p className="text-base font-bold text-primary">Ready</p>
+                  <p className="text-base font-bold text-primary">{queueInfo.estWait} mins</p>
                 </div>
               </div>
               
               <div className="bg-primary-fixed text-on-primary-fixed-variant p-4 rounded-lg flex gap-4 items-start">
                 <span className="material-symbols-outlined">info</span>
-                <p className="text-xs leading-relaxed font-medium">Please proceed to the entry gate immediately. Your token is currently being called.</p>
+                <p className="text-xs leading-relaxed font-medium">{queueInfo.position === 0 ? "Please proceed to the entry gate immediately. Your token is currently being called." : "Please wait for your token to be called."}</p>
               </div>
             </div>
           </div>

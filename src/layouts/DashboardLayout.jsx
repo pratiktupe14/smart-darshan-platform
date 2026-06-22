@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
-import { supabase } from '../lib/supabase';
-
 
 export default function DashboardLayout() {
   const location = useLocation();
@@ -11,14 +9,20 @@ export default function DashboardLayout() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '');
+  const [userName, setUserName] = useState('');
 
   useEffect(() => {
-    const fetchUser = async () => {
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        const role = data.user.user_metadata?.role || '';
-        setUserRole(role);
-        localStorage.setItem('userRole', role);
+    const fetchUser = () => {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          if (userObj.fullName) setUserName(userObj.fullName);
+          if (userObj.role) {
+             setUserRole(userObj.role);
+             localStorage.setItem('userRole', userObj.role);
+          }
+        } catch(e) {}
       }
     };
     fetchUser();
@@ -33,9 +37,8 @@ export default function DashboardLayout() {
                       location.pathname.startsWith('/dashboard/parking') ||
                       (location.pathname === '/dashboard/announcements' && userRole === 'admin');
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
     if (window.confirm(t('confirmLogout'))) {
-      await supabase.auth.signOut();
       localStorage.clear();
       sessionStorage.clear();
       navigate('/login');
@@ -58,7 +61,7 @@ export default function DashboardLayout() {
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-10 h-16 bg-surface border-b border-outline-variant">
         <div className="flex items-center gap-4">
           <span className="text-xl md:text-2xl font-bold text-primary">
-            {isAdminView ? t('welcomeAdmin') : t('welcomeUser')}
+            {isAdminView ? t('welcomeAdmin') : `Welcome back, ${userName || 'User'}`}
           </span>
         </div>
         <div className="flex items-center gap-2 md:gap-6">

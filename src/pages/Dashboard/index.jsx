@@ -1,19 +1,76 @@
 import React, { useEffect, useState } from 'react';
+import QRCode from 'react-qr-code';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 
 export default function Dashboard() {
   const { t } = useLanguage();
 
-  const [progress, setProgress] = useState(56);
+  const [progress, setProgress] = useState(0);
+  const [user, setUser] = useState({});
+  const [activeBooking, setActiveBooking] = useState(null);
+  const [queueInfo, setQueueInfo] = useState({
+    currentServingToken: 'None',
+    userTokenNumber: 'N/A',
+    position: 0,
+    estWait: 0
+  });
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setProgress((prev) => {
-        if (prev < 100) return prev + 0.5;
-        return prev;
-      });
-    }, 3000);
+    const userStr = localStorage.getItem('user');
+    let currentUser = {};
+    if (userStr) {
+      try {
+        currentUser = JSON.parse(userStr);
+        setUser(currentUser);
+      } catch(e) {}
+    }
+
+    const fetchData = async () => {
+      if (!currentUser.mobile && !currentUser._id) return;
+      try {
+        const identifier = currentUser._id || currentUser.mobile;
+        const res = await fetch(`http://localhost:5000/api/bookings/user/${identifier}`);
+        if(res.ok) {
+            const bookings = await res.json();
+            const active = bookings.find(b => b.status === 'confirmed');
+            setActiveBooking(active);
+
+            // Fetch queue status
+            const qRes = await fetch(`http://localhost:5000/api/queue`);
+            const queueList = await qRes.json();
+            
+            // Find current serving
+            const currentServing = queueList.filter(q => q.status === 'serving');
+            
+            // Find user's token
+            let userToken = null;
+            let pos = 0;
+            let waitingQueue = queueList.filter(q => q.status === 'waiting');
+            if (active) {
+                userToken = queueList.find(q => q.bookingId && q.bookingId._id === active._id);
+                if (userToken && userToken.status === 'waiting') {
+                    pos = waitingQueue.findIndex(q => q._id === userToken._id) + 1;
+                }
+            }
+            
+            const currProgress = pos === 0 ? (userToken && userToken.status === 'serving' ? 100 : 0) : Math.max(10, 100 - (pos * 5));
+            setQueueInfo({
+                currentServingToken: currentServing.length > 0 ? currentServing[0].tokenNumber : 'None',
+                userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
+                position: pos,
+                estWait: pos * 2, // 2 mins per token
+            });
+            setProgress(currProgress);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
+    const timer = setInterval(fetchData, 10000);
+
     return () => clearInterval(timer);
   }, []);
 
@@ -22,7 +79,7 @@ export default function Dashboard() {
       {/* Welcome Section */}
       <section className="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary leading-tight">{t('welcomeUser')}</h1>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary leading-tight">Welcome back, {user.fullName || 'User'}</h1>
           <div className="flex flex-wrap items-center gap-2 md:gap-3">
             <span className="px-3 py-1 bg-surface-container-highest text-primary text-xs md:text-sm font-medium rounded-full flex items-center gap-1">
               <span className="material-symbols-outlined text-[18px]">calendar_today</span>
@@ -60,29 +117,29 @@ export default function Dashboard() {
               <div className="flex justify-between items-start mb-6 gap-4">
                 <div>
                   <p className="text-[10px] md:text-xs text-on-surface-variant uppercase tracking-wider mb-1">{t('devoteeName')}</p>
-                  <p className="text-lg md:text-xl font-bold text-on-surface">Rajesh Kumar</p>
+                  <p className="text-lg md:text-xl font-bold text-on-surface">{activeBooking ? activeBooking.fullName : user.fullName || 'User'}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] md:text-xs text-on-surface-variant uppercase tracking-wider mb-1">{t('tokenId')}</p>
-                  <p className="text-xl md:text-2xl font-bold text-primary">#A001</p>
+                  <p className="text-xl md:text-2xl font-bold text-primary">#{queueInfo.userTokenNumber}</p>
                 </div>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 md:gap-y-6 gap-x-4">
                 <div>
                   <p className="text-xs text-on-surface-variant mb-0.5 md:mb-1">{t('mobile')}</p>
-                  <p className="text-sm md:text-base font-semibold">+91 98765 43210</p>
+                  <p className="text-sm md:text-base font-semibold">{activeBooking ? activeBooking.mobile : user.mobile || 'N/A'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-on-surface-variant mb-0.5 md:mb-1">Vehicle No.</p>
-                  <p className="text-sm md:text-base font-semibold">MH-12-AB-1234</p>
+                  <p className="text-sm md:text-base font-semibold">{activeBooking ? (activeBooking.vehicleNumber || 'None') : 'None'}</p>
                 </div>
                 <div>
                   <p className="text-xs text-on-surface-variant mb-0.5 md:mb-1">{t('persons')}</p>
-                  <p className="text-sm md:text-base font-semibold">04 (Adults)</p>
+                  <p className="text-sm md:text-base font-semibold">{activeBooking ? activeBooking.persons : 0} (Adults)</p>
                 </div>
                 <div>
                   <p className="text-xs text-on-surface-variant mb-0.5 md:mb-1">{t('reportingTime')}</p>
-                  <p className="text-sm md:text-base font-semibold">08:30 AM</p>
+                  <p className="text-sm md:text-base font-semibold">{activeBooking ? new Date(activeBooking.darshanDate).toLocaleDateString() : 'N/A'}</p>
                 </div>
               </div>
               <div className="mt-6 md:mt-8 pt-6 border-t border-dashed border-outline-variant flex flex-col sm:flex-row gap-3 md:gap-4">
@@ -99,13 +156,17 @@ export default function Dashboard() {
             
             {/* Ticket QR Section */}
             <div className="bg-surface-container-low p-6 md:p-8 flex flex-col items-center justify-center lg:min-w-[280px] border-t lg:border-t-0 lg:border-l border-dashed border-outline-variant">
-              <div className="bg-white p-3 rounded-xl shadow-inner mb-4">
-                <img className="w-32 h-32 md:w-40 md:h-40" alt="QR code" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCktjw6ePRAtMz8AG2O4p7Un5fQqhyDi2kOl4XSYNuGhTQcD2Us15YKzpE1YXIpXs7OSjQGliZvRvulpIMqhkwdtkWp6PZe_RswQvJQDdeFGEOj8yxje65tfKhJzidtrQT73mRiZaBsmOG14ILe_OMBFRukwB0BSZMAwMiJJmMAGYnHeMvn6L_wjJacjZeeBDmGqIgDN-HXfyZf9tL1YgfMzCSOAkMi4VVmk0KWwcyvyK0BOKDE5SVUlSmNdNn7RQy4uP9SiBkFEL4" />
+              <div className="bg-white p-3 rounded-xl shadow-inner mb-4 w-40 h-40 flex items-center justify-center">
+                <QRCode 
+                  value={activeBooking ? `TOKEN-${queueInfo.userTokenNumber}-${activeBooking._id}` : `TOKEN-NONE`} 
+                  size={120} 
+                  style={{ height: "auto", maxWidth: "100%", width: "100%" }}
+                />
               </div>
               <p className="text-xs md:text-sm text-on-surface-variant text-center font-medium">{t('entranceGate')}</p>
               <div className="mt-4 w-full max-w-[180px]">
                 <div className="h-12 flex items-center justify-center bg-white rounded-lg px-4 border border-outline-variant shadow-sm">
-                  <span className="font-mono text-base md:text-lg font-bold tracking-widest">A001-RX42</span>
+                  <span className="font-mono text-base md:text-lg font-bold tracking-widest">{queueInfo.userTokenNumber}-RX42</span>
                 </div>
               </div>
               <div className="mt-8 pt-6 border-t border-outline-variant/30 w-full">
@@ -141,11 +202,11 @@ export default function Dashboard() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <p className="text-xs text-on-surface-variant">{t('currentToken')}</p>
-                <p className="text-xl md:text-2xl font-bold text-on-surface">A-045</p>
+                <p className="text-xl md:text-2xl font-bold text-on-surface">{queueInfo.currentServingToken}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs text-on-surface-variant">{t('yourToken')}</p>
-                <p className="text-xl md:text-2xl font-bold text-primary">A-080</p>
+                <p className="text-xl md:text-2xl font-bold text-primary">{queueInfo.userTokenNumber}</p>
               </div>
             </div>
             <div className="space-y-4">
@@ -159,11 +220,11 @@ export default function Dashboard() {
               <div className="grid grid-cols-2 gap-3 md:gap-4 mt-6">
                 <div className="bg-surface-container-low p-4 rounded-lg text-center">
                   <p className="text-[10px] md:text-xs text-on-surface-variant mb-1 uppercase">{t('queuePosition')}</p>
-                  <p className="text-base md:text-lg font-bold text-on-surface">35 <span className="text-[10px] md:text-xs font-normal">{t('away')}</span></p>
+                  <p className="text-base md:text-lg font-bold text-on-surface">{queueInfo.position} <span className="text-[10px] md:text-xs font-normal">{t('away')}</span></p>
                 </div>
                 <div className="bg-surface-container-low p-4 rounded-lg text-center">
                   <p className="text-[10px] md:text-xs text-on-surface-variant mb-1 uppercase">{t('estWait')}</p>
-                  <p className="text-base md:text-lg font-bold text-on-surface">35 <span className="text-[10px] md:text-xs font-normal">{t('mins')}</span></p>
+                  <p className="text-base md:text-lg font-bold text-on-surface">{queueInfo.estWait} <span className="text-[10px] md:text-xs font-normal">{t('mins')}</span></p>
                 </div>
               </div>
             </div>

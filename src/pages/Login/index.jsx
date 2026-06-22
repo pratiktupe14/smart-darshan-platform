@@ -5,9 +5,10 @@ export default function Login() {
   const navigate = useNavigate();
   const [role, setRole] = useState('user');
   const [view, setView] = useState('mobile');
-  const [loginMethod, setLoginMethod] = useState('mobile'); // 'mobile' or 'email'
+  const [loginMethod, setLoginMethod] = useState('email'); // 'mobile' or 'email'
   const [mobileNumber, setMobileNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
+  const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const otpRefs = [useRef(), useRef(), useRef(), useRef(), useRef(), useRef()];
@@ -31,13 +32,52 @@ export default function Login() {
     }, 100);
   };
 
-  const handleEmailSubmit = (e) => {
+  const handleEmailSubmit = async (e) => {
     e.preventDefault();
-    if (!emailAddress || !password) {
-      alert('Please enter both email and password.');
+    if (!emailAddress || !password || !fullName) {
+      alert('Please enter your name, email and password.');
       return;
     }
-    handleVerifyOtp();
+    
+    try {
+      // Try register first
+      let response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailAddress, password, fullName, role })
+      });
+      
+      let data = await response.json();
+      
+      if (!response.ok && data.message === 'User already exists') {
+        // Try login
+        response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: emailAddress, password })
+        });
+        data = await response.json();
+      }
+      
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        localStorage.setItem('userRole', data.user.role || role);
+        
+        if (data.user.role === 'admin') {
+          navigate('/dashboard/admin');
+        } else if (data.user.role === 'committee') {
+          navigate('/dashboard/committee');
+        } else {
+          navigate('/dashboard');
+        }
+      } else {
+        alert(data.message || 'Login failed');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred during login');
+    }
   };
 
   const handleGoogleLogin = () => {
@@ -202,7 +242,20 @@ export default function Login() {
                     </>
                   ) : (
                     <form onSubmit={handleEmailSubmit} className="space-y-6">
-                      <p className="font-body-md text-body-md text-on-surface-variant mb-6">Enter your email and password to log in to your account.</p>
+                      <p className="font-body-md text-body-md text-on-surface-variant mb-6">Enter your name, email and password to log in or register.</p>
+                      
+                      <div className="group">
+                        <label className="block font-label-md text-label-md text-on-surface mb-2 ml-1" htmlFor="name">Full Name</label>
+                        <input 
+                          className="w-full px-4 py-4 rounded-lg bg-surface border-outline-variant/50 border focus:border-primary focus:ring-4 focus:ring-primary-container/20 transition-all font-body-lg text-body-lg tracking-normal" 
+                          id="name" 
+                          placeholder="Your Name" 
+                          type="text"
+                          value={fullName}
+                          onChange={(e) => setFullName(e.target.value)}
+                          required
+                        />
+                      </div>
                       
                       <div className="group">
                         <label className="block font-label-md text-label-md text-on-surface mb-2 ml-1" htmlFor="email">Email Address</label>
@@ -284,7 +337,7 @@ export default function Login() {
                         <input 
                           key={index}
                           ref={otpRefs[index]}
-                          className="otp-input w-12 h-14 md:w-14 md:h-16 text-center text-headline-md font-bold rounded-lg border border-outline-variant/50 bg-surface" 
+                          className="otp-input w-12 h-14 md:w-14 md:h-16 text-center text-headline-md font-bold rounded-lg border border-outline-variant/50 bg-surface text-on-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none" 
                           maxLength="1" 
                           type="text"
                           value={digit}

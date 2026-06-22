@@ -1,8 +1,68 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 
 export default function UserQueueStatus() {
   const { t } = useLanguage();
+  const [queueInfo, setQueueInfo] = useState({
+    currentServingToken: 'None',
+    userTokenNumber: 'N/A',
+    position: 0,
+    estWait: 0,
+    progress: 0,
+    nextTokens: []
+  });
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const userStr = localStorage.getItem('user');
+      let currentUser = {};
+      if (userStr) {
+        try {
+          currentUser = JSON.parse(userStr);
+        } catch (e) {}
+      }
+      if (!currentUser.mobile && !currentUser._id) return;
+      try {
+        const identifier = currentUser._id || currentUser.mobile;
+        const res = await fetch(`http://localhost:5000/api/bookings/user/${identifier}`);
+        if (res.ok) {
+          const bookings = await res.json();
+          const active = bookings.find(b => b.status === 'confirmed');
+
+          const qRes = await fetch(`http://localhost:5000/api/queue`);
+          const queueList = await qRes.json();
+          
+          const currentServing = queueList.filter(q => q.status === 'serving');
+          let waitingQueue = queueList.filter(q => q.status === 'waiting');
+          
+          let userToken = null;
+          let pos = 0;
+          if (active) {
+              userToken = queueList.find(q => q.bookingId && q.bookingId._id === active._id);
+              if (userToken && userToken.status === 'waiting') {
+                  pos = waitingQueue.findIndex(q => q._id === userToken._id) + 1;
+              }
+          }
+          
+          setQueueInfo({
+              currentServingToken: currentServing.length > 0 ? currentServing[0].tokenNumber : 'None',
+              userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
+              position: pos,
+              estWait: pos * 2,
+              progress: pos === 0 ? (userToken && userToken.status === 'serving' ? 100 : 0) : Math.max(10, 100 - (pos * 5)),
+              nextTokens: waitingQueue.slice(0, 5).map(q => q.tokenNumber)
+          });
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    fetchData();
+    const timer = setInterval(fetchData, 10000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   return (
     <main className="max-w-[1280px] mx-auto px-4 md:px-10 py-8 space-y-8 w-full">
@@ -24,16 +84,16 @@ export default function UserQueueStatus() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   <span className="bg-primary-container/10 text-primary-container px-3 py-1 rounded-full text-sm font-bold uppercase tracking-wider">In Queue</span>
-                  <span className="text-on-surface-variant text-sm font-medium">Oct 24, 2024</span>
+                  <span className="text-on-surface-variant text-sm font-medium">{new Date().toLocaleDateString()}</span>
                 </div>
                 <div className="space-y-1">
                   <p className="text-on-surface-variant font-medium">{t('yourToken')}</p>
-                  <h3 className="text-7xl font-black text-primary tracking-tighter">A080</h3>
+                  <h3 className="text-7xl font-black text-primary tracking-tighter">{queueInfo.userTokenNumber}</h3>
                 </div>
               </div>
               
               <div className="bg-surface-container border border-primary/10 rounded-xl p-6 text-center min-w-[200px] shadow-sm">
-                <p className="text-3xl font-bold text-primary">35</p>
+                <p className="text-3xl font-bold text-primary">{queueInfo.position}</p>
                 <p className="text-on-surface-variant font-medium">People Ahead</p>
                 <div className="mt-4 pt-4 border-t border-primary/10 flex items-center justify-center gap-2 text-primary font-semibold">
                   <span className="material-symbols-outlined text-sm">trending_down</span>
@@ -47,13 +107,13 @@ export default function UserQueueStatus() {
           <div className="bg-surface-container-lowest border border-outline/10 rounded-xl p-8 shadow-sm space-y-10 hover:-translate-y-0.5 transition-all duration-300">
             <div className="flex justify-between items-center">
               <h4 className="text-xl font-semibold text-on-surface">Live Journey Tracker</h4>
-              <span className="text-primary font-bold">65% Progress</span>
+              <span className="text-primary font-bold">{Math.floor(queueInfo.progress)}% Progress</span>
             </div>
             
             <div className="relative px-2">
               {/* Background Line */}
               <div className="absolute top-1/2 left-0 w-full h-1.5 bg-surface-container-high -translate-y-1/2 rounded-full overflow-hidden">
-                <div className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" style={{ width: '65%' }}></div>
+                <div className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" style={{ width: `${queueInfo.progress}%` }}></div>
               </div>
               
               {/* Steps */}
@@ -130,22 +190,20 @@ export default function UserQueueStatus() {
             <div className="flex justify-between items-end border-b border-surface-variant/10 pb-6">
               <div>
                 <p className="text-surface-variant text-sm">Active Token</p>
-                <h5 className="text-4xl font-bold text-white">A045</h5>
+                <h5 className="text-4xl font-bold text-white">{queueInfo.currentServingToken}</h5>
               </div>
               <div className="text-right">
                 <p className="text-surface-variant text-sm">Est. Wait</p>
-                <h5 className="text-xl font-bold text-primary-fixed">40 Mins</h5>
+                <h5 className="text-xl font-bold text-primary-fixed">{queueInfo.estWait} Mins</h5>
               </div>
             </div>
             
             <div className="space-y-4">
               <p className="text-xs font-bold text-surface-variant uppercase">Next Upcoming</p>
               <div className="flex flex-wrap gap-2">
-                <span className="bg-surface-variant/10 border border-surface-variant/20 px-3 py-1.5 rounded-lg text-sm font-semibold">A046</span>
-                <span className="bg-surface-variant/10 border border-surface-variant/20 px-3 py-1.5 rounded-lg text-sm font-semibold">A047</span>
-                <span className="bg-surface-variant/10 border border-surface-variant/20 px-3 py-1.5 rounded-lg text-sm font-semibold">A048</span>
-                <span className="bg-surface-variant/10 border border-surface-variant/20 px-3 py-1.5 rounded-lg text-sm font-semibold">A049</span>
-                <span className="bg-surface-variant/10 border border-surface-variant/20 px-3 py-1.5 rounded-lg text-sm font-semibold">A050</span>
+                {queueInfo.nextTokens.length > 0 ? queueInfo.nextTokens.map((token, i) => (
+                  <span key={i} className="bg-surface-variant/10 border border-surface-variant/20 px-3 py-1.5 rounded-lg text-sm font-semibold">{token}</span>
+                )) : <span className="text-surface-variant">None</span>}
               </div>
             </div>
             

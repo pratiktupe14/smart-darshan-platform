@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import QRCode from 'react-qr-code';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 
@@ -31,13 +32,38 @@ export default function BookDarshan() {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => {
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: e.target.full_name.value,
+          mobile: e.target.mobile.value,
+          placeCity: e.target.place_city.value,
+          persons: persons,
+          vehicleType: vehicleType,
+          vehicleNumber: vehicleType !== 'none' ? e.target.vehicle_number.value : '',
+          darshanDate: e.target.darshan_date.value,
+        }),
+      });
+
+      if (response.ok) {
+        setShowSuccess(true);
+      } else {
+        alert('Failed to book darshan. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error booking darshan:', error);
+      alert('An error occurred while booking.');
+    } finally {
       setIsSubmitting(false);
-      setShowSuccess(true);
-    }, 1500);
+    }
   };
 
   return (
@@ -146,15 +172,15 @@ export default function BookDarshan() {
 
                 {/* OTP Verification Block */}
                 {otpSent && (
-                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 relative z-10 animate-fade-in">
-                    <div className="space-y-2 max-w-sm mx-auto text-center">
-                      <label className="font-label-md text-label-md text-on-surface-variant flex flex-col items-center gap-2" htmlFor="otp">
+                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 relative z-10 w-full mt-6">
+                    <div className="space-y-4 w-full mx-auto text-center flex flex-col items-center">
+                      <label className="font-label-md text-label-md text-on-surface-variant flex flex-col items-center gap-2 w-full" htmlFor="otp">
                         <span className="material-symbols-outlined text-primary text-[24px]">lock_open</span> 
-                        <span className="font-bold text-on-surface">Enter Verification Code</span>
-                        <span className="text-xs font-normal">We've sent a 6-digit code to your mobile</span>
+                        <span className="font-bold text-on-surface text-lg">Enter Verification Code</span>
+                        <span className="text-sm font-normal">We've sent a 6-digit code to your mobile</span>
                       </label>
                       <input 
-                        className="w-full text-center tracking-[0.5em] font-bold text-2xl bg-white border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow" 
+                        className="w-full max-w-[200px] text-center tracking-[0.5em] font-bold text-2xl bg-white border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow mx-auto block" 
                         id="otp" name="otp" pattern="[0-9]{6}" placeholder="------" maxLength="6" required type="text"
                       />
                       <button 
@@ -280,12 +306,12 @@ export default function BookDarshan() {
                   <p className="text-on-surface-variant font-body-md text-[16px] mb-8 max-w-md">
                     Your slot is reserved. A digital copy and SMS with the QR code have been sent to your mobile.
                   </p>
-                  <div className="p-4 border-2 border-dashed border-outline-variant rounded-xl mb-8">
-                    <div className="w-48 h-48 bg-surface-container-high flex items-center justify-center relative">
-                      <img 
-                        className="w-40 h-40" 
-                        alt="QR Code" 
-                        src="https://lh3.googleusercontent.com/aida-public/AB6AXuDGC2JeFF-ghMLH61KV94ZWl7VhlqCSXEzyg7vV_XYLPLq9FKBk5f9jvjF-yqf0soeDhdX_B3C90Ie9bfHDO01Ni_CdxAaRcqAH1VhrNUtL82HjkmnxkA8wAqzOJ1ltpDI0JJYixWsflbTiiD_wqrX-ZWLRgJkoAuo4ddI9PqppTdkmemngoXzATA052GLlKXq6Dm0XovOhvjSaVDDFJinwu0z5S0Bee4u2fSxUEoP2VBZCc9vNYDn-ls5Z_lUBc7nA7NB2OR_TP0g"
+                  <div className="p-4 border-2 border-dashed border-outline-variant rounded-xl mb-8 bg-white">
+                    <div className="w-48 h-48 bg-surface-container-high flex items-center justify-center relative p-4 rounded-xl shadow-inner">
+                      <QRCode 
+                        value="TOKEN-SUCCESS-A001" 
+                        size={160} 
+                        style={{ height: "auto", maxWidth: "100%", width: "100%" }}
                       />
                       <div className="absolute -top-3 -right-3 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-[12px] font-bold shadow-md">
                         SCAN FOR ENTRY

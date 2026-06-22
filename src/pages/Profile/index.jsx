@@ -1,8 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
-import { supabase } from '../../lib/supabase';
-
 
 export default function Profile() {
   const navigate = useNavigate();
@@ -10,7 +8,6 @@ export default function Profile() {
 
   const handleLogout = async () => {
     if (window.confirm(t('confirmLogout'))) {
-      await supabase.auth.signOut();
       localStorage.clear();
       sessionStorage.clear();
       navigate('/login');

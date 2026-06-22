@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { supabase } from '../../lib/supabase';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 export default function Announcements() {
   const { t } = useLanguage();
   const [announcements, setAnnouncements] = useState([]);
@@ -12,18 +12,22 @@ export default function Announcements() {
   const [newContent, setNewContent] = useState('');
   const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '');
 
-  // Fetch user role from supabase auth or localStorage
+  // Fetch user role from localStorage
   useEffect(() => {
     const fetchUser = async () => {
       const localRole = localStorage.getItem('userRole');
       if (localRole) {
         setUserRole(localRole);
       }
-      const { data } = await supabase.auth.getUser();
-      if (data?.user) {
-        const role = data.user.user_metadata?.role || '';
-        setUserRole(role);
-        localStorage.setItem('userRole', role);
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        try {
+          const userObj = JSON.parse(userStr);
+          if (userObj.role) {
+             setUserRole(userObj.role);
+             localStorage.setItem('userRole', userObj.role);
+          }
+        } catch(e) {}
       }
     };
     fetchUser();
@@ -66,41 +70,26 @@ export default function Announcements() {
     return defaultAnnouncements;
   };
 
-  // Fetch announcements from Supabase with localStorage fallback
+  // Fetch announcements from new Express API
   const fetchAnnouncements = async () => {
-    const { data, error } = await supabase
-      .from('announcements')
-      .select('*')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.warn('Supabase fetch failed, falling back to localStorage:', error.message);
+    try {
+      const response = await fetch(`${API_URL}/announcements`);
+      if (response.ok) {
+        const data = await response.json();
+        setAnnouncements(data);
+        localStorage.setItem('announcements', JSON.stringify(data));
+      } else {
+        throw new Error('Failed to fetch announcements');
+      }
+    } catch (error) {
+      console.warn('API fetch failed, falling back to localStorage:', error.message);
       const localData = getInitialAnnouncements();
       setAnnouncements(localData);
-    } else {
-      setAnnouncements(data || []);
-      localStorage.setItem('announcements', JSON.stringify(data || []));
     }
   };
 
   useEffect(() => {
     fetchAnnouncements();
-
-    // Subscribe to realtime updates if any changes happen in Supabase
-    const channel = supabase
-      .channel('schema-db-changes')
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'announcements' },
-        () => {
-          fetchAnnouncements();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const handleCreate = async () => {
@@ -108,33 +97,36 @@ export default function Announcements() {
     const newAnn = {
       title: newTitle,
       content: newContent,
-      published: true
+      isActive: true,
+      author: userRole || 'admin'
     };
 
-    const { data, error } = await supabase
-      .from('announcements')
-      .insert(newAnn)
-      .select();
-
-    if (error) {
-      console.warn('Supabase insert failed, falling back to localStorage:', error.message);
+    try {
+      const response = await fetch(`${API_URL}/announcements`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newAnn)
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAnnouncements([data, ...announcements]);
+      } else {
+        throw new Error('Create failed');
+      }
+    } catch (error) {
+      console.warn('API insert failed, falling back to localStorage:', error.message);
       const localData = getInitialAnnouncements();
       const localNewAnn = {
-        id: crypto.randomUUID(),
+        _id: crypto.randomUUID(),
         title: newTitle,
         content: newContent,
-        published: true,
-        created_at: new Date().toISOString()
+        isActive: true,
+        createdAt: new Date().toISOString()
       };
       const updated = [localNewAnn, ...localData];
       localStorage.setItem('announcements', JSON.stringify(updated));
       setAnnouncements(updated);
-    } else {
-      if (data && data.length > 0) {
-        setAnnouncements([data[0], ...announcements]);
-      } else {
-        fetchAnnouncements();
-      }
     }
 
     setShowModal(false);
@@ -145,28 +137,29 @@ export default function Announcements() {
   const handleEdit = async () => {
     if (!newTitle || !editingId) return;
 
-    const { data, error } = await supabase
-      .from('announcements')
-      .update({ title: newTitle, content: newContent })
-      .eq('id', editingId)
-      .select();
-
-    if (error) {
-      console.warn('Supabase update failed, falling back to localStorage:', error.message);
+    try {
+      const response = await fetch(`${API_URL}/announcements/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle, content: newContent })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAnnouncements(announcements.map(ann => (ann._id || ann.id) === editingId ? data : ann));
+      } else {
+        throw new Error('Edit failed');
+      }
+    } catch (error) {
+      console.warn('API update failed, falling back to localStorage:', error.message);
       const localData = getInitialAnnouncements();
       const updated = localData.map(ann =>
-        ann.id === editingId
+        (ann._id || ann.id) === editingId
           ? { ...ann, title: newTitle, content: newContent }
           : ann
       );
       localStorage.setItem('announcements', JSON.stringify(updated));
       setAnnouncements(updated);
-    } else {
-      if (data && data.length > 0) {
-        setAnnouncements(announcements.map(ann => ann.id === editingId ? data[0] : ann));
-      } else {
-        fetchAnnouncements();
-      }
     }
 
     setShowModal(false);
@@ -178,54 +171,59 @@ export default function Announcements() {
   const handleDelete = async (id) => {
     if (!window.confirm('Are you sure you want to delete this announcement?')) return;
 
-    const { error } = await supabase
-      .from('announcements')
-      .delete()
-      .eq('id', id);
-
-    if (error) {
-      console.warn('Supabase delete failed, falling back to localStorage:', error.message);
+    try {
+      const response = await fetch(`${API_URL}/announcements/${id}`, {
+        method: 'DELETE'
+      });
+      if (!response.ok) throw new Error('Delete failed');
+      setAnnouncements(announcements.filter(ann => (ann._id || ann.id) !== id));
+    } catch (error) {
+      console.warn('API delete failed, falling back to localStorage:', error.message);
       const localData = getInitialAnnouncements();
-      const updated = localData.filter(ann => ann.id !== id);
+      const updated = localData.filter(ann => (ann._id || ann.id) !== id);
       localStorage.setItem('announcements', JSON.stringify(updated));
       setAnnouncements(updated);
-    } else {
-      setAnnouncements(announcements.filter(ann => ann.id !== id));
     }
   };
 
   const handleTogglePublish = async (ann) => {
-    const nextPublishedState = !ann.published;
+    const isPublished = ann.isActive !== undefined ? ann.isActive : ann.published;
+    const nextPublishedState = !isPublished;
+    const annId = ann._id || ann.id;
 
-    const { data, error } = await supabase
-      .from('announcements')
-      .update({ published: nextPublishedState })
-      .eq('id', ann.id)
-      .select();
-
-    if (error) {
-      console.warn('Supabase toggle publish failed, falling back to localStorage:', error.message);
+    try {
+      const response = await fetch(`${API_URL}/announcements/${annId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isActive: nextPublishedState })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        setAnnouncements(announcements.map(item => (item._id || item.id) === annId ? data : item));
+      } else {
+        throw new Error('Toggle publish failed');
+      }
+    } catch (error) {
+      console.warn('API toggle publish failed, falling back to localStorage:', error.message);
       const localData = getInitialAnnouncements();
       const updated = localData.map(item =>
-        item.id === ann.id
-          ? { ...item, published: nextPublishedState }
+        (item._id || item.id) === annId
+          ? { ...item, isActive: nextPublishedState, published: nextPublishedState }
           : item
       );
       localStorage.setItem('announcements', JSON.stringify(updated));
       setAnnouncements(updated);
-    } else {
-      if (data && data.length > 0) {
-        setAnnouncements(announcements.map(item => item.id === ann.id ? data[0] : item));
-      } else {
-        fetchAnnouncements();
-      }
     }
   };
 
   // Filter based on roles
   const displayedAnnouncements = userRole === 'admin'
     ? announcements
-    : announcements.filter(ann => ann.published === true || ann.published === undefined);
+    : announcements.filter(ann => {
+        const isPublished = ann.isActive !== undefined ? ann.isActive : ann.published;
+        return isPublished === true || isPublished === undefined;
+      });
 
   return (
     <main className="pt-8 pb-12 px-4 md:px-10 max-w-7xl mx-auto w-full">
@@ -345,18 +343,18 @@ export default function Announcements() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {displayedAnnouncements.map((ann) => (
-                <div key={ann.id} className="bg-white rounded-xl p-6 shadow-[0_4px_20px_0_rgba(152,67,0,0.06)] border border-outline-variant/20 hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-between">
+                <div key={ann._id || ann.id} className="bg-white rounded-xl p-6 shadow-[0_4px_20px_0_rgba(152,67,0,0.06)] border border-outline-variant/20 hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-between">
                   <div>
                     <div className="flex justify-between items-start mb-4">
                       <div className="flex flex-col gap-1.5">
                         <span className="px-3 py-1 rounded-full bg-surface-container-high text-primary font-semibold text-xs w-fit">{ann.title}</span>
                         {userRole === 'admin' && (
-                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded w-fit ${ann.published ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                            {ann.published ? 'Published' : 'Draft/Unpublished'}
+                          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded w-fit ${(ann.isActive !== undefined ? ann.isActive : ann.published) ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                            {(ann.isActive !== undefined ? ann.isActive : ann.published) ? 'Published' : 'Draft/Unpublished'}
                           </span>
                         )}
                       </div>
-                      <span className="text-on-surface-variant text-[12px]">{new Date(ann.created_at).toLocaleDateString()}</span>
+                      <span className="text-on-surface-variant text-[12px]">{new Date(ann.createdAt || ann.created_at).toLocaleDateString()}</span>
                     </div>
                     <p className="text-on-surface-variant text-sm mb-4 line-clamp-2">{ann.content}</p>
                   </div>
@@ -368,14 +366,14 @@ export default function Announcements() {
                       <div className="flex gap-2">
                         <button 
                           onClick={() => handleTogglePublish(ann)}
-                          title={ann.published ? "Unpublish" : "Publish"}
-                          className={`p-1.5 rounded-lg border transition-colors ${ann.published ? 'border-yellow-200 text-yellow-700 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
+                          title={(ann.isActive !== undefined ? ann.isActive : ann.published) ? "Unpublish" : "Publish"}
+                          className={`p-1.5 rounded-lg border transition-colors ${(ann.isActive !== undefined ? ann.isActive : ann.published) ? 'border-yellow-200 text-yellow-700 hover:bg-yellow-50' : 'border-green-200 text-green-700 hover:bg-green-50'}`}
                         >
-                          <span className="material-symbols-outlined text-sm">{ann.published ? 'unpublished' : 'publish'}</span>
+                          <span className="material-symbols-outlined text-sm">{(ann.isActive !== undefined ? ann.isActive : ann.published) ? 'unpublished' : 'publish'}</span>
                         </button>
                         <button 
                           onClick={() => {
-                            setEditingId(ann.id);
+                            setEditingId(ann._id || ann.id);
                             setNewTitle(ann.title);
                             setNewContent(ann.content);
                             setModalType('edit');
@@ -387,7 +385,7 @@ export default function Announcements() {
                           <span className="material-symbols-outlined text-sm">edit</span>
                         </button>
                         <button 
-                          onClick={() => handleDelete(ann.id)}
+                          onClick={() => handleDelete(ann._id || ann.id)}
                           title="Delete"
                           className="p-1.5 rounded-lg border border-error/20 text-error hover:bg-error/5 transition-colors"
                         >

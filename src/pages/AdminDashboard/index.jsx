@@ -10,21 +10,20 @@ export default function AdminDashboard() {
   const [isEmergencyActive, setIsEmergencyActive] = useState(false);
   const [visitorLimit, setVisitorLimit] = useState(50000);
   
-  // Simulated stats state
   const [stats, setStats] = useState({
-    bookingsToday: 1250,
-    visitorsToday: 3400,
-    visitorsInside: 450,
-    queueCount: 120,
-    vipVisitors: 45,
-    parkingOccupancy: 65,
-    completedDarshans: 2850,
-    cancelledBookings: 12
+    bookingsToday: 0,
+    visitorsToday: 0,
+    visitorsInside: 0,
+    queueCount: 0,
+    vipVisitors: 0,
+    parkingOccupancy: 0,
+    completedDarshans: 0,
+    cancelledBookings: 0
   });
 
-  // Simulated live queue updates
-  const [servingToken, setServingToken] = useState(8829);
-  const [queueFlowRate, setQueueFlowRate] = useState(78);
+  const [servingToken, setServingToken] = useState('None');
+  const [queueFlowRate, setQueueFlowRate] = useState(0);
+  const [nextTokens, setNextTokens] = useState([]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -37,35 +36,88 @@ export default function AdminDashboard() {
     return () => clearInterval(clockTimer);
   }, []);
 
-  // Simulate token changing occasionally
   useEffect(() => {
-    const tokenTimer = setInterval(() => {
-      setServingToken(prev => prev + 1);
-      setStats(prev => ({
-        ...prev,
-        visitorsToday: prev.visitorsToday + Math.floor(Math.random() * 3),
-        visitorsInside: Math.min(500, Math.max(380, prev.visitorsInside + Math.floor(Math.random() * 5) - 2)),
-        queueCount: Math.max(80, prev.queueCount + Math.floor(Math.random() * 3) - 2)
-      }));
-    }, 12000);
-    return () => clearInterval(tokenTimer);
+    const fetchData = async () => {
+      try {
+        const statsRes = await fetch('http://localhost:5000/api/stats');
+        const settingsRes = await fetch('http://localhost:5000/api/settings');
+        const queueRes = await fetch('http://localhost:5000/api/queue');
+        
+        if (statsRes.ok && settingsRes.ok && queueRes.ok) {
+          const statsData = await statsRes.json();
+          const settingsData = await settingsRes.json();
+          const queueData = await queueRes.json();
+          
+          setStats({
+            bookingsToday: statsData.bookingsToday,
+            visitorsToday: statsData.visitorsToday,
+            visitorsInside: statsData.visitorsInside,
+            queueCount: statsData.queueCount,
+            vipVisitors: statsData.vipVisitors,
+            parkingOccupancy: settingsData.parkingOccupancy || 0,
+            completedDarshans: statsData.completedDarshans,
+            cancelledBookings: statsData.cancelledBookings
+          });
+          
+          setVisitorLimit(settingsData.visitorLimit || 50000);
+          setIsEmergencyActive(settingsData.isEmergencyActive || false);
+          
+          const serving = queueData.filter(q => q.status === 'serving');
+          const waiting = queueData.filter(q => q.status === 'waiting');
+          
+          setServingToken(serving.length > 0 ? serving[0].tokenNumber : 'None');
+          setNextTokens(waiting.slice(0, 5).map(q => q.tokenNumber));
+          setQueueFlowRate(statsData.queueCount > 0 ? Math.min(100, Math.max(20, 100 - (statsData.queueCount / 2))) : 100);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    
+    fetchData();
+    const timer = setInterval(fetchData, 10000);
+    return () => clearInterval(timer);
   }, []);
 
-  const handleEmergencyClosure = () => {
-    if (!isEmergencyActive) {
-      if (window.confirm('CRITICAL: Are you sure you want to trigger an Emergency Closure? This will halt all entry and notify all onsite personnel.')) {
-        alert('PROTOCOL INITIATED: Gate signals set to RED. Public notification dispatched.');
-        setIsEmergencyActive(true);
-      }
-    } else {
-      if (window.confirm('Are you sure you want to lift the Emergency Closure?')) {
-        setIsEmergencyActive(false);
-      }
+  const handleEmergencyClosure = async () => {
+    try {
+        if (!isEmergencyActive) {
+          if (window.confirm('CRITICAL: Are you sure you want to trigger an Emergency Closure? This will halt all entry and notify all onsite personnel.')) {
+            await fetch('http://localhost:5000/api/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isEmergencyActive: true })
+            });
+            alert('PROTOCOL INITIATED: Gate signals set to RED. Public notification dispatched.');
+            setIsEmergencyActive(true);
+          }
+        } else {
+          if (window.confirm('Are you sure you want to lift the Emergency Closure?')) {
+            await fetch('http://localhost:5000/api/settings', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isEmergencyActive: false })
+            });
+            setIsEmergencyActive(false);
+          }
+        }
+    } catch (e) {
+        console.error(e);
     }
   };
 
-  const adjustCapacity = (amount) => {
-    setVisitorLimit(prev => Math.max(1000, prev + amount));
+  const adjustCapacity = async (amount) => {
+    const newLimit = Math.max(1000, visitorLimit + amount);
+    try {
+        await fetch('http://localhost:5000/api/settings', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ visitorLimit: newLimit })
+        });
+        setVisitorLimit(newLimit);
+    } catch (e) {
+        console.error(e);
+    }
   };
 
   // Mock data for charts
@@ -245,12 +297,13 @@ export default function AdminDashboard() {
               <div className="space-y-4">
                 <p className="text-xs font-bold text-on-surface-variant uppercase font-label-sm">Next 5 Tokens</p>
                 <div className="grid grid-cols-5 gap-2">
-                  {[1, 2, 3, 4, 5].map((offset) => (
-                    <div key={offset} className="bg-surface-container-low p-2 rounded text-center border border-outline-variant">
-                      <p className="text-[10px] font-bold opacity-50">{offset === 1 ? 'NEXT' : `+${offset}`}</p>
-                      <p className="text-sm font-bold">{servingToken + offset}</p>
+                  {nextTokens.map((token, idx) => (
+                    <div key={idx} className="bg-surface-container-low p-2 rounded text-center border border-outline-variant">
+                      <p className="text-[10px] font-bold opacity-50">{idx === 0 ? 'NEXT' : `+${idx + 1}`}</p>
+                      <p className="text-sm font-bold">{token}</p>
                     </div>
                   ))}
+                  {nextTokens.length === 0 && <p className="col-span-5 text-sm text-center text-on-surface-variant py-2">No tokens waiting</p>}
                 </div>
                 
                 <div className="pt-4">
@@ -387,66 +440,8 @@ export default function AdminDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant text-sm">
-                  <tr className="hover:bg-surface-container-low transition-colors duration-150">
-                    <td className="py-4 px-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-xs font-bold">AS</div>
-                        <div>
-                          <p className="text-sm font-bold">Amit Sharma</p>
-                          <p className="text-[10px] text-on-surface-variant">#BK-9921</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-2 text-sm text-on-surface">General</td>
-                    <td className="py-4 px-2">
-                      <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-surface-variant text-on-surface-variant">Check-In</span>
-                    </td>
-                    <td className="py-4 px-2 text-xs font-medium text-on-surface-variant">10:28 AM</td>
-                    <td className="py-4 px-2">
-                      <span className="text-xs font-bold text-green-600 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">check_circle</span> Verified
-                      </span>
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-surface-container-low transition-colors duration-150">
-                    <td className="py-4 px-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-secondary-container flex items-center justify-center text-xs font-bold">VB</div>
-                        <div>
-                          <p className="text-sm font-bold">Vikas Bansal</p>
-                          <p className="text-[10px] text-on-surface-variant">#BK-V004</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-2 text-sm font-bold text-primary">VIP</td>
-                    <td className="py-4 px-2">
-                      <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-surface-variant text-on-surface-variant">Entry Approved</span>
-                    </td>
-                    <td className="py-4 px-2 text-xs font-medium text-on-surface-variant">10:25 AM</td>
-                    <td className="py-4 px-2">
-                      <span className="text-xs font-bold text-green-600 flex items-center gap-1">
-                        <span className="material-symbols-outlined text-[14px]">check_circle</span> Verified
-                      </span>
-                    </td>
-                  </tr>
-                  <tr className="hover:bg-surface-container-low transition-colors duration-150">
-                    <td className="py-4 px-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-xs font-bold">RM</div>
-                        <div>
-                          <p className="text-sm font-bold">Reema Malhotra</p>
-                          <p className="text-[10px] text-on-surface-variant">#BK-9918</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-4 px-2 text-sm text-on-surface">Special Pooja</td>
-                    <td className="py-4 px-2">
-                      <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-surface-variant text-on-surface-variant">Slot Changed</span>
-                    </td>
-                    <td className="py-4 px-2 text-xs font-medium text-on-surface-variant">10:18 AM</td>
-                    <td className="py-4 px-2">
-                      <span className="text-xs font-bold text-primary">Pending</span>
-                    </td>
+                  <tr>
+                    <td colSpan="5" className="text-center py-4 text-on-surface-variant text-sm">No recent activities.</td>
                   </tr>
                 </tbody>
               </table>

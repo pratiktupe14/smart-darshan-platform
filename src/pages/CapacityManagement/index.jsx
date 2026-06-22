@@ -21,23 +21,33 @@ export default function CapacityManagement() {
   // Simulated countdown for slot refresh
   useEffect(() => {
     const timer = setInterval(() => {
-      setRefreshCountdown(prev => {
-        if (prev <= 1) {
-          // Trigger slot refresh simulation
-          setAvailableSlots(current => {
-            const bookedDelta = Math.floor(Math.random() * 8) + 2;
-            const cancelledDelta = Math.floor(Math.random() * 3);
-            setBookingsToday(b => b + bookedDelta - cancelledDelta);
-            setOnlineBookings(o => o + Math.floor(bookedDelta * 0.8));
-            setWalkIns(w => w + Math.floor(bookedDelta * 0.2));
-            return Math.max(0, current - bookedDelta + cancelledDelta);
-          });
-          return 15;
-        }
-        return prev - 1;
-      });
+      setRefreshCountdown(prev => prev <= 1 ? 15 : prev - 1);
     }, 1000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const statsRes = await fetch('http://localhost:5000/api/stats');
+        const settingsRes = await fetch('http://localhost:5000/api/settings');
+        
+        if (statsRes.ok) {
+          const stats = await statsRes.json();
+          setBookingsToday(stats.bookingsToday);
+          setOnlineBookings(Math.floor(stats.bookingsToday * 0.8));
+          setWalkIns(stats.bookingsToday - Math.floor(stats.bookingsToday * 0.8));
+        }
+
+        if (settingsRes.ok) {
+          const settings = await settingsRes.json();
+          setVisitorLimit(settings.visitorLimit || 50000);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchData();
   }, []);
 
   const handleReset = () => {
@@ -48,16 +58,32 @@ export default function CapacityManagement() {
     }
   };
 
-  const handleSave = () => {
-    alert(`${t('configSavedSuccess') || 'Configuration saved successfully!'}\n- ${t('maxVisitors') || 'Max Visitors'}: ${visitorLimit.toLocaleString()}\n- ${t('maxVehicles') || 'Max Vehicles'}: ${vehicleLimit}\n- ${t('maxPersonsPerBooking') || 'Max Persons/Booking'}: ${maxPersons}`);
+  const handleSave = async () => {
+    try {
+      await fetch('http://localhost:5000/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ visitorLimit })
+      });
+      alert(`${t('configSavedSuccess') || 'Configuration saved successfully!'}\n- ${t('maxVisitors') || 'Max Visitors'}: ${visitorLimit.toLocaleString()}\n- ${t('maxVehicles') || 'Max Vehicles'}: ${vehicleLimit}\n- ${t('maxPersonsPerBooking') || 'Max Persons/Booking'}: ${maxPersons}`);
+    } catch (e) {
+      console.error(e);
+    }
   };
 
-  const handleUpdateCapacity = () => {
+  const handleUpdateCapacity = async () => {
     const newLimit = prompt(t('enterNewMaxVisitors') || 'Enter new Max Visitors Per Day:', visitorLimit);
     if (newLimit !== null) {
       const parsed = parseInt(newLimit, 10);
       if (!isNaN(parsed) && parsed > 0) {
         setVisitorLimit(parsed);
+        try {
+          await fetch('http://localhost:5000/api/settings', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ visitorLimit: parsed })
+          });
+        } catch (e) { console.error(e); }
       } else {
         alert(t('enterValidNumber') || 'Please enter a valid positive number.');
       }
