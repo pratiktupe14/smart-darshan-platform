@@ -19,6 +19,12 @@ const bookingSchema = new mongoose.Schema({
     min: 1,
     max: 10,
   },
+  visitors: [
+    {
+      name: { type: String, required: true },
+      age: { type: Number, required: true }
+    }
+  ],
   vehicleType: {
     type: String,
     enum: ['none', 'two_wheeler', 'four_wheeler', 'bus'],
@@ -35,6 +41,19 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'confirmed', 'cancelled', 'completed'],
     default: 'confirmed',
+  },
+  verificationStatus: {
+    type: String,
+    enum: ['none', 'verified_entry', 'in_queue', 'completed'],
+    default: 'none',
+  },
+  enteredTemple: {
+    type: String,
+    enum: ['Yes', 'No'],
+    default: 'No',
+  },
+  darshanCompletedAt: {
+    type: Date,
   },
   qrCode: {
     type: String,

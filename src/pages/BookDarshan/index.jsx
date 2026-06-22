@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import QRCode from 'react-qr-code';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import { useUser } from '../../context/UserContext';
 
 export default function BookDarshan() {
   const { t, currentLanguage, setLanguage } = useLanguage();
+  const { user } = useUser();
 
   const [persons, setPersons] = useState(1);
+  const [visitors, setVisitors] = useState([{ name: '', age: '' }]);
   const [vehicleType, setVehicleType] = useState('none');
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -19,7 +22,40 @@ export default function BookDarshan() {
   }, []);
 
   const updatePersons = (change) => {
-    setPersons((prev) => Math.max(1, Math.min(10, prev + change)));
+    setPersons((prev) => {
+      const nextVal = Math.max(1, Math.min(10, prev + change));
+      setVisitors((prevVisitors) => {
+        if (prevVisitors.length < nextVal) {
+          return [...prevVisitors, ...Array.from({ length: nextVal - prevVisitors.length }, () => ({ name: '', age: '' }))];
+        } else if (prevVisitors.length > nextVal) {
+          return prevVisitors.slice(0, nextVal);
+        }
+        return prevVisitors;
+      });
+      return nextVal;
+    });
+  };
+
+  const handleVisitorChange = (index, field, value) => {
+    setVisitors((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
+
+  const handleDateChange = (e) => {
+    const val = e.target.value;
+    if (!val) return;
+    const parts = val.split('-');
+    if (parts.length === 3) {
+      const date = new Date(parts[0], parts[1] - 1, parts[2]);
+      const day = date.getDay(); // 0 = Sunday, 1 = Monday, 2 = Tuesday
+      if (day !== 0 && day !== 1 && day !== 2) {
+        alert('Darshan booking is only allowed on Sunday, Monday, and Tuesday.');
+        e.target.value = '';
+      }
+    }
   };
 
   const handleSendOTP = () => {
@@ -36,31 +72,65 @@ export default function BookDarshan() {
     e.preventDefault();
     setIsSubmitting(true);
     
+    const dateVal = e.target.darshan_date.value;
+    if (dateVal) {
+      const parts = dateVal.split('-');
+      if (parts.length === 3) {
+        const date = new Date(parts[0], parts[1] - 1, parts[2]);
+        const day = date.getDay(); // 0 = Sunday, 1 = Monday, 2 = Tuesday
+        if (day !== 0 && day !== 1 && day !== 2) {
+          alert('Darshan booking is only allowed on Sunday, Monday, and Tuesday.');
+          setIsSubmitting(false);
+          return;
+        }
+      }
+    }
+
     try {
+      const payload = {
+        fullName: e.target.full_name.value,
+        mobile: e.target.mobile.value,
+        placeCity: e.target.place_city.value,
+        persons: persons,
+        visitors: visitors,
+        vehicleType: vehicleType,
+        vehicleNumber: vehicleType !== 'none' ? e.target.vehicle_number.value : '',
+        darshanDate: e.target.darshan_date.value,
+        userId: user?._id || undefined,
+      };
+      console.log('Sending booking request with payload:', payload);
+
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          fullName: e.target.full_name.value,
-          mobile: e.target.mobile.value,
-          placeCity: e.target.place_city.value,
-          persons: persons,
-          vehicleType: vehicleType,
-          vehicleNumber: vehicleType !== 'none' ? e.target.vehicle_number.value : '',
-          darshanDate: e.target.darshan_date.value,
-        }),
+        body: JSON.stringify(payload),
       });
+
+      console.log('Received response with status:', response.status);
 
       if (response.ok) {
         setShowSuccess(true);
       } else {
-        alert('Failed to book darshan. Please try again.');
+        const errorData = await response.json().catch(() => null);
+        console.error('Booking Error Response:', errorData);
+        let errorMsg = errorData?.error || errorData?.message || 'Failed to book darshan. Please try again.';
+        if (errorData?.details) {
+          errorMsg += `\nDetails: ${errorData.details}`;
+        }
+        
+        if (response.status === 400) {
+          alert(`Validation Error: ${errorMsg}`);
+        } else if (response.status === 401 || response.status === 403) {
+          alert(`Authentication Error: ${errorMsg}`);
+        } else {
+          alert(`Database Error: ${errorMsg}`);
+        }
       }
     } catch (error) {
-      console.error('Error booking darshan:', error);
-      alert('An error occurred while booking.');
+      console.error('Network Error during booking request:', error);
+      alert(`Network Error: ${error.message || 'An error occurred while connecting to the server.'}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -149,6 +219,7 @@ export default function BookDarshan() {
                     <input 
                       className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" 
                       id="full_name" name="full_name" placeholder="E.g. Rajesh Kumar" required type="text"
+                      defaultValue={user?.fullName || ''}
                     />
                   </div>
                   <div className="space-y-2 relative z-10">
@@ -159,6 +230,7 @@ export default function BookDarshan() {
                       <input 
                         className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" 
                         id="mobile" name="mobile" pattern="[0-9]{10}" placeholder="9876543210" required type="tel"
+                        defaultValue={user?.mobileNumber || user?.mobile || ''}
                       />
                       <button 
                         className="bg-secondary-container text-on-secondary-container font-label-md text-label-md px-4 py-3 rounded-lg hover:bg-secondary-fixed-dim transition-all active:scale-95 whitespace-nowrap shrink-0" 
@@ -208,6 +280,7 @@ export default function BookDarshan() {
                     <input 
                       className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" 
                       id="place_city" name="place_city" placeholder="E.g. Mumbai" required type="text"
+                      defaultValue={user?.placeCityVillage || ''}
                     />
                   </div>
                   <div className="space-y-2">
@@ -227,6 +300,53 @@ export default function BookDarshan() {
                       </button>
                     </div>
                   </div>
+                </div>
+
+                {/* Visitor Details Section */}
+                <div className="space-y-4 pt-2 relative z-10">
+                  <h3 className="font-bold text-on-surface text-base border-b border-outline-variant pb-2">Visitor Details</h3>
+                  {Array.from({ length: persons }).map((_, index) => (
+                    <div key={index} className="p-4 bg-surface-container-low border border-outline-variant rounded-lg space-y-4">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary text-[18px]">person</span>
+                        <h4 className="font-bold text-sm text-primary">Visitor {index + 1}</h4>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" htmlFor={`visitor_name_${index}`}>
+                            Full Name
+                          </label>
+                          <input 
+                            className="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 outline-none focus:border-primary transition-all soft-glow font-body-md" 
+                            id={`visitor_name_${index}`}
+                            name={`visitor_name_${index}`}
+                            placeholder="Full Name"
+                            required
+                            type="text"
+                            value={visitors[index]?.name || ''}
+                            onChange={(e) => handleVisitorChange(index, 'name', e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" htmlFor={`visitor_age_${index}`}>
+                            Age
+                          </label>
+                          <input 
+                            className="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 outline-none focus:border-primary transition-all soft-glow font-body-md" 
+                            id={`visitor_age_${index}`}
+                            name={`visitor_age_${index}`}
+                            placeholder="Age"
+                            required
+                            type="number"
+                            min="1"
+                            max="120"
+                            value={visitors[index]?.age || ''}
+                            onChange={(e) => handleVisitorChange(index, 'age', e.target.value)}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Vehicle Details */}
@@ -268,10 +388,12 @@ export default function BookDarshan() {
                     <input 
                       className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" 
                       id="darshan_date" name="darshan_date" required type="date" min={minDate}
+                      onChange={handleDateChange}
+                      onKeyDown={(e) => e.preventDefault()}
                     />
                   </div>
                   <p className="font-label-sm text-label-sm text-primary flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">info</span> Slots are usually open for the next 30 days.
+                    <span className="material-symbols-outlined text-[14px]">info</span> Bookings are only allowed on Sundays, Mondays, and Tuesdays.
                   </p>
                 </div>
 
@@ -303,9 +425,11 @@ export default function BookDarshan() {
                     <span className="material-symbols-outlined text-primary text-5xl">check_circle</span>
                   </div>
                   <h3 className="font-headline-lg text-[32px] font-bold text-on-surface mb-2">Booking Confirmed!</h3>
-                  <p className="text-on-surface-variant font-body-md text-[16px] mb-8 max-w-md">
-                    Your slot is reserved. A digital copy and SMS with the QR code have been sent to your mobile.
-                  </p>
+                  <div className="text-on-surface-variant font-body-md text-[16px] mb-8 max-w-[600px] w-full px-4 space-y-4">
+                    <p>Your darshan booking has been successfully confirmed.</p>
+                    <p>A digital pass with your QR code and booking details has been generated and sent to your registered mobile number.</p>
+                    <p>Please carry your QR pass during your temple visit.</p>
+                  </div>
                   <div className="p-4 border-2 border-dashed border-outline-variant rounded-xl mb-8 bg-white">
                     <div className="w-48 h-48 bg-surface-container-high flex items-center justify-center relative p-4 rounded-xl shadow-inner">
                       <QRCode 
@@ -323,6 +447,7 @@ export default function BookDarshan() {
                     onClick={() => {
                       setShowSuccess(false);
                       setPersons(1);
+                      setVisitors([{ name: '', age: '' }]);
                       setVehicleType('none');
                     }}
                   >

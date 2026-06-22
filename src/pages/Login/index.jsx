@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useUser } from '../../context/UserContext';
 
 export default function Login() {
   const navigate = useNavigate();
+  const { loginUser } = useUser();
   const [role, setRole] = useState('user');
   const [view, setView] = useState('mobile');
   const [loginMethod, setLoginMethod] = useState('email'); // 'mobile' or 'email'
@@ -60,9 +62,7 @@ export default function Login() {
       }
       
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('userRole', data.user.role || role);
+        loginUser(data.user, data.user.role || role, data.token);
         
         if (data.user.role === 'admin') {
           navigate('/dashboard/admin');

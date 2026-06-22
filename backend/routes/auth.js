@@ -96,4 +96,34 @@ router.get('/me', async (req, res) => {
   }
 });
 
+// Update logged in user profile
+router.put('/profile', async (req, res) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    if (!token) return res.status(401).json({ message: 'No token, authorization denied' });
+
+    const decoded = jwt.verify(token, JWT_SECRET);
+    
+    const { fullName, mobileNumber, profilePhoto, placeCityVillage, preferredLanguage } = req.body;
+
+    const user = await User.findById(decoded.user.id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    if (fullName !== undefined) user.fullName = fullName;
+    if (mobileNumber !== undefined) user.mobileNumber = mobileNumber;
+    if (profilePhoto !== undefined) user.profilePhoto = profilePhoto;
+    if (placeCityVillage !== undefined) user.placeCityVillage = placeCityVillage;
+    if (preferredLanguage !== undefined) user.preferredLanguage = preferredLanguage;
+
+    await user.save();
+    
+    // Return the updated user (excluding password)
+    const updatedUser = await User.findById(decoded.user.id).select('-password');
+    res.json(updatedUser);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ message: 'Server Error' });
+  }
+});
+
 module.exports = router;

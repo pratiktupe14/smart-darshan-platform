@@ -27,6 +27,28 @@ export default function OfflineVerification() {
   const [formVehicleType, setFormVehicleType] = useState('None / Walk-in');
   const [formVehicleNumber, setFormVehicleNumber] = useState('');
   const [formDate, setFormDate] = useState('2024-05-24');
+  const [formVisitors, setFormVisitors] = useState([{ name: '', age: '' }]);
+
+  const handlePersonsChange = (val) => {
+    const nextVal = Math.max(1, parseInt(val) || 1);
+    setFormPersons(nextVal);
+    setFormVisitors((prev) => {
+      if (prev.length < nextVal) {
+        return [...prev, ...Array.from({ length: nextVal - prev.length }, () => ({ name: '', age: '' }))];
+      } else if (prev.length > nextVal) {
+        return prev.slice(0, nextVal);
+      }
+      return prev;
+    });
+  };
+
+  const handleVisitorChange = (index, field, value) => {
+    setFormVisitors((prev) => {
+      const next = [...prev];
+      next[index] = { ...next[index], [field]: value };
+      return next;
+    });
+  };
 
   // Registered devotee to display in the pass modal
   const [registeredDevotee, setRegisteredDevotee] = useState(null);
@@ -61,7 +83,7 @@ export default function OfflineVerification() {
     }
   };
 
-  const handleCreateToken = (e) => {
+  const handleCreateToken = async (e) => {
     e.preventDefault();
     if (!formName.trim() || !formMobile.trim()) {
       showToast('Please fill in Name and Mobile Number');
@@ -93,12 +115,48 @@ export default function OfflineVerification() {
       mobile: formMobile,
       village: formVillage || 'N/A',
       persons: parseInt(formPersons) || 1,
+      visitors: formVisitors,
       vehicleType: formVehicleType,
       vehicleNumber: formVehicleNumber,
       time: nowTime,
       status: 'Registered',
       date: formDate
     };
+
+    // Save to Database
+    try {
+      const bookingResponse = await fetch('http://localhost:5000/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fullName: formName,
+          mobile: formMobile,
+          placeCity: formVillage || 'N/A',
+          persons: parseInt(formPersons) || 1,
+          visitors: formVisitors,
+          vehicleType: formVehicleType === 'None / Walk-in' ? 'none' :
+                       formVehicleType === 'Two Wheeler' ? 'two_wheeler' :
+                       formVehicleType === 'Four Wheeler' ? 'four_wheeler' : 'bus',
+          vehicleNumber: formVehicleNumber,
+          darshanDate: formDate
+        })
+      });
+      if (bookingResponse.ok) {
+        const savedBooking = await bookingResponse.json();
+        // Also save to Queue
+        await fetch('http://localhost:5000/api/queue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tokenNumber: newTokenId,
+            isVip: false,
+            bookingId: savedBooking._id
+          })
+        });
+      }
+    } catch (err) {
+      console.error('Error saving offline entry to database:', err);
+    }
 
     setEntries(prev => [newDevotee, ...prev]);
     setSelectedToken(newTokenId);
@@ -117,6 +175,7 @@ export default function OfflineVerification() {
     setFormMobile('');
     setFormVillage('');
     setFormPersons(1);
+    setFormVisitors([{ name: '', age: '' }]);
     setFormVehicleType('None / Walk-in');
     setFormVehicleNumber('');
 
@@ -248,6 +307,18 @@ export default function OfflineVerification() {
                 <div class="field-value">${devotee.date}</div>
               </div>
             </div>
+            ${devotee.visitors && devotee.visitors.length > 0 ? `
+              <div style="border-top: 2px dashed #dbc2b0; padding-top: 12px; margin-bottom: 16px;">
+                <span class="field-label" style="display: block; margin-bottom: 8px;">Visitors Details</span>
+                <div style="display: grid; grid-template-cols: 1fr 1fr; gap: 8px;">
+                  ${devotee.visitors.map((v, i) => `
+                    <div style="font-size: 13px; color: #1a1c1c;">
+                      <strong>${i + 1}.</strong> ${v.name} (${v.age} yrs)
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
             <div class="qr-sec">
               <img class="qr-code" src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(qrData)}" />
               <div class="code">${devotee.code}</div>
@@ -283,6 +354,12 @@ export default function OfflineVerification() {
             <p><strong>Mobile:</strong> ${devotee.mobile}</p>
             <p><strong>Date:</strong> ${devotee.date}</p>
             <p><strong>Persons:</strong> ${devotee.persons}</p>
+            ${devotee.visitors && devotee.visitors.length > 0 ? `
+              <p><strong>Visitors:</strong></p>
+              <ul style="margin: 4px 0 12px 20px; font-size: 13px; line-height: 1.6;">
+                ${devotee.visitors.map(v => `<li>${v.name} (${v.age} yrs)</li>`).join('')}
+              </ul>
+            ` : ''}
             <p><strong>Vehicle:</strong> ${devotee.vehicleType} (${devotee.vehicleNumber || 'N/A'})</p>
             <p><strong>Code:</strong> ${devotee.code}</p>
             <div class="qr">
@@ -399,7 +476,7 @@ export default function OfflineVerification() {
                 <label className="text-label-sm font-label-sm text-on-surface-variant">{t('numberOfPersons')}</label>
                 <input 
                   value={formPersons}
-                  onChange={(e) => setFormPersons(Math.max(1, parseInt(e.target.value) || 1))}
+                  onChange={(e) => handlePersonsChange(e.target.value)}
                   className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2.5 text-body-md focus:ring-primary focus:border-primary outline-none" 
                   min="1" 
                   type="number"
@@ -439,6 +516,47 @@ export default function OfflineVerification() {
                   type="date"
                 />
               </div>
+              
+              {/* Dynamic Visitor Fields */}
+              <div className="md:col-span-2 space-y-4 border-t border-outline-variant pt-4">
+                <h4 className="text-sm font-bold text-primary">Visitor Details</h4>
+                {Array.from({ length: formPersons }).map((_, index) => (
+                  <div key={index} className="p-4 bg-surface-container-low border border-outline-variant rounded-lg space-y-4">
+                    <h5 className="font-bold text-xs text-on-surface-variant">Person {index + 1}</h5>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-on-surface-variant" htmlFor={`offline_visitor_name_${index}`}>Full Name</label>
+                        <input 
+                          className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 text-body-md focus:ring-primary focus:border-primary outline-none" 
+                          id={`offline_visitor_name_${index}`}
+                          name={`offline_visitor_name_${index}`}
+                          placeholder="Enter full name"
+                          required
+                          type="text"
+                          value={formVisitors[index]?.name || ''}
+                          onChange={(e) => handleVisitorChange(index, 'name', e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-on-surface-variant" htmlFor={`offline_visitor_age_${index}`}>Age</label>
+                        <input 
+                          className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg px-4 py-2 text-body-md focus:ring-primary focus:border-primary outline-none" 
+                          id={`offline_visitor_age_${index}`}
+                          name={`offline_visitor_age_${index}`}
+                          placeholder="Enter age"
+                          required
+                          type="number"
+                          min="1"
+                          max="120"
+                          value={formVisitors[index]?.age || ''}
+                          onChange={(e) => handleVisitorChange(index, 'age', e.target.value)}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
               <div className="md:col-span-2 pt-4">
                 <button 
                   type="submit"
@@ -537,6 +655,19 @@ export default function OfflineVerification() {
                   <span className="text-on-surface-variant text-body-md font-medium">{t('village') || 'Village'}</span>
                   <span className="font-bold text-on-surface">{currentDevotee.village}</span>
                 </div>
+                {currentDevotee.visitors && currentDevotee.visitors.length > 0 && (
+                  <div className="border-t border-outline-variant/30 pt-3 space-y-2">
+                    <span className="text-on-surface-variant text-[11px] font-bold uppercase tracking-wider block">Visitors Details</span>
+                    <div className="space-y-1.5">
+                      {currentDevotee.visitors.map((v, i) => (
+                        <div key={i} className="flex justify-between items-center text-sm font-semibold bg-surface-container-low px-3 py-1.5 rounded border border-outline-variant/35">
+                          <span className="text-on-surface">{v.name}</span>
+                          <span className="text-primary text-xs">{v.age} yrs</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex flex-col gap-3">
                 <button 
@@ -646,13 +777,29 @@ export default function OfflineVerification() {
                     <p className="text-xs text-on-surface-variant mb-0.5">{t('vehicleNumber') || 'Vehicle No.'}</p>
                     <p className="text-sm font-semibold">{registeredDevotee.vehicleNumber || 'N/A'}</p>
                   </div>
-                  <div>
+                   <div>
                     <p className="text-xs text-on-surface-variant mb-0.5">{t('persons')}</p>
                     <p className="text-sm font-semibold">{registeredDevotee.persons} (Adults)</p>
                   </div>
                   <div>
                     <p className="text-xs text-on-surface-variant mb-0.5">{t('darshanDateLabel')}</p>
                     <p className="text-sm font-semibold">{registeredDevotee.date}</p>
+                  </div>
+                  <div className="col-span-2 border-t border-outline-variant/30 pt-3">
+                    <p className="text-xs text-on-surface-variant mb-1">Visitor Details</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {registeredDevotee.visitors && registeredDevotee.visitors.length > 0 ? (
+                        registeredDevotee.visitors.map((v, i) => (
+                          <div key={i} className="text-sm font-semibold bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant/30">
+                            {v.name} ({v.age} yrs)
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-sm font-semibold bg-surface-container-low px-3 py-1.5 rounded-lg border border-outline-variant/30">
+                          {registeredDevotee.name}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 <div className="mt-6 pt-4 border-t border-dashed border-outline-variant flex gap-3">

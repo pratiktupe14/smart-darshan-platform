@@ -69,7 +69,7 @@ const translations = {
     notice3Desc: "We have launched a simplified portal for sponsoring meals for devotees. Contribute now.",
 
     // User Dashboard
-    welcomeUser: "Welcome back, Pratik Tupe",
+    welcomeUser: "Welcome back",
     darshanDate: "Darshan Date: Oct 24, 2026",
     currentStatus: "Current Status: Confirmed",
     digitalPass: "Digital Darshan Pass",
@@ -215,7 +215,7 @@ const translations = {
     gateNo: "Gate No.",
     verifyEntry: "Verify Entry",
     markInQueue: "Mark In Queue",
-    markEntered: "Mark Entered",
+    markEntered: "Darshan Completed",
     insideTemple: "Inside Temple",
     pending: "Pending",
     recentScans: "Recent Scans",
@@ -352,7 +352,7 @@ const translations = {
     notice3Desc: "हमने श्रद्धालुओं के लिए भोजन प्रायोजित करने के लिए एक सरल पोर्टल शुरू किया है। अभी योगदान दें।",
 
     // User Dashboard
-    welcomeUser: "वापसी पर स्वागत है, प्रतीक तुपे",
+    welcomeUser: "वापसी पर स्वागत है",
     darshanDate: "दर्शन तिथि: 24 अक्टूबर, 2026",
     currentStatus: "वर्तमान स्थिति: कन्फर्म",
     digitalPass: "डिजिटल दर्शन पास",
@@ -498,7 +498,7 @@ const translations = {
     gateNo: "गेट नंबर",
     verifyEntry: "प्रवेश सत्यापित करें",
     markInQueue: "कतार में चिह्नित करें",
-    markEntered: "प्रवेश चिह्नित करें",
+    markEntered: "दर्शन पूर्ण हुआ",
     insideTemple: "मंदिर के अंदर",
     pending: "लंबित",
     recentScans: "हाल के स्कैन",
@@ -635,7 +635,7 @@ const translations = {
     notice3Desc: "आम्ही भाविकांसाठी जेवण प्रायोजित करण्यासाठी एक सरलीकृत पोर्टल सुरू केले आहे. आता योगदान द्या.",
 
     // User Dashboard
-    welcomeUser: "परत आल्याबद्दल स्वागत, प्रतीक तुपे",
+    welcomeUser: "परत आल्याबद्दल स्वागत",
     darshanDate: "दर्शनाची तारीख: 24 ऑक्टोबर, 2026",
     currentStatus: "सध्याची स्थिती: निश्चित",
     digitalPass: "डिजिटल दर्शन पास",
@@ -781,7 +781,7 @@ const translations = {
     gateNo: "गेट क्रमांक",
     verifyEntry: "प्रवेश पडताळा",
     markInQueue: "रांगेत असल्याचे नोंदवा",
-    markEntered: "प्रवेश केल्याचे नोंदवा",
+    markEntered: "दर्शन पूर्ण झाले",
     insideTemple: "मंदिराच्या आत",
     pending: "प्रलंबित",
     recentScans: "अलीकडील स्कॅन",

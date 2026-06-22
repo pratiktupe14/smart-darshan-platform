@@ -1,18 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import { useUser } from '../../context/UserContext';
 
 export default function Profile() {
   const navigate = useNavigate();
   const { t, currentLanguage, setLanguage } = useLanguage();
+  const { user, updateUser, logoutUser } = useUser();
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    fullName: '',
+    mobileNumber: '',
+    placeCityVillage: '',
+  });
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || '',
+        mobileNumber: user.mobileNumber || '',
+        placeCityVillage: user.placeCityVillage || '',
+      });
+      if (user.preferredLanguage && user.preferredLanguage !== currentLanguage) {
+        setLanguage(user.preferredLanguage);
+      }
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     if (window.confirm(t('confirmLogout'))) {
-      localStorage.clear();
-      sessionStorage.clear();
+      logoutUser();
       navigate('/login');
     }
   };
+
+  const handleInputChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSave = async () => {
+    try {
+      await updateUser({ ...formData, preferredLanguage: currentLanguage });
+      setIsEditing(false);
+    } catch (err) {
+      alert('Failed to update profile');
+    }
+  };
+
+  const memberSince = user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently';
 
   return (
     <main className="pt-8 pb-12 px-4 md:px-10 max-w-[1280px] mx-auto w-full">
@@ -32,23 +67,45 @@ export default function Profile() {
                 <img 
                   className="w-32 h-32 rounded-full border-4 border-primary-fixed shadow-md object-cover" 
                   alt="Profile" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuCQ8B_WS1S_AMXodk0VLAB4geE2PZA-lEYEUVBWpW-AW4i04SQPFkeXEYLdJ-1e7_kfdw8GELH-5Q7JDI_yf2qa85jKC-J-RJQZMVjLNupT8SNQu_T4QwSO3AdMqcnd44bQo636Z4mKTxVdm0YzCkv1AdR9Nvnvx5kn2dD5ibBRBqZRKz_p3cMZJdTr_bCNe1_ue5lghQRhBY38E_friMSu-sd3YuQ1XClNWf2CqNTqjvRW3zf_YLZ6AJb0rF3UawOEOL7MXkT4Ci4"
+                  src={user?.profilePhoto || "https://lh3.googleusercontent.com/aida-public/AB6AXuCQ8B_WS1S_AMXodk0VLAB4geE2PZA-lEYEUVBWpW-AW4i04SQPFkeXEYLdJ-1e7_kfdw8GELH-5Q7JDI_yf2qa85jKC-J-RJQZMVjLNupT8SNQu_T4QwSO3AdMqcnd44bQo636Z4mKTxVdm0YzCkv1AdR9Nvnvx5kn2dD5ibBRBqZRKz_p3cMZJdTr_bCNe1_ue5lghQRhBY38E_friMSu-sd3YuQ1XClNWf2CqNTqjvRW3zf_YLZ6AJb0rF3UawOEOL7MXkT4Ci4"}
                 />
                 <button className="absolute bottom-1 right-1 bg-primary text-white p-2 rounded-full shadow-lg hover:bg-primary-container transition-colors">
                   <span className="material-symbols-outlined text-sm">edit</span>
                 </button>
               </div>
-              <h2 className="text-xl font-semibold mb-1">Pratik Tupe</h2>
-              <span className="bg-secondary-fixed px-3 py-1 rounded-full text-xs font-medium text-on-secondary-fixed mb-4">#SD-88291</span>
-              <p className="text-xs text-on-surface-variant mb-6">Member since Oct 2023</p>
+              <h2 className="text-xl font-semibold mb-1">{user?.fullName || 'Guest'}</h2>
+              <span className="bg-secondary-fixed px-3 py-1 rounded-full text-xs font-medium text-on-secondary-fixed mb-4">#{user?._id?.substring(0, 8).toUpperCase() || 'SD-88291'}</span>
+              <p className="text-xs text-on-surface-variant mb-6">Member since {memberSince}</p>
               
               <div className="flex flex-col w-full gap-3">
-                <button className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-container transition-colors shadow-sm active:scale-95">
-                  Edit Profile
-                </button>
-                <button className="w-full py-3 border-2 border-primary text-primary rounded-xl font-semibold hover:bg-surface-container transition-colors active:scale-95">
-                  Change Photo
-                </button>
+                {!isEditing ? (
+                  <button 
+                    onClick={() => setIsEditing(true)}
+                    className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-container transition-colors shadow-sm active:scale-95"
+                  >
+                    Edit Profile
+                  </button>
+                ) : (
+                  <button 
+                    onClick={handleSave}
+                    className="w-full py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-sm active:scale-95"
+                  >
+                    Save Changes
+                  </button>
+                )}
+                {isEditing && (
+                  <button 
+                    onClick={() => setIsEditing(false)}
+                    className="w-full py-3 border-2 border-outline-variant text-on-surface rounded-xl font-semibold hover:bg-surface-container transition-colors active:scale-95"
+                  >
+                    Cancel
+                  </button>
+                )}
+                {!isEditing && (
+                  <button className="w-full py-3 border-2 border-primary text-primary rounded-xl font-semibold hover:bg-surface-container transition-colors active:scale-95">
+                    Change Photo
+                  </button>
+                )}
               </div>
             </div>
           </section>
@@ -115,19 +172,48 @@ export default function Profile() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-on-surface-variant">Full Name</label>
-                <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">Pratik Tupe</div>
+                {isEditing ? (
+                  <input 
+                    name="fullName"
+                    value={formData.fullName}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white rounded-lg border border-primary text-on-surface outline-none"
+                  />
+                ) : (
+                  <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">{user?.fullName || '-'}</div>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-on-surface-variant">Mobile Number</label>
-                <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">+91 98765 43210</div>
+                {isEditing ? (
+                  <input 
+                    name="mobileNumber"
+                    value={formData.mobileNumber}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white rounded-lg border border-primary text-on-surface outline-none"
+                  />
+                ) : (
+                  <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">{user?.mobileNumber || '-'}</div>
+                )}
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-on-surface-variant">Current City</label>
-                <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">Pune, Maharashtra</div>
+                <label className="text-sm font-semibold text-on-surface-variant">Current City/Place</label>
+                {isEditing ? (
+                  <input 
+                    name="placeCityVillage"
+                    value={formData.placeCityVillage}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 bg-white rounded-lg border border-primary text-on-surface outline-none"
+                  />
+                ) : (
+                  <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">{user?.placeCityVillage || '-'}</div>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-on-surface-variant">Communication Language</label>
-                <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">English</div>
+                <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">
+                  {currentLanguage === 'en' ? 'English' : currentLanguage === 'hi' ? 'Hindi' : 'Marathi'}
+                </div>
               </div>
             </div>
           </section>
@@ -249,7 +335,12 @@ export default function Profile() {
               <div className="relative max-w-xs">
                 <select 
                   value={currentLanguage}
-                  onChange={(e) => setLanguage(e.target.value)}
+                  onChange={(e) => {
+                    setLanguage(e.target.value);
+                    if (user) {
+                      updateUser({ preferredLanguage: e.target.value });
+                    }
+                  }}
                   className="w-full appearance-none bg-surface-container-low border border-outline-variant rounded-xl px-4 py-3 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer font-medium"
                 >
                   <option value="en">English (US)</option>

@@ -1,29 +1,25 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useUser } from '../../context/UserContext';
 
 export default function UserQueueStatus() {
   const { t } = useLanguage();
+  const { user } = useUser();
   const [queueInfo, setQueueInfo] = useState({
     currentServingToken: 'None',
     userTokenNumber: 'N/A',
     position: 0,
     estWait: 0,
     progress: 0,
+    currentStage: 1,
     nextTokens: []
   });
 
   useEffect(() => {
     const fetchData = async () => {
-      const userStr = localStorage.getItem('user');
-      let currentUser = {};
-      if (userStr) {
-        try {
-          currentUser = JSON.parse(userStr);
-        } catch (e) {}
-      }
-      if (!currentUser.mobile && !currentUser._id) return;
+      if (!user || (!user.mobile && !user._id)) return;
       try {
-        const identifier = currentUser._id || currentUser.mobile;
+        const identifier = user._id || user.mobile;
         const res = await fetch(`http://localhost:5000/api/bookings/user/${identifier}`);
         if (res.ok) {
           const bookings = await res.json();
@@ -44,12 +40,44 @@ export default function UserQueueStatus() {
               }
           }
           
+          let currentStage = 1;
+          let progress = 25;
+
+          if (active) {
+            const status = active.verificationStatus || 'none';
+            if (status === 'verified_entry') {
+              currentStage = 2;
+              progress = 50;
+            } else if (status === 'in_queue') {
+              currentStage = 3;
+              if (userToken && userToken.status === 'serving') {
+                progress = 85;
+              } else {
+                const scaledProgress = pos > 0 ? Math.max(60, Math.min(80, 85 - pos * 2)) : 75;
+                progress = scaledProgress;
+              }
+            } else if (status === 'completed') {
+              currentStage = 4;
+              progress = 100;
+            } else {
+              currentStage = 1;
+              progress = 25;
+            }
+          } else {
+            const completedBooking = bookings.find(b => b.status === 'completed' || b.verificationStatus === 'completed');
+            if (completedBooking) {
+              currentStage = 4;
+              progress = 100;
+            }
+          }
+          
           setQueueInfo({
               currentServingToken: currentServing.length > 0 ? currentServing[0].tokenNumber : 'None',
               userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
               position: pos,
               estWait: pos * 2,
-              progress: pos === 0 ? (userToken && userToken.status === 'serving' ? 100 : 0) : Math.max(10, 100 - (pos * 5)),
+              progress: progress,
+              currentStage: currentStage,
               nextTokens: waitingQueue.slice(0, 5).map(q => q.tokenNumber)
           });
         }
@@ -62,7 +90,7 @@ export default function UserQueueStatus() {
     const timer = setInterval(fetchData, 10000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [user]);
 
   return (
     <main className="max-w-[1280px] mx-auto px-4 md:px-10 py-8 space-y-8 w-full">
@@ -118,45 +146,52 @@ export default function UserQueueStatus() {
               
               {/* Steps */}
               <div className="relative flex justify-between">
-                {/* Step 1 */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md z-10">
-                    <span className="material-symbols-outlined text-sm font-bold">check</span>
-                  </div>
-                  <span className="text-xs font-bold text-on-surface text-center">Booked</span>
-                </div>
-                
-                {/* Step 2 */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md z-10">
-                    <span className="material-symbols-outlined text-sm font-bold">check</span>
-                  </div>
-                  <span className="text-xs font-bold text-on-surface text-center">Entered</span>
-                </div>
-                
-                {/* Step 3 (Active) */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-10 h-10 -mt-1 rounded-full bg-white border-4 border-primary text-primary flex items-center justify-center shadow-lg z-10 animate-pulse">
-                    <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>hourglass_top</span>
-                  </div>
-                  <span className="text-sm font-black text-primary text-center">In Queue</span>
-                </div>
-                
-                {/* Step 4 */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center z-10">
-                    <span className="text-xs font-bold">4</span>
-                  </div>
-                  <span className="text-xs font-medium text-on-surface-variant text-center">Your Turn</span>
-                </div>
-                
-                {/* Step 5 */}
-                <div className="flex flex-col items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center z-10">
-                    <span className="material-symbols-outlined text-sm">temple_hindu</span>
-                  </div>
-                  <span className="text-xs font-medium text-on-surface-variant text-center">Darshan</span>
-                </div>
+                {[
+                  { id: 1, label: "Booking Confirmed", icon: "confirmation_number", pendingText: "1" },
+                  { id: 2, label: "Temple Entry", icon: "login", pendingText: "2" },
+                  { id: 3, label: "Waiting in Queue", icon: "hourglass_top", pendingText: "3" },
+                  { id: 4, label: "Darshan Completed", icon: "temple_hindu", pendingText: "temple_hindu" }
+                ].map((step) => {
+                  const isCompleted = queueInfo.currentStage > step.id;
+                  const isActive = queueInfo.currentStage === step.id;
+                  
+                  if (isCompleted) {
+                    return (
+                      <div key={step.id} className="flex flex-col items-center gap-3 w-24">
+                        <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md z-10">
+                          <span className="material-symbols-outlined text-sm font-bold">check</span>
+                        </div>
+                        <span className="text-xs font-bold text-on-surface text-center">{step.label}</span>
+                      </div>
+                    );
+                  } else if (isActive) {
+                    return (
+                      <div key={step.id} className="flex flex-col items-center gap-3 w-24">
+                        <div className="w-10 h-10 -mt-1 rounded-full bg-white border-4 border-primary text-primary flex items-center justify-center shadow-lg z-10 animate-pulse">
+                          {step.id === 4 ? (
+                            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>{step.icon}</span>
+                          ) : (
+                            <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>hourglass_top</span>
+                          )}
+                        </div>
+                        <span className="text-sm font-black text-primary text-center">{step.label}</span>
+                      </div>
+                    );
+                  } else {
+                    return (
+                      <div key={step.id} className="flex flex-col items-center gap-3 w-24">
+                        <div className="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center z-10">
+                          {step.pendingText === "temple_hindu" ? (
+                            <span className="material-symbols-outlined text-sm">temple_hindu</span>
+                          ) : (
+                            <span className="text-xs font-bold">{step.pendingText}</span>
+                          )}
+                        </div>
+                        <span className="text-xs font-medium text-on-surface-variant text-center">{step.label}</span>
+                      </div>
+                    );
+                  }
+                })}
               </div>
             </div>
           </div>

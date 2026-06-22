@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
+import { useUser } from '../context/UserContext';
 
 export default function DashboardLayout() {
   const location = useLocation();
@@ -8,25 +9,8 @@ export default function DashboardLayout() {
   const { t, currentLanguage, setLanguage } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '');
-  const [userName, setUserName] = useState('');
-
-  useEffect(() => {
-    const fetchUser = () => {
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        try {
-          const userObj = JSON.parse(userStr);
-          if (userObj.fullName) setUserName(userObj.fullName);
-          if (userObj.role) {
-             setUserRole(userObj.role);
-             localStorage.setItem('userRole', userObj.role);
-          }
-        } catch(e) {}
-      }
-    };
-    fetchUser();
-  }, []);
+  const { user, userRole, logoutUser } = useUser();
+  const userName = user?.fullName || '';
 
   const isAdminView = location.pathname.startsWith('/dashboard/admin') || 
                       location.pathname.startsWith('/dashboard/capacity') || 
@@ -39,14 +23,13 @@ export default function DashboardLayout() {
 
   const handleLogout = () => {
     if (window.confirm(t('confirmLogout'))) {
-      localStorage.clear();
-      sessionStorage.clear();
+      logoutUser();
       navigate('/login');
     }
   };
 
   const getLinkClasses = (path) => {
-    const isActive = location.pathname === path || (path !== '/dashboard' && location.pathname.startsWith(path));
+    const isActive = location.pathname === path || (path !== '/dashboard' && path !== '/dashboard/admin' && location.pathname.startsWith(path));
     return `flex items-center gap-3 px-4 py-3 rounded-lg font-bold font-label-md text-label-md transition-all ${
       isActive
         ? 'bg-secondary-container text-on-secondary-container active:scale-[0.98]'
@@ -61,7 +44,7 @@ export default function DashboardLayout() {
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-10 h-16 bg-surface border-b border-outline-variant">
         <div className="flex items-center gap-4">
           <span className="text-xl md:text-2xl font-bold text-primary">
-            {isAdminView ? t('welcomeAdmin') : `Welcome back, ${userName || 'User'}`}
+            {isAdminView ? t('welcomeAdmin') : `${t('welcomeUser')}, ${userName || 'User'}`}
           </span>
         </div>
         <div className="flex items-center gap-2 md:gap-6">
@@ -137,10 +120,6 @@ export default function DashboardLayout() {
                 <span className="material-symbols-outlined">dashboard</span>
                 <span className="text-sm">{t('dashboard')}</span>
               </Link>
-              <a className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all font-bold font-label-md text-label-md" href="#">
-                <span className="material-symbols-outlined">calendar_month</span>
-                <span className="text-sm">{t('bookings')}</span>
-              </a>
 
               <Link to="/dashboard/committee" className={getLinkClasses('/dashboard/committee')}>
                 <span className="material-symbols-outlined">groups</span>
@@ -170,7 +149,7 @@ export default function DashboardLayout() {
                 <span className="material-symbols-outlined">person</span>
                 <span className="text-sm">{t('userManagement')}</span>
               </a>
-              <Link to="/dashboard/announcements" className={getLinkClasses('/dashboard/announcements')}>
+              <Link to="/dashboard/admin/announcements" className={getLinkClasses('/dashboard/admin/announcements')}>
                 <span className="material-symbols-outlined">campaign</span>
                 <span className="text-sm">{t('announcements')}</span>
               </Link>
@@ -182,10 +161,6 @@ export default function DashboardLayout() {
                 <span className="material-symbols-outlined">analytics</span>
                 <span className="text-sm">{t('reportsAnalytics')}</span>
               </Link>
-              <a className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all font-bold font-label-md text-label-md" href="#">
-                <span className="material-symbols-outlined">notifications</span>
-                <span className="text-sm">{t('notifications')}</span>
-              </a>
               <a className="flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high rounded-lg transition-all font-bold font-label-md text-label-md" href="#">
                 <span className="material-symbols-outlined">settings</span>
                 <span className="text-sm">{t('settings')}</span>

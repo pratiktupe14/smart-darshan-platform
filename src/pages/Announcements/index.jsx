@@ -1,37 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useUser } from '../../context/UserContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 export default function Announcements() {
   const { t } = useLanguage();
+  const { user, userRole } = useUser();
   const [announcements, setAnnouncements] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('create'); // 'create' or 'edit'
   const [editingId, setEditingId] = useState(null);
   const [newTitle, setNewTitle] = useState('');
   const [newContent, setNewContent] = useState('');
-  const [userRole, setUserRole] = useState(() => localStorage.getItem('userRole') || '');
-
-  // Fetch user role from localStorage
-  useEffect(() => {
-    const fetchUser = async () => {
-      const localRole = localStorage.getItem('userRole');
-      if (localRole) {
-        setUserRole(localRole);
-      }
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        try {
-          const userObj = JSON.parse(userStr);
-          if (userObj.role) {
-             setUserRole(userObj.role);
-             localStorage.setItem('userRole', userObj.role);
-          }
-        } catch(e) {}
-      }
-    };
-    fetchUser();
-  }, []);
 
   // Helper to load/save mock local storage data
   const getInitialAnnouncements = () => {

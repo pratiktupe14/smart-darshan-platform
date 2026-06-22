@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import QRCode from 'react-qr-code';
+import { jsPDF } from 'jspdf';
+import QRCodeBrowser from 'qrcode';
 import { useLanguage } from '../../context/LanguageContext';
+import { useUser } from '../../context/UserContext';
 
 export default function MyPass() {
   const { t } = useLanguage();
-  const [user, setUser] = useState({});
+  const { user } = useUser();
   const [activeBooking, setActiveBooking] = useState(null);
   const [passHistory, setPassHistory] = useState([]);
   const [queueInfo, setQueueInfo] = useState({
@@ -15,19 +18,10 @@ export default function MyPass() {
   });
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    let currentUser = {};
-    if (userStr) {
-      try {
-        currentUser = JSON.parse(userStr);
-        setUser(currentUser);
-      } catch (e) {}
-    }
-
     const fetchData = async () => {
-      if (!currentUser.mobile && !currentUser._id) return;
+      if (!user || (!user.mobile && !user._id)) return;
       try {
-        const identifier = currentUser._id || currentUser.mobile;
+        const identifier = user._id || user.mobile;
         const res = await fetch(`http://localhost:5000/api/bookings/user/${identifier}`);
         if (res.ok) {
           const bookings = await res.json();
@@ -69,7 +63,100 @@ export default function MyPass() {
     const timer = setInterval(fetchData, 10000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [user]);
+
+  const downloadPDF = async () => {
+    if (!activeBooking) {
+      alert("No active booking found to download.");
+      return;
+    }
+    
+    try {
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      doc.setFontSize(24);
+      doc.setTextColor(0, 0, 0);
+      doc.text("Sri Meenakshi Temple", 105, 25, { align: "center" });
+      
+      doc.setFontSize(16);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Darshan Digital Pass", 105, 35, { align: "center" });
+      
+      // Generate QR Code
+      const qrData = JSON.stringify({ 
+        token: queueInfo.userTokenNumber, 
+        bookingId: activeBooking._id, 
+        name: activeBooking.fullName, 
+        mobile: activeBooking.mobile 
+      });
+      const qrImageURL = await QRCodeBrowser.toDataURL(qrData, { width: 200, margin: 1 });
+      
+      doc.addImage(qrImageURL, 'PNG', 75, 45, 60, 60);
+      
+      doc.setFontSize(16);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Token Number: #${queueInfo.userTokenNumber}`, 105, 115, { align: "center" });
+      
+      // Divider
+      doc.setLineWidth(0.5);
+      doc.line(20, 125, 190, 125);
+      
+      // Details
+      doc.setFontSize(12);
+      const startY = 140;
+      const lineHeight = 10;
+      
+      doc.setFont(undefined, 'bold');
+      doc.text("Devotee Name:", 20, startY);
+      doc.setFont(undefined, 'normal');
+      doc.text(`${activeBooking.fullName || user?.fullName || 'N/A'}`, 60, startY);
+      
+      doc.setFont(undefined, 'bold');
+      doc.text("Mobile Number:", 20, startY + lineHeight * 1);
+      doc.setFont(undefined, 'normal');
+      doc.text(`${activeBooking.mobile || user?.mobile || 'N/A'}`, 60, startY + lineHeight * 1);
+      
+      doc.setFont(undefined, 'bold');
+      doc.text("Vehicle No:", 20, startY + lineHeight * 2);
+      doc.setFont(undefined, 'normal');
+      doc.text(`${activeBooking.vehicleNumber || 'None'}`, 60, startY + lineHeight * 2);
+      
+      doc.setFont(undefined, 'bold');
+      doc.text("Vehicle Type:", 20, startY + lineHeight * 3);
+      doc.setFont(undefined, 'normal');
+      doc.text(`${activeBooking.vehicleType || 'None'}`, 60, startY + lineHeight * 3);
+      
+      doc.setFont(undefined, 'bold');
+      doc.text("Persons:", 20, startY + lineHeight * 4);
+      doc.setFont(undefined, 'normal');
+      doc.text(`${activeBooking.persons || 1}`, 60, startY + lineHeight * 4);
+      
+      doc.setFont(undefined, 'bold');
+      doc.text("Date & Time:", 20, startY + lineHeight * 5);
+      doc.setFont(undefined, 'normal');
+      doc.text(`${new Date(activeBooking.darshanDate).toLocaleString()}`, 60, startY + lineHeight * 5);
+      
+      doc.setFont(undefined, 'bold');
+      doc.text("Darshan Status:", 20, startY + lineHeight * 6);
+      doc.setFont(undefined, 'normal');
+      doc.text(`${(activeBooking.status || 'Active').toUpperCase()}`, 60, startY + lineHeight * 6);
+      
+      // Footer
+      doc.setFontSize(10);
+      doc.setTextColor(150, 150, 150);
+      doc.text("Please present this QR code at the temple entry gate.", 105, 280, { align: "center" });
+      
+      doc.save(`Darshan_Pass_${activeBooking._id}.pdf`);
+      alert("Success: Digital pass downloaded successfully!");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      alert("Error: Failed to generate PDF. Please try again.");
+    }
+  };
 
   return (
     <main className="max-w-7xl mx-auto px-4 md:px-10 py-8 md:py-12 w-full">
@@ -118,11 +205,11 @@ export default function MyPass() {
                 <div className="grid grid-cols-2 gap-y-4 gap-x-6">
                   <div>
                     <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t('devoteeName')}</p>
-                    <p className="text-base font-semibold">{activeBooking ? activeBooking.fullName : user.fullName || 'User'}</p>
+                    <p className="text-base font-semibold">{activeBooking ? activeBooking.fullName : (user?.fullName || 'User')}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Email / Contact</p>
-                    <p className="text-base font-semibold">{activeBooking ? activeBooking.mobile : user.mobile || 'N/A'}</p>
+                    <p className="text-base font-semibold">{activeBooking ? activeBooking.mobile : (user?.mobileNumber || user?.mobile || 'N/A')}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Vehicle No</p>
@@ -140,7 +227,10 @@ export default function MyPass() {
 
                 <div className="dash-line pt-6 border-t border-dashed border-outline-variant">
                   <div className="flex flex-wrap gap-2">
-                    <button className="flex items-center gap-1 bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md">
+                    <button 
+                      onClick={downloadPDF}
+                      className="flex items-center gap-1 bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md"
+                    >
                       <span className="material-symbols-outlined text-[18px]">download</span>
                       Download PDF
                     </button>

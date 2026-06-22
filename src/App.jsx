@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { UserProvider } from './context/UserContext';
 import MainLayout from './layouts/MainLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 import Home from './pages/Home';
@@ -24,38 +25,41 @@ import VIPManagement from './pages/VIPManagement';
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<MainLayout />}>
-          <Route index element={<Home />} />
-        </Route>
-        <Route path="/login" element={<Login />} />
-        <Route path="/dashboard/committee" element={<CommitteeDashboardLayout />}>
-          <Route index element={<CommitteeDashboard />} />
-          <Route path="dashboard" element={<CommitteeOperationsOverview />} />
-          <Route path="scanner" element={<Scanner />} />
-          <Route path="scanner-verification" element={<OfflineVerification />} />
-          <Route path="parking" element={<Parking />} />
-          <Route path="announcements" element={<Announcements />} />
-        </Route>
-        <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="admin" element={<AdminDashboard />} />
-          <Route path="capacity" element={<CapacityManagement />} />
-          <Route path="vip" element={<VIPManagement />} />
-          <Route path="book" element={<BookDarshan />} />
+    <UserProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            <Route index element={<Home />} />
+          </Route>
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard/committee" element={<CommitteeDashboardLayout />}>
+            <Route index element={<CommitteeDashboard />} />
+            <Route path="dashboard" element={<CommitteeOperationsOverview />} />
+            <Route path="scanner" element={<Scanner />} />
+            <Route path="scanner-verification" element={<OfflineVerification />} />
+            <Route path="parking" element={<Parking />} />
+            <Route path="announcements" element={<Announcements />} />
+          </Route>
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="admin" element={<AdminDashboard />} />
+            <Route path="admin/announcements" element={<Announcements />} />
+            <Route path="capacity" element={<CapacityManagement />} />
+            <Route path="vip" element={<VIPManagement />} />
+            <Route path="book" element={<BookDarshan />} />
 
 
-          <Route path="analytics" element={<Analytics />} />
-          <Route path="pass" element={<MyPass />} />
-          <Route path="user-queue" element={<UserQueueStatus />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="announcements" element={<Announcements />} />
-          <Route path="scanner" element={<Scanner />} />
-          <Route path="parking" element={<Parking />} />
-        </Route>
-      </Routes>
-    </Router>
+            <Route path="analytics" element={<Analytics />} />
+            <Route path="pass" element={<MyPass />} />
+            <Route path="user-queue" element={<UserQueueStatus />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="announcements" element={<Announcements />} />
+            <Route path="scanner" element={<Scanner />} />
+            <Route path="parking" element={<Parking />} />
+          </Route>
+        </Routes>
+      </Router>
+    </UserProvider>
   );
 }
 

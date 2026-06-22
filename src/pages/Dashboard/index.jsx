@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import QRCode from 'react-qr-code';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import { useUser } from '../../context/UserContext';
 
 export default function Dashboard() {
   const { t } = useLanguage();
+  const { user } = useUser();
 
   const [progress, setProgress] = useState(0);
-  const [user, setUser] = useState({});
   const [activeBooking, setActiveBooking] = useState(null);
   const [queueInfo, setQueueInfo] = useState({
     currentServingToken: 'None',
@@ -17,19 +18,10 @@ export default function Dashboard() {
   });
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
-    let currentUser = {};
-    if (userStr) {
-      try {
-        currentUser = JSON.parse(userStr);
-        setUser(currentUser);
-      } catch(e) {}
-    }
-
     const fetchData = async () => {
-      if (!currentUser.mobile && !currentUser._id) return;
+      if (!user || (!user.mobile && !user._id)) return;
       try {
-        const identifier = currentUser._id || currentUser.mobile;
+        const identifier = user._id || user.mobile;
         const res = await fetch(`http://localhost:5000/api/bookings/user/${identifier}`);
         if(res.ok) {
             const bookings = await res.json();
@@ -54,7 +46,25 @@ export default function Dashboard() {
                 }
             }
             
-            const currProgress = pos === 0 ? (userToken && userToken.status === 'serving' ? 100 : 0) : Math.max(10, 100 - (pos * 5));
+            let currProgress = 25;
+            if (active) {
+              const status = active.verificationStatus || 'none';
+              if (status === 'verified_entry') {
+                currProgress = 50;
+              } else if (status === 'in_queue') {
+                currProgress = pos === 0 ? (userToken && userToken.status === 'serving' ? 85 : 75) : Math.max(60, 100 - (pos * 5));
+              } else if (status === 'completed') {
+                currProgress = 100;
+              } else {
+                currProgress = 25;
+              }
+            } else {
+              const completedBooking = bookings.find(b => b.status === 'completed' || b.verificationStatus === 'completed');
+              if (completedBooking) {
+                currProgress = 100;
+              }
+            }
+
             setQueueInfo({
                 currentServingToken: currentServing.length > 0 ? currentServing[0].tokenNumber : 'None',
                 userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
@@ -72,14 +82,14 @@ export default function Dashboard() {
     const timer = setInterval(fetchData, 10000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [user]);
 
   return (
     <main className="px-4 md:px-10 pb-12 pt-8 md:pt-16 max-w-[1600px] mx-auto w-full">
       {/* Welcome Section */}
       <section className="mb-8 md:mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div className="space-y-2">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary leading-tight">Welcome back, {user.fullName || 'User'}</h1>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-primary leading-tight">Welcome back, {user?.fullName || 'User'}</h1>
           <div className="flex flex-wrap items-center gap-2 md:gap-3">
             <span className="px-3 py-1 bg-surface-container-highest text-primary text-xs md:text-sm font-medium rounded-full flex items-center gap-1">
               <span className="material-symbols-outlined text-[18px]">calendar_today</span>
@@ -117,7 +127,7 @@ export default function Dashboard() {
               <div className="flex justify-between items-start mb-6 gap-4">
                 <div>
                   <p className="text-[10px] md:text-xs text-on-surface-variant uppercase tracking-wider mb-1">{t('devoteeName')}</p>
-                  <p className="text-lg md:text-xl font-bold text-on-surface">{activeBooking ? activeBooking.fullName : user.fullName || 'User'}</p>
+                  <p className="text-lg md:text-xl font-bold text-on-surface">{activeBooking ? activeBooking.fullName : (user?.fullName || 'User')}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-[10px] md:text-xs text-on-surface-variant uppercase tracking-wider mb-1">{t('tokenId')}</p>
@@ -127,7 +137,7 @@ export default function Dashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 md:gap-y-6 gap-x-4">
                 <div>
                   <p className="text-xs text-on-surface-variant mb-0.5 md:mb-1">{t('mobile')}</p>
-                  <p className="text-sm md:text-base font-semibold">{activeBooking ? activeBooking.mobile : user.mobile || 'N/A'}</p>
+                  <p className="text-sm md:text-base font-semibold">{activeBooking ? activeBooking.mobile : (user?.mobileNumber || user?.mobile || 'N/A')}</p>
                 </div>
                 <div>
                   <p className="text-xs text-on-surface-variant mb-0.5 md:mb-1">Vehicle No.</p>

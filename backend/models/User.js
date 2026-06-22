@@ -21,6 +21,22 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  mobileNumber: {
+    type: String,
+    required: false,
+  },
+  profilePhoto: {
+    type: String,
+    required: false,
+  },
+  placeCityVillage: {
+    type: String,
+    required: false,
+  },
+  preferredLanguage: {
+    type: String,
+    default: 'en',
+  },
   createdAt: {
     type: Date,
     default: Date.now,

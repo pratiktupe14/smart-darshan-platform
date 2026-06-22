@@ -528,7 +528,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <Link to="/dashboard/announcements" className="bg-surface-container-low p-4 rounded-xl border border-outline-variant hover:border-primary transition-all duration-200 cursor-pointer group flex flex-col justify-between">
+          <Link to="/dashboard/admin/announcements" className="bg-surface-container-low p-4 rounded-xl border border-outline-variant hover:border-primary transition-all duration-200 cursor-pointer group flex flex-col justify-between">
             <div className="w-10 h-10 rounded-lg bg-white shadow-sm flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
               <span className="material-symbols-outlined text-primary">notification_add</span>
             </div>
