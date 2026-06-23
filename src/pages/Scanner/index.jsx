@@ -1,12 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useOutletContext } from 'react-router-dom';
+import { useOutletContext, useParams } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import { useUser } from '../../context/UserContext';
 import jsQR from 'jsqr';
 
 export default function Scanner() {
   const { t } = useLanguage();
+  const { user } = useUser();
+  const { counterId } = useParams();
   const context = useOutletContext();
   const showToast = context && context.showToast ? context.showToast : (msg) => alert(msg);
+
+  // Dynamic titles/subtitles based on counterId
+  let pageTitle = t('qrScannerTitle') || 'QR Scanner & Visitor Verification';
+  let pageSubtitle = t('qrScannerSubtitle') || 'Scan devotee QR codes for instant darshan verification and real-time entry tracking.';
+
+  if (counterId === '1') {
+    pageTitle = 'Counter 1 – Temple Entry';
+    pageSubtitle = 'Scan QR Code or Enter Token Number to verify devotee entry into the temple.';
+  } else if (counterId === '2') {
+    pageTitle = 'Counter 2 – Queue Management';
+    pageSubtitle = 'Scan QR Code or Enter Token Number to mark devotee in queue.';
+  } else if (counterId === '3') {
+    pageTitle = 'Counter 3 – Darshan Completion';
+    pageSubtitle = 'Scan QR Code or Enter Token Number to mark devotee darshan as completed.';
+  }
 
   // Search input states
   const [searchToken, setSearchToken] = useState('');
@@ -43,7 +61,10 @@ export default function Scanner() {
       const res = await fetch('http://localhost:5000/api/bookings/verify-scanner', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ query: queryVal.trim() })
+        body: JSON.stringify({
+          query: queryVal.trim(),
+          counterNumber: counterId ? parseInt(counterId) : undefined
+        })
       });
       const data = await res.json();
       if (res.ok) {
@@ -66,11 +87,58 @@ export default function Scanner() {
         };
         setRecentScansList(prev => [newScan, ...prev.slice(0, 4)]);
       } else {
+        setScannedDevotee(null); // Clear previous visitor data if search/validation fails
         showToast(data.error || 'Verification failed.');
       }
     } catch (err) {
       console.error(err);
+      setScannedDevotee(null);
       showToast('Server Error during verification.');
+    }
+  };
+
+  const handleCounterAction = async (counterNum) => {
+    if (!scannedDevotee) return;
+    try {
+      console.log(`[Scanner] Sending counter action ${counterNum} for booking:`, scannedDevotee._id);
+      const res = await fetch('http://localhost:5000/api/bookings/verify-scanner/action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          bookingId: scannedDevotee._id,
+          counterNumber: counterNum,
+          staffName: user?.fullName || 'Staff Member'
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setScannedDevotee(null); // Clear details for the next visitor
+        setSearchToken('');
+        setSearchMobile('');
+        setSearchVehicle('');
+        showToast(data.message);
+
+        // Add to recent scans
+        const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const statusMap = {
+          'verified_entry': 'Verified',
+          'in_queue': 'In Queue',
+          'completed': 'Completed'
+        };
+        const newScan = {
+          name: data.booking.fullName,
+          persons: data.booking.persons,
+          time: nowTime,
+          status: statusMap[data.booking.verificationStatus] || 'Verified',
+          gate: data.booking.gateNo || 'Gate 1'
+        };
+        setRecentScansList(prev => [newScan, ...prev.slice(0, 4)]);
+      } else {
+        showToast(data.error || 'Failed to update counter status.');
+      }
+    } catch (err) {
+      console.error(err);
+      showToast('Error sending counter action.');
     }
   };
 
@@ -226,8 +294,8 @@ export default function Scanner() {
     <div className="flex flex-col gap-8 max-w-7xl mx-auto w-full pb-20">
       {/* Page Header */}
       <section className="flex flex-col gap-1">
-        <h2 className="text-2xl md:text-3xl font-bold text-on-surface">{t('qrScannerTitle')}</h2>
-        <p className="text-on-surface-variant text-base max-w-2xl">{t('qrScannerSubtitle')}</p>
+        <h2 className="text-2xl md:text-3xl font-bold text-on-surface">{pageTitle}</h2>
+        <p className="text-on-surface-variant text-base max-w-2xl">{pageSubtitle}</p>
       </section>
 
       {/* Main Layout Grid */}
@@ -389,6 +457,7 @@ export default function Scanner() {
           </div>
 
           {/* Verification Result Card */}
+          {/* Verification Result Card */}
           {scannedDevotee ? (
             <div className="bg-white border-t-4 border-t-primary border-x border-b border-outline-variant rounded-xl p-6 shadow-md animate-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col md:flex-row justify-between gap-4">
@@ -400,7 +469,7 @@ export default function Scanner() {
                     <h4 className="text-xl font-bold text-on-surface">{scannedDevotee.fullName}</h4>
                     <div className="flex items-center gap-2 mt-1">
                       <span className="bg-primary-container text-on-primary-container px-2 py-0.5 rounded text-xs font-semibold">{t('familyPass')}</span>
-                      <span className="text-on-surface-variant text-sm font-semibold">{t('tokenNumber') || 'Token'}: #{scannedDevotee.qrCode || 'N/A'}</span>
+                      <span className="text-on-surface-variant text-sm font-semibold">{t('tokenNumber') || 'Token'}: #{scannedDevotee.tokenNumber || 'N/A'}</span>
                     </div>
                   </div>
                 </div>
@@ -410,55 +479,151 @@ export default function Scanner() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 p-4 bg-surface-container-low rounded-lg">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6 p-4 bg-surface-container-low rounded-lg">
                 <div>
-                  <p className="text-xs text-on-surface-variant">{t('phone')}</p>
+                  <p className="text-xs text-on-surface-variant">{t('phone') || 'Mobile Number'}</p>
                   <p className="font-bold text-on-surface">{scannedDevotee.mobile}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-on-surface-variant">{t('vehicle')}</p>
+                  <p className="text-xs text-on-surface-variant">Token Number</p>
+                  <p className="font-bold text-on-surface">{scannedDevotee.tokenNumber || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-on-surface-variant">QR Code</p>
+                  <p className="font-bold text-on-surface select-all text-xs break-all">{scannedDevotee.qrCode || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-on-surface-variant">Place / City / Village</p>
+                  <p className="font-bold text-on-surface">{scannedDevotee.placeCity || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-on-surface-variant">{t('vehicleType') || 'Vehicle Type'}</p>
+                  <p className="font-bold text-on-surface capitalize">{(scannedDevotee.vehicleType || 'none').replace('_', ' ')}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-on-surface-variant">{t('vehicle') || 'Vehicle Number'}</p>
                   <p className="font-bold text-on-surface">{scannedDevotee.vehicleNumber || 'None'}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-on-surface-variant">{t('members')}</p>
-                  <p className="font-bold text-on-surface">
-                    {String(scannedDevotee.persons).padStart(2, '0')} ({scannedDevotee.visitors && scannedDevotee.visitors.length > 0 ? scannedDevotee.visitors.map(v => v.name).join(', ') : 'Self'})
-                  </p>
+                  <p className="text-xs text-on-surface-variant">{t('members') || 'Number of Persons'}</p>
+                  <p className="font-bold text-on-surface">{scannedDevotee.persons}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-on-surface-variant">{t('gateNo')}</p>
-                  <p className="font-bold text-on-surface">{scannedDevotee.gateNo || 'North Archway'}</p>
+                  <p className="text-xs text-on-surface-variant">Current Status</p>
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold uppercase mt-1 ${
+                    scannedDevotee.status === 'confirmed' ? 'bg-green-100 text-green-800' :
+                    scannedDevotee.status === 'completed' ? 'bg-blue-100 text-blue-800' :
+                    scannedDevotee.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                    'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {scannedDevotee.status}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs text-on-surface-variant">Journey Tracker Status</p>
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold uppercase mt-1 ${
+                    scannedDevotee.verificationStatus === 'none' ? 'bg-gray-100 text-gray-800' :
+                    scannedDevotee.verificationStatus === 'verified_entry' ? 'bg-purple-100 text-purple-800' :
+                    scannedDevotee.verificationStatus === 'in_queue' ? 'bg-orange-100 text-orange-800' :
+                    'bg-green-100 text-green-800'
+                  }`}>
+                    {(scannedDevotee.verificationStatus || 'none').replace('_', ' ')}
+                  </span>
+                </div>
+                <div className="col-span-2 md:col-span-3">
+                  <p className="text-xs text-on-surface-variant">Person Names &amp; Ages</p>
+                  <p className="font-semibold text-on-surface text-sm mt-1">
+                    {scannedDevotee.visitors && scannedDevotee.visitors.length > 0 ? (
+                      <span className="flex flex-wrap gap-2">
+                        {scannedDevotee.visitors.map((v, i) => (
+                          <span key={i} className="px-2.5 py-1 bg-surface-container rounded-full text-xs font-medium border border-outline-variant text-on-surface">
+                            {v.name} ({v.age} yrs)
+                          </span>
+                        ))}
+                      </span>
+                    ) : (
+                      'No accompanying visitors (Self Only)'
+                    )}
+                  </p>
                 </div>
               </div>
 
+              {/* Counter Journey History Logs */}
+              <div className="mt-6 border-t border-outline-variant pt-6">
+                <h5 className="text-sm font-bold text-on-surface mb-3 flex items-center gap-1.5">
+                  <span className="material-symbols-outlined text-base text-primary">history</span>
+                  Journey Tracker History
+                </h5>
+                {scannedDevotee.counterHistory && scannedDevotee.counterHistory.length > 0 ? (
+                  <div className="flex flex-col gap-3">
+                    {scannedDevotee.counterHistory.map((history, idx) => (
+                      <div key={idx} className="flex items-center gap-3 p-3 bg-surface-container-low border border-outline-variant rounded-lg">
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
+                          {history.counterNumber}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-bold text-on-surface">
+                            Counter {history.counterNumber}: {history.status}
+                          </p>
+                          <p className="text-[10px] text-on-surface-variant">
+                            Updated by: <span className="font-semibold">{history.staffName}</span>
+                          </p>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-[10px] text-on-surface-variant font-medium">
+                            {new Date(history.timestamp).toLocaleDateString()}
+                          </p>
+                          <p className="text-xs font-bold text-on-surface">
+                            {new Date(history.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-4 bg-surface-container-low border border-outline-variant border-dashed rounded-lg text-center text-xs text-on-surface-variant">
+                    No counter history recorded yet. Use the buttons below to log progress.
+                  </div>
+                )}
+              </div>
+
               <div className="mt-8 flex flex-wrap gap-4">
-                <button 
-                  disabled={scannedDevotee.verificationStatus !== 'verified_entry'}
-                  className={`flex-1 min-w-[140px] py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all ${
-                    scannedDevotee.verificationStatus !== 'verified_entry' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-                  }`}
-                >
-                  <span className="material-symbols-outlined">verified</span>
-                  {t('verifyEntry')}
-                </button>
-                <button 
-                  disabled={scannedDevotee.verificationStatus !== 'in_queue'}
-                  className={`flex-1 min-w-[140px] py-3 border-2 border-secondary text-secondary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all ${
-                    scannedDevotee.verificationStatus !== 'in_queue' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-                  }`}
-                >
-                  <span className="material-symbols-outlined">hourglass_top</span>
-                  {t('markInQueue')}
-                </button>
-                <button 
-                  disabled={scannedDevotee.verificationStatus !== 'completed'}
-                  className={`flex-1 min-w-[140px] py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-highest active:scale-95 transition-all ${
-                    scannedDevotee.verificationStatus !== 'completed' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-                  }`}
-                >
-                  <span className="material-symbols-outlined">login</span>
-                  {t('markEntered')}
-                </button>
+                {(!counterId || counterId === '1') && (
+                  <button 
+                    disabled={scannedDevotee.verificationStatus !== 'none'}
+                    onClick={() => handleCounterAction(1)}
+                    className={`flex-1 min-w-[140px] py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all ${
+                      scannedDevotee.verificationStatus !== 'none' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                    }`}
+                  >
+                    <span className="material-symbols-outlined">verified</span>
+                    {t('verifyEntry') || 'Verify Entry'}
+                  </button>
+                )}
+                {(!counterId || counterId === '2') && (
+                  <button 
+                    disabled={scannedDevotee.verificationStatus !== 'verified_entry'}
+                    onClick={() => handleCounterAction(2)}
+                    className={`flex-1 min-w-[140px] py-3 border-2 border-secondary text-secondary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all ${
+                      scannedDevotee.verificationStatus !== 'verified_entry' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                    }`}
+                  >
+                    <span className="material-symbols-outlined">hourglass_top</span>
+                    {t('markInQueue') || 'Mark In Queue'}
+                  </button>
+                )}
+                {(!counterId || counterId === '3') && (
+                  <button 
+                    disabled={scannedDevotee.verificationStatus !== 'in_queue'}
+                    onClick={() => handleCounterAction(3)}
+                    className={`flex-1 min-w-[140px] py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-highest active:scale-95 transition-all ${
+                      scannedDevotee.verificationStatus !== 'in_queue' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                    }`}
+                  >
+                    <span className="material-symbols-outlined">check_circle</span>
+                    Mark Darshan Completed
+                  </button>
+                )}
               </div>
             </div>
           ) : (

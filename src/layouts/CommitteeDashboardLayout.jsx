@@ -279,17 +279,26 @@ export default function CommitteeDashboardLayout() {
           <Link className={getSidebarLinkClasses('/dashboard/committee/dashboard')} to="/dashboard/committee/dashboard">
             <span className="material-symbols-outlined">dashboard</span> {t('dashboard')}
           </Link>
+          <Link className={getSidebarLinkClasses('/dashboard/committee/scanner')} to="/dashboard/committee/scanner">
+            <span className="material-symbols-outlined">qr_code_scanner</span> QR Scanner &amp; Verification
+          </Link>
           <Link className={getSidebarLinkClasses('/dashboard/committee')} to="/dashboard/committee">
             <span className="material-symbols-outlined">groups</span> {t('queueStatus')}
-          </Link>
-          <Link className={getSidebarLinkClasses('/dashboard/committee/scanner')} to="/dashboard/committee/scanner">
-            <span className="material-symbols-outlined">qr_code_scanner</span> {t('qrScanner')}
           </Link>
           <Link className={getSidebarLinkClasses('/dashboard/committee/scanner-verification')} to="/dashboard/committee/scanner-verification">
             <span className="material-symbols-outlined">verified_user</span> {t('newEntry')}
           </Link>
           <Link className={getSidebarLinkClasses('/dashboard/committee/parking')} to="/dashboard/committee/parking">
             <span className="material-symbols-outlined">local_parking</span> {t('parkingManagement')}
+          </Link>
+          <Link className={getSidebarLinkClasses('/dashboard/committee/counter/1')} to="/dashboard/committee/counter/1">
+            <span className="material-symbols-outlined">meeting_room</span> Counter 1 – Temple Entry
+          </Link>
+          <Link className={getSidebarLinkClasses('/dashboard/committee/counter/2')} to="/dashboard/committee/counter/2">
+            <span className="material-symbols-outlined">queue</span> Counter 2 – Queue Management
+          </Link>
+          <Link className={getSidebarLinkClasses('/dashboard/committee/counter/3')} to="/dashboard/committee/counter/3">
+            <span className="material-symbols-outlined">check_circle</span> Counter 3 – Darshan Completion
           </Link>
           <Link className={getSidebarLinkClasses('/dashboard/committee/announcements')} to="/dashboard/committee/announcements">
             <span className="material-symbols-outlined">campaign</span> {t('announcements')}

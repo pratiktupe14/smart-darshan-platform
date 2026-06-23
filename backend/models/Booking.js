@@ -63,6 +63,14 @@ const bookingSchema = new mongoose.Schema({
     ref: 'User',
     required: false, // Optional, since booking might be guest or authenticated
   },
+  counterHistory: [
+    {
+      counterNumber: { type: Number, required: true },
+      status: { type: String, required: true },
+      timestamp: { type: Date, default: Date.now },
+      staffName: { type: String, required: true }
+    }
+  ],
   createdAt: {
     type: Date,
     default: Date.now,

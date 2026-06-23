@@ -104,15 +104,33 @@ export default function Login() {
     }
   };
 
-  const handleVerifyOtp = () => {
-    // Mock login and redirect based on role
-    localStorage.setItem('userRole', role);
-    if (role === 'user') {
-      navigate('/dashboard');
-    } else if (role === 'committee') {
-      navigate('/dashboard/committee');
-    } else if (role === 'admin') {
-      navigate('/dashboard/admin');
+  const handleVerifyOtp = async () => {
+    try {
+      console.log('[Login] Verifying OTP for mobile:', mobileNumber);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/mobile-login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mobileNumber, role })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        console.log('[Login] Mobile login success. User data:', data);
+        loginUser(data.user, data.user.role || role, data.token);
+        
+        if (data.user.role === 'admin') {
+          navigate('/dashboard/admin');
+        } else if (data.user.role === 'committee') {
+          navigate('/dashboard/committee');
+        } else {
+          navigate('/dashboard');
+        }
+      } else {
+        const errData = await res.json().catch(() => null);
+        alert(errData?.message || 'Verification failed');
+      }
+    } catch (err) {
+      console.error('[Login] Error during mobile verification:', err);
+      alert('An error occurred during verification');
     }
   };
 

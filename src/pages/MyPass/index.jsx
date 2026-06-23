@@ -4,6 +4,7 @@ import { jsPDF } from 'jspdf';
 import QRCodeBrowser from 'qrcode';
 import { useLanguage } from '../../context/LanguageContext';
 import { useUser } from '../../context/UserContext';
+import { Link } from 'react-router-dom';
 
 export default function MyPass() {
   const { t } = useLanguage();
@@ -14,25 +15,50 @@ export default function MyPass() {
     currentServingToken: 'None',
     userTokenNumber: 'N/A',
     position: 0,
-    estWait: 0
+    estWait: 0,
+    progress: 0,
+    currentStage: 1
   });
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user || (!user.mobile && !user._id)) return;
+      if (!user) {
+        console.log('[MyPass] Authentication Session: Null (No user logged in)');
+        return;
+      }
+      const identifier = user._id || user.id || user.mobileNumber || user.mobile;
+      if (!identifier) {
+        console.log('[MyPass] No valid user identifier found yet. Auth Session:', user);
+        return;
+      }
       try {
-        const identifier = user._id || user.mobile;
+        console.log("Logged-in User ID:", user._id || user.id);
+        console.log("Authentication Session:", user);
+        
         const res = await fetch(`http://localhost:5000/api/bookings/user/${identifier}`);
         if (res.ok) {
           const bookings = await res.json();
-          const active = bookings.find(b => b.status === 'confirmed');
-          const history = bookings.filter(b => b.status !== 'confirmed');
+          console.log("Database Query Result (Bookings):", bookings);
           
+          // An active booking is one whose status is confirmed, pending, or in progress of verification, but NOT completed or cancelled
+          const active = bookings.find(b => b.status !== 'completed' && b.status !== 'cancelled' && b.verificationStatus !== 'completed');
+          const history = bookings.filter(b => b.status === 'completed' || b.status === 'cancelled' || b.verificationStatus === 'completed');
+          
+          console.log("My Pass Fetch Result (Active Booking):", active);
+          if (active) {
+            console.log("Booking User ID (Owner):", active.userId);
+          } else {
+            console.log("Booking User ID (Owner): None (No active booking found)");
+          }
+
           setActiveBooking(active);
           setPassHistory(history);
 
           // Fetch queue status
           const qRes = await fetch(`http://localhost:5000/api/queue`);
+          if (!qRes.ok) {
+            console.error('[MyPass] Error fetching queue status:', qRes.statusText);
+          }
           const queueList = await qRes.json();
           
           const currentServing = queueList.filter(q => q.status === 'serving');
@@ -47,15 +73,44 @@ export default function MyPass() {
               }
           }
           
+          // Calculate journey stage and progress
+          let currentStage = 1;
+          let progress = 25;
+          if (active) {
+            const status = active.verificationStatus || 'none';
+            if (status === 'verified_entry') {
+              currentStage = 2;
+              progress = 50;
+            } else if (status === 'in_queue') {
+              currentStage = 3;
+              if (userToken && userToken.status === 'serving') {
+                progress = 85;
+              } else {
+                const scaledProgress = pos > 0 ? Math.max(60, Math.min(80, 85 - pos * 2)) : 75;
+                progress = scaledProgress;
+              }
+            } else if (status === 'completed') {
+              currentStage = 4;
+              progress = 100;
+            } else {
+              currentStage = 1;
+              progress = 25;
+            }
+          }
+          
           setQueueInfo({
               currentServingToken: currentServing.length > 0 ? currentServing[0].tokenNumber : 'None',
               userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
               position: pos,
               estWait: pos * 2,
+              progress: progress,
+              currentStage: currentStage
           });
+        } else {
+          console.error('[MyPass] API Error fetching bookings:', res.status, res.statusText);
         }
       } catch (err) {
-        console.error(err);
+        console.error('[MyPass] Database or API Error fetching booking data:', err);
       }
     };
 
@@ -90,8 +145,8 @@ export default function MyPass() {
       const qrData = JSON.stringify({ 
         token: queueInfo.userTokenNumber, 
         bookingId: activeBooking._id, 
-        name: activeBooking.fullName, 
-        mobile: activeBooking.mobile 
+        name: user?.fullName || activeBooking.fullName, 
+        mobile: user?.mobileNumber || user?.mobile || activeBooking.mobile 
       });
       const qrImageURL = await QRCodeBrowser.toDataURL(qrData, { width: 200, margin: 1 });
       
@@ -113,12 +168,12 @@ export default function MyPass() {
       doc.setFont(undefined, 'bold');
       doc.text("Devotee Name:", 20, startY);
       doc.setFont(undefined, 'normal');
-      doc.text(`${activeBooking.fullName || user?.fullName || 'N/A'}`, 60, startY);
+      doc.text(`${user?.fullName || activeBooking.fullName || 'N/A'}`, 60, startY);
       
       doc.setFont(undefined, 'bold');
       doc.text("Mobile Number:", 20, startY + lineHeight * 1);
       doc.setFont(undefined, 'normal');
-      doc.text(`${activeBooking.mobile || user?.mobile || 'N/A'}`, 60, startY + lineHeight * 1);
+      doc.text(`${user?.mobileNumber || user?.mobile || activeBooking.mobile || 'N/A'}`, 60, startY + lineHeight * 1);
       
       doc.setFont(undefined, 'bold');
       doc.text("Vehicle No:", 20, startY + lineHeight * 2);
@@ -170,13 +225,19 @@ export default function MyPass() {
         {/* Active Pass Column */}
         <div className="lg:col-span-8 space-y-6 md:space-y-8">
           {activeBooking ? (
+            <>
             <div className="bg-surface-container-lowest rounded-xl premium-ticket-glow overflow-hidden border border-outline/10">
               <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8">
                 {/* QR Code Section */}
                 <div className="flex flex-col items-center justify-center space-y-4 shrink-0">
                   <div className="bg-white p-4 rounded-xl border border-outline-variant shadow-sm w-48 h-48 flex items-center justify-center">
                     <QRCode 
-                      value={JSON.stringify({ token: queueInfo.userTokenNumber !== 'N/A' ? queueInfo.userTokenNumber : activeBooking.qrCode, bookingId: activeBooking._id, name: activeBooking.fullName, mobile: activeBooking.mobile })} 
+                      value={JSON.stringify({ 
+                        token: queueInfo.userTokenNumber !== 'N/A' ? queueInfo.userTokenNumber : activeBooking.qrCode, 
+                        bookingId: activeBooking._id, 
+                        name: user?.fullName || activeBooking.fullName, 
+                        mobile: user?.mobileNumber || user?.mobile || activeBooking.mobile 
+                      })} 
                       size={160} 
                       style={{ height: "auto", maxWidth: "100%", width: "100%" }}
                     />
@@ -205,11 +266,11 @@ export default function MyPass() {
                   <div className="grid grid-cols-2 gap-y-4 gap-x-6">
                     <div>
                       <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t('devoteeName')}</p>
-                      <p className="text-base font-semibold">{activeBooking.fullName}</p>
+                      <p className="text-base font-semibold">{user?.fullName || activeBooking.fullName}</p>
                     </div>
                     <div>
                       <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Email / Contact</p>
-                      <p className="text-base font-semibold">{activeBooking.mobile}</p>
+                      <p className="text-base font-semibold">{user?.mobileNumber || user?.mobile || activeBooking.mobile}</p>
                     </div>
                     <div>
                       <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Vehicle No</p>
@@ -247,14 +308,83 @@ export default function MyPass() {
                 </div>
               </div>
             </div>
+
+            {/* Live Journey Tracker */}
+            <div className="bg-surface-container-lowest border border-outline/10 rounded-xl p-8 shadow-sm space-y-10 mt-6 transition-all duration-300">
+              <div className="flex justify-between items-center">
+                <h4 className="text-xl font-semibold text-on-surface">Live Journey Tracker</h4>
+                <span className="text-primary font-bold">{Math.floor(queueInfo.progress)}% Progress</span>
+              </div>
+              
+              <div className="relative px-2">
+                {/* Background Line */}
+                <div className="absolute top-1/2 left-0 w-full h-1.5 bg-surface-container-high -translate-y-1/2 rounded-full overflow-hidden">
+                  <div className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" style={{ width: `${queueInfo.progress}%` }}></div>
+                </div>
+                
+                {/* Steps */}
+                <div className="relative flex justify-between">
+                  {[
+                    { id: 1, label: "Booking Confirmed", icon: "confirmation_number", pendingText: "1" },
+                    { id: 2, label: "Temple Entry", icon: "login", pendingText: "2" },
+                    { id: 3, label: "Waiting in Queue", icon: "hourglass_top", pendingText: "3" },
+                    { id: 4, label: "Darshan Completed", icon: "temple_hindu", pendingText: "temple_hindu" }
+                  ].map((step) => {
+                    const isCompleted = queueInfo.currentStage > step.id;
+                    const isActive = queueInfo.currentStage === step.id;
+                    
+                    if (isCompleted) {
+                      return (
+                        <div key={step.id} className="flex flex-col items-center gap-3 w-24">
+                          <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md z-10">
+                            <span className="material-symbols-outlined text-sm font-bold">check</span>
+                          </div>
+                          <span className="text-xs font-bold text-on-surface text-center">{step.label}</span>
+                        </div>
+                      );
+                    } else if (isActive) {
+                      return (
+                        <div key={step.id} className="flex flex-col items-center gap-3 w-24">
+                          <div className="w-10 h-10 -mt-1 rounded-full bg-white border-4 border-primary text-primary flex items-center justify-center shadow-lg z-10 animate-pulse">
+                            {step.id === 4 ? (
+                              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>{step.icon}</span>
+                            ) : (
+                              <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>hourglass_top</span>
+                            )}
+                          </div>
+                          <span className="text-sm font-black text-primary text-center">{step.label}</span>
+                        </div>
+                      );
+                    } else {
+                      return (
+                        <div key={step.id} className="flex flex-col items-center gap-3 w-24">
+                          <div className="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center z-10">
+                            {step.pendingText === "temple_hindu" ? (
+                              <span className="material-symbols-outlined text-sm">temple_hindu</span>
+                            ) : (
+                              <span className="text-xs font-bold">{step.pendingText}</span>
+                            )}
+                          </div>
+                          <span className="text-xs font-medium text-on-surface-variant text-center">{step.label}</span>
+                        </div>
+                      );
+                    }
+                  })}
+                </div>
+              </div>
+            </div>
+            </>
           ) : (
-            <div className="bg-surface-container-lowest rounded-xl border border-outline/10 p-12 flex flex-col items-center justify-center text-center shadow-sm h-[400px]">
+            <div className="bg-surface-container-lowest rounded-xl border border-outline/10 p-12 flex flex-col items-center justify-center text-center shadow-sm w-full">
               <span className="material-symbols-outlined text-6xl text-outline-variant mb-4">confirmation_number</span>
-              <h2 className="text-2xl font-bold text-on-surface mb-2">No Active Pass Found</h2>
-              <p className="text-on-surface-variant mb-6 max-w-md">You don't have any active darshan bookings at the moment. Book a slot to generate your digital pass.</p>
-              <a href="/book-darshan" className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-md">
+              <h2 className="text-2xl font-bold text-on-surface mb-4">No Active Pass Found</h2>
+              <div className="text-on-surface-variant mb-8 w-full max-w-[450px] space-y-2">
+                <p>You do not have any active darshan bookings at the moment.</p>
+                <p>Book a darshan slot to generate your digital pass.</p>
+              </div>
+              <Link to="/dashboard/book" className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-md">
                 Book Darshan Now
-              </a>
+              </Link>
             </div>
           )}
 

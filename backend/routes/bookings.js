@@ -22,6 +22,7 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Invalid date format.' });
     }
 
+    console.log(`[POST /bookings] Creating new booking. userId: ${userId || 'none'}, mobile: ${mobile}, name: ${fullName}`);
     const newBooking = new Booking({
       fullName,
       mobile,
@@ -33,11 +34,29 @@ router.post('/', async (req, res) => {
       darshanDate,
       qrCode: `QR-${Math.random().toString(36).substring(2, 10).toUpperCase()}`
     });
-    if (userId) {
+    if (userId && userId !== 'none') {
       newBooking.userId = userId;
+      
+      // Automatically update user's mobileNumber in User profile if not set
+      const User = require('../models/User');
+      const user = await User.findById(userId);
+      if (user && !user.mobileNumber) {
+        user.mobileNumber = mobile;
+        await user.save();
+        console.log(`[POST /bookings] Automatically updated user ${userId} mobileNumber to ${mobile}`);
+      }
+    } else {
+      // Try to associate booking with existing user if mobile matches
+      const User = require('../models/User');
+      const user = await User.findOne({ mobileNumber: mobile });
+      if (user) {
+        newBooking.userId = user._id;
+        console.log(`[POST /bookings] Associated guest booking with user ID ${user._id} via mobile match`);
+      }
     }
 
     const savedBooking = await newBooking.save();
+    console.log(`[POST /bookings] Saved booking successfully:`, savedBooking._id, 'Token QR:', savedBooking.qrCode);
     res.status(201).json(savedBooking);
   } catch (err) {
     console.error('Database Error during booking:', err.message, err);
@@ -66,27 +85,50 @@ router.get('/', async (req, res) => {
 router.get('/user/:identifier', async (req, res) => {
   try {
     const identifier = req.params.identifier;
+    console.log(`[GET /bookings/user/${identifier}] Querying bookings...`);
     const query = [{ mobile: identifier }];
     
     // Only query by userId if the identifier is a valid ObjectId
     if (/^[0-9a-fA-F]{24}$/.test(identifier)) {
       query.push({ userId: identifier });
+      
+      // Look up user to also search bookings by user's registered mobile number
+      const User = require('../models/User');
+      const user = await User.findById(identifier);
+      if (user) {
+        console.log(`[GET /bookings/user/${identifier}] Found user for ID in DB:`, user._id, 'Mobile:', user.mobileNumber);
+        if (user.mobileNumber) {
+          query.push({ mobile: user.mobileNumber });
+        }
+      }
+    } else {
+      // If identifier is a mobile number, also find the user with this mobile number and query by their userId
+      const User = require('../models/User');
+      const user = await User.findOne({ mobileNumber: identifier });
+      if (user) {
+        console.log(`[GET /bookings/user/${identifier}] Found user for Mobile in DB:`, user._id);
+        query.push({ userId: user._id });
+      }
     }
 
+    console.log(`[GET /bookings/user/${identifier}] Query formulated:`, JSON.stringify(query));
     const bookings = await Booking.find({
       $or: query
     }).sort({ createdAt: -1 });
+    
+    console.log(`[GET /bookings/user/${identifier}] Successfully found bookings count: ${bookings.length}`);
     res.json(bookings);
   } catch (err) {
-    console.error(err.message);
+    console.error(`[GET /bookings/user/${identifier}] Error:`, err.message);
     res.status(500).send('Server Error');
   }
 });
 
 // Verification Scanner Endpoint
+// Verification Scanner Endpoint (Search-Only)
 router.post('/verify-scanner', async (req, res) => {
   try {
-    const { query } = req.body;
+    const { query, counterNumber } = req.body;
     if (!query) {
       return res.status(400).json({ error: 'Search query or QR data is required.' });
     }
@@ -147,31 +189,77 @@ router.post('/verify-scanner', async (req, res) => {
       return res.status(404).json({ error: 'Devotee / Booking record not found.' });
     }
 
-    const currentStatus = booking.verificationStatus || 'none';
+    // Counter specific validation
+    if (counterNumber) {
+      const cNum = parseInt(counterNumber);
+      if (cNum === 1) {
+        if (booking.verificationStatus === 'verified_entry' || booking.verificationStatus === 'in_queue' || booking.verificationStatus === 'completed') {
+          return res.status(400).json({ error: 'Entry Already Verified.' });
+        }
+      } else if (cNum === 2) {
+        if (booking.verificationStatus === 'in_queue' || booking.verificationStatus === 'completed') {
+          return res.status(400).json({ error: 'Already In Queue.' });
+        }
+        if (booking.verificationStatus === 'none') {
+          return res.status(400).json({ error: 'Devotee has not entered the temple yet. Please complete Counter 1 (Temple Entry) first.' });
+        }
+      } else if (cNum === 3) {
+        if (booking.verificationStatus === 'completed') {
+          return res.status(400).json({ error: 'Darshan Already Completed.' });
+        }
+        if (booking.verificationStatus === 'none' || booking.verificationStatus === 'verified_entry') {
+          return res.status(400).json({ error: 'Devotee is not in the queue yet. Please complete Counter 2 (Queue Entry) first.' });
+        }
+      }
+    }
 
-    // 4. Perform the automatic state transitions based on current status
-    if (currentStatus === 'none') {
-      // First Verification Scan -> Verified Entry
+    // Find corresponding queue entry to see if a token is assigned
+    const Queue = require('../models/Queue');
+    const queueEntry = await Queue.findOne({ bookingId: booking._id });
+    const tokenNumber = queueEntry ? queueEntry.tokenNumber : (booking.qrCode ? booking.qrCode.split('-')[1] : 'N/A');
+
+    res.json({
+      message: 'Devotee verified successfully!',
+      booking: {
+        ...booking.toObject(),
+        tokenNumber
+      }
+    });
+  } catch (err) {
+    console.error('Verify scanner error:', err);
+    res.status(500).json({ error: 'Server Error during scanner verification.' });
+  }
+});
+
+// Counter Verification Actions
+router.post('/verify-scanner/action', async (req, res) => {
+  try {
+    const { bookingId, counterNumber, staffName } = req.body;
+    if (!bookingId || !counterNumber) {
+      return res.status(400).json({ error: 'Booking ID and Counter Number are required.' });
+    }
+
+    const booking = await Booking.findById(bookingId);
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found.' });
+    }
+
+    let statusLabel = '';
+    let nextVerificationStatus = '';
+
+    if (counterNumber === 1) {
+      // Counter 1: Temple Entry -> Verified Entry
       booking.verificationStatus = 'verified_entry';
       booking.enteredTemple = 'Yes';
-      await booking.save();
-
-      return res.json({
-        message: 'Successfully verified temple entry!',
-        booking,
-        nextAction: 'Verify Entry',
-        buttonStates: {
-          verifyEntry: true,
-          markInQueue: false,
-          darshanCompleted: false
-        }
-      });
-    } else if (currentStatus === 'verified_entry') {
-      // Second Verification Scan -> In Queue
+      statusLabel = 'Temple Entry Completed';
+      nextVerificationStatus = 'verified_entry';
+    } else if (counterNumber === 2) {
+      // Counter 2: Queue Entry -> In Queue
       booking.verificationStatus = 'in_queue';
-      await booking.save();
+      statusLabel = 'Waiting in Queue';
+      nextVerificationStatus = 'in_queue';
 
-      // Ensure they are added to the Queue collection if not already present
+      // Add to Queue collection if not exists
       const Queue = require('../models/Queue');
       let queueEntry = await Queue.findOne({ bookingId: booking._id });
       if (!queueEntry) {
@@ -197,57 +285,55 @@ router.post('/verify-scanner', async (req, res) => {
           await queueEntry.save();
         }
       }
-
-      return res.json({
-        message: 'Devotee marked in queue successfully!',
-        booking,
-        queueEntry,
-        nextAction: 'Mark In Queue',
-        buttonStates: {
-          verifyEntry: false,
-          markInQueue: true,
-          darshanCompleted: false
-        }
-      });
-    } else if (currentStatus === 'in_queue') {
-      // Third Verification Scan -> Darshan Completed
+    } else if (counterNumber === 3) {
+      // Counter 3: Darshan Completion -> Completed
       booking.verificationStatus = 'completed';
       booking.status = 'completed';
       booking.darshanCompletedAt = new Date();
-      await booking.save();
+      statusLabel = 'Darshan Completed';
+      nextVerificationStatus = 'completed';
 
-      // Update corresponding Queue entry to completed
+      // Update corresponding Queue entry
       const Queue = require('../models/Queue');
       let queueEntry = await Queue.findOne({ bookingId: booking._id });
       if (queueEntry) {
         queueEntry.status = 'completed';
         await queueEntry.save();
       }
-
-      return res.json({
-        message: 'Darshan completed successfully!',
-        booking,
-        queueEntry,
-        nextAction: 'Darshan Completed',
-        buttonStates: {
-          verifyEntry: false,
-          markInQueue: false,
-          darshanCompleted: true
-        }
-      });
-    } else if (currentStatus === 'completed' || booking.status === 'completed') {
-      // Already completed -> Prevent duplicate scan/verification
-      return res.status(400).json({
-        error: 'Darshan already completed for this devotee. Duplicate verification prevented.',
-        booking,
-        duplicate: true
-      });
     } else {
-      return res.status(400).json({ error: 'Invalid verification state.' });
+      return res.status(400).json({ error: 'Invalid Counter Number.' });
     }
+
+    // Initialize counterHistory if not exists
+    if (!booking.counterHistory) {
+      booking.counterHistory = [];
+    }
+
+    // Add record to counterHistory
+    booking.counterHistory.push({
+      counterNumber,
+      status: statusLabel,
+      timestamp: new Date(),
+      staffName: staffName || 'Staff Member'
+    });
+
+    await booking.save();
+
+    // Find updated token number
+    const Queue = require('../models/Queue');
+    const queueEntry = await Queue.findOne({ bookingId: booking._id });
+    const tokenNumber = queueEntry ? queueEntry.tokenNumber : (booking.qrCode ? booking.qrCode.split('-')[1] : 'N/A');
+
+    res.json({
+      message: `Successfully updated status to: ${statusLabel}!`,
+      booking: {
+        ...booking.toObject(),
+        tokenNumber
+      }
+    });
   } catch (err) {
-    console.error('Verify scanner error:', err);
-    res.status(500).json({ error: 'Server Error during scanner verification.' });
+    console.error('Counter action error:', err);
+    res.status(500).json({ error: 'Server Error during counter action processing.' });
   }
 });
 

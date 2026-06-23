@@ -13,27 +13,38 @@ export const UserProvider = ({ children }) => {
 
   const fetchUser = async () => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      console.log('[UserContext] fetchUser called but no token found in localStorage.');
+      return;
+    }
     try {
+      console.log('[UserContext] fetchUser fetching user details from database...');
       const res = await fetch('http://localhost:5000/api/auth/me', {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
+        console.log('[UserContext] fetchUser success. Loaded user details:', data);
         setUser(data);
         localStorage.setItem('user', JSON.stringify(data));
         setUserRole(data.role);
         localStorage.setItem('userRole', data.role);
+      } else {
+        console.warn('[UserContext] fetchUser failed with status:', res.status);
       }
     } catch (err) {
-      console.error('Error fetching user:', err);
+      console.error('[UserContext] Error fetching user:', err);
     }
   };
 
   const updateUser = async (profileData) => {
     const token = localStorage.getItem('token');
-    if (!token) return;
+    if (!token) {
+      console.log('[UserContext] updateUser called but no token found.');
+      return;
+    }
     try {
+      console.log('[UserContext] updateUser starting. Payload:', profileData);
       const res = await fetch('http://localhost:5000/api/auth/profile', {
         method: 'PUT',
         headers: { 
@@ -44,26 +55,34 @@ export const UserProvider = ({ children }) => {
       });
       if (res.ok) {
         const data = await res.json();
+        console.log('[UserContext] updateUser success. Returned data:', data);
         setUser(data);
         localStorage.setItem('user', JSON.stringify(data));
         return data;
       }
+      console.warn('[UserContext] updateUser failed with status:', res.status);
       throw new Error('Failed to update profile');
     } catch (err) {
-      console.error('Error updating user:', err);
+      console.error('[UserContext] Error updating user:', err);
       throw err;
     }
   };
 
   const loginUser = (userData, role, token) => {
-    setUser(userData);
-    setUserRole(role);
+    console.log('[UserContext] loginUser called. userData:', userData, 'role:', role);
+    localStorage.setItem('token', token);
     localStorage.setItem('user', JSON.stringify(userData));
     localStorage.setItem('userRole', role);
-    localStorage.setItem('token', token);
+    setUser(userData);
+    setUserRole(role);
+    
+    // Fetch latest user details from DB
+    console.log('[UserContext] Fetching latest user details immediately after login...');
+    fetchUser();
   };
 
   const logoutUser = () => {
+    console.log('[UserContext] logging out user');
     setUser(null);
     setUserRole(null);
     localStorage.removeItem('user');

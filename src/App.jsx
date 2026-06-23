@@ -36,6 +36,7 @@ function App() {
             <Route index element={<CommitteeDashboard />} />
             <Route path="dashboard" element={<CommitteeOperationsOverview />} />
             <Route path="scanner" element={<Scanner />} />
+            <Route path="counter/:counterId" element={<Scanner />} />
             <Route path="scanner-verification" element={<OfflineVerification />} />
             <Route path="parking" element={<Parking />} />
             <Route path="announcements" element={<Announcements />} />

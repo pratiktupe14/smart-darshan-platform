@@ -96,7 +96,7 @@ export default function BookDarshan() {
         vehicleType: vehicleType,
         vehicleNumber: vehicleType !== 'none' ? e.target.vehicle_number.value : '',
         darshanDate: e.target.darshan_date.value,
-        userId: user?._id || undefined,
+        userId: user?._id || user?.id || undefined,
       };
       console.log('Sending booking request with payload:', payload);
 
@@ -217,6 +217,7 @@ export default function BookDarshan() {
                       <span className="material-symbols-outlined text-[18px]">person</span> {t('nameLabel')}
                     </label>
                     <input 
+                      key={user?.fullName || 'name'}
                       className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" 
                       id="full_name" name="full_name" placeholder="E.g. Rajesh Kumar" required type="text"
                       defaultValue={user?.fullName || ''}
@@ -228,6 +229,7 @@ export default function BookDarshan() {
                     </label>
                     <div className="flex gap-2">
                       <input 
+                        key={user?.mobileNumber || user?.mobile || 'mobile'}
                         className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" 
                         id="mobile" name="mobile" pattern="[0-9]{10}" placeholder="9876543210" required type="tel"
                         defaultValue={user?.mobileNumber || user?.mobile || ''}
@@ -278,6 +280,7 @@ export default function BookDarshan() {
                       <span className="material-symbols-outlined text-[18px]">location_city</span> Place/City
                     </label>
                     <input 
+                      key={user?.placeCityVillage || 'place'}
                       className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" 
                       id="place_city" name="place_city" placeholder="E.g. Mumbai" required type="text"
                       defaultValue={user?.placeCityVillage || ''}
