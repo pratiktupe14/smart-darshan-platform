@@ -236,8 +236,11 @@ router.post('/verify-scanner/action', async (req, res) => {
       nextVerificationStatus = 'verified_entry';
     } else if (counterNumber === 2) {
       // Counter 2: Queue Entry -> In Queue
-      if (booking.verificationStatus === 'in_queue' || booking.verificationStatus === 'completed') {
-        return res.status(400).json({ error: 'Visitor is already marked In Queue.' });
+      if (booking.verificationStatus !== 'verified_entry') {
+        if (booking.verificationStatus === 'in_queue' || booking.verificationStatus === 'completed') {
+          return res.status(400).json({ error: 'Visitor is already marked In Queue or Completed.' });
+        }
+        return res.status(400).json({ error: 'Cannot mark in queue. Visitor must complete Temple Entry (Counter 1) first.' });
       }
       booking.verificationStatus = 'in_queue';
       statusLabel = 'Waiting in Queue';
@@ -271,8 +274,11 @@ router.post('/verify-scanner/action', async (req, res) => {
       }
     } else if (counterNumber === 3) {
       // Counter 3: Darshan Completion -> Completed
-      if (booking.verificationStatus === 'completed') {
-        return res.status(400).json({ error: 'Darshan is already completed.' });
+      if (booking.verificationStatus !== 'in_queue') {
+        if (booking.verificationStatus === 'completed') {
+          return res.status(400).json({ error: 'Darshan is already completed.' });
+        }
+        return res.status(400).json({ error: 'Cannot complete Darshan. Visitor must be in queue (Counter 2) first.' });
       }
       booking.verificationStatus = 'completed';
       booking.status = 'completed';

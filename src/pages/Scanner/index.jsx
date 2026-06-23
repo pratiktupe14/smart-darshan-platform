@@ -602,10 +602,10 @@ export default function Scanner() {
                 )}
                 {(!counterId || counterId === '2') && (
                   <button 
-                    disabled={['in_queue', 'completed'].includes(scannedDevotee.verificationStatus)}
+                    disabled={scannedDevotee.verificationStatus !== 'verified_entry'}
                     onClick={() => handleCounterAction(2)}
                     className={`flex-1 min-w-[140px] py-3 border-2 border-secondary text-secondary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all ${
-                      ['in_queue', 'completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                      scannedDevotee.verificationStatus !== 'verified_entry' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
                     }`}
                   >
                     <span className="material-symbols-outlined">hourglass_top</span>
@@ -614,10 +614,10 @@ export default function Scanner() {
                 )}
                 {(!counterId || counterId === '3') && (
                   <button 
-                    disabled={scannedDevotee.verificationStatus === 'completed'}
+                    disabled={scannedDevotee.verificationStatus !== 'in_queue'}
                     onClick={() => handleCounterAction(3)}
                     className={`flex-1 min-w-[140px] py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-highest active:scale-95 transition-all ${
-                      scannedDevotee.verificationStatus === 'completed' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                      scannedDevotee.verificationStatus !== 'in_queue' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
                     }`}
                   >
                     <span className="material-symbols-outlined">check_circle</span>
