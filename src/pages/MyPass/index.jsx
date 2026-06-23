@@ -22,11 +22,12 @@ export default function MyPass() {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user) {
-        console.log('[MyPass] Authentication Session: Null (No user logged in)');
+      const guestMobile = localStorage.getItem('guestMobile');
+      if (!user && !guestMobile) {
+        console.log('[MyPass] Authentication Session: Null (No user logged in and no guest session)');
         return;
       }
-      const identifier = user._id || user.id || user.mobileNumber || user.mobile;
+      const identifier = user ? (user._id || user.id || user.mobileNumber || user.mobile) : guestMobile;
       if (!identifier) {
         console.log('[MyPass] No valid user identifier found yet. Auth Session:', user);
         return;

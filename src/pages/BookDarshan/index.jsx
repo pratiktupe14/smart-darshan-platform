@@ -112,6 +112,9 @@ export default function BookDarshan() {
 
       if (response.ok) {
         setShowSuccess(true);
+        if (!user) {
+          localStorage.setItem('guestMobile', payload.mobile);
+        }
       } else {
         const errorData = await response.json().catch(() => null);
         console.error('Booking Error Response:', errorData);
