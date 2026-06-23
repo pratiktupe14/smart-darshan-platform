@@ -121,10 +121,7 @@ export default function DashboardLayout() {
                 <span className="text-sm">{t('dashboard')}</span>
               </Link>
 
-              <Link to="/dashboard/committee" className={getLinkClasses('/dashboard/committee')}>
-                <span className="material-symbols-outlined">groups</span>
-                <span className="text-sm">{t('committeeTitle')}</span>
-              </Link>
+
               <Link to="/dashboard/scanner" className={getLinkClasses('/dashboard/scanner')}>
                 <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>qr_code_scanner</span>
                 <span className="text-sm">{t('qrScanner')}</span>
