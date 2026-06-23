@@ -38,9 +38,9 @@ export default function CommitteeDashboardLayout() {
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const statsRes = await fetch('http://localhost:5000/api/stats');
-        const queueRes = await fetch('http://localhost:5000/api/queue');
-        const vipRes = await fetch('http://localhost:5000/api/vip');
+        const statsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats`);
+        const queueRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
+        const vipRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip`);
         
         if (statsRes.ok) {
           const stats = await statsRes.json();

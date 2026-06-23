@@ -35,7 +35,7 @@ export default function MyPass() {
         console.log("Logged-in User ID:", user._id || user.id);
         console.log("Authentication Session:", user);
         
-        const res = await fetch(`http://localhost:5000/api/bookings/user/${identifier}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/user/${identifier}`);
         if (res.ok) {
           const bookings = await res.json();
           console.log("Database Query Result (Bookings):", bookings);
@@ -55,7 +55,7 @@ export default function MyPass() {
           setPassHistory(history);
 
           // Fetch queue status
-          const qRes = await fetch(`http://localhost:5000/api/queue`);
+          const qRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
           if (!qRes.ok) {
             console.error('[MyPass] Error fetching queue status:', qRes.statusText);
           }

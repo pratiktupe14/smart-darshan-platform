@@ -29,7 +29,7 @@ export default function Dashboard() {
         console.log('[Dashboard] Logged-in User ID:', user._id || user.id);
         console.log('[Dashboard] Authentication Session:', user);
         console.log('[Dashboard] Querying bookings for identifier:', identifier);
-        const res = await fetch(`http://localhost:5000/api/bookings/user/${identifier}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/user/${identifier}`);
         if(res.ok) {
             const bookings = await res.json();
             console.log('[Dashboard] Database Query Result (Bookings):', bookings);
@@ -46,7 +46,7 @@ export default function Dashboard() {
             setActiveBooking(active);
 
             // Fetch queue status
-            const qRes = await fetch(`http://localhost:5000/api/queue`);
+            const qRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
             const queueList = await qRes.json();
             
             // Find current serving

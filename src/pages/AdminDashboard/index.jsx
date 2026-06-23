@@ -39,9 +39,9 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const statsRes = await fetch('http://localhost:5000/api/stats');
-        const settingsRes = await fetch('http://localhost:5000/api/settings');
-        const queueRes = await fetch('http://localhost:5000/api/queue');
+        const statsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats`);
+        const settingsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/settings`);
+        const queueRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
         
         if (statsRes.ok && settingsRes.ok && queueRes.ok) {
           const statsData = await statsRes.json();
@@ -83,7 +83,7 @@ export default function AdminDashboard() {
     try {
         if (!isEmergencyActive) {
           if (window.confirm('CRITICAL: Are you sure you want to trigger an Emergency Closure? This will halt all entry and notify all onsite personnel.')) {
-            await fetch('http://localhost:5000/api/settings', {
+            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/settings`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ isEmergencyActive: true })
@@ -93,7 +93,7 @@ export default function AdminDashboard() {
           }
         } else {
           if (window.confirm('Are you sure you want to lift the Emergency Closure?')) {
-            await fetch('http://localhost:5000/api/settings', {
+            await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/settings`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ isEmergencyActive: false })
@@ -109,7 +109,7 @@ export default function AdminDashboard() {
   const adjustCapacity = async (amount) => {
     const newLimit = Math.max(1000, visitorLimit + amount);
     try {
-        await fetch('http://localhost:5000/api/settings', {
+        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/settings`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ visitorLimit: newLimit })

@@ -125,7 +125,7 @@ export default function OfflineVerification() {
 
     // Save to Database
     try {
-      const bookingResponse = await fetch('http://localhost:5000/api/bookings', {
+      const bookingResponse = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -144,7 +144,7 @@ export default function OfflineVerification() {
       if (bookingResponse.ok) {
         const savedBooking = await bookingResponse.json();
         // Also save to Queue
-        await fetch('http://localhost:5000/api/queue', {
+        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

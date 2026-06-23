@@ -11,7 +11,7 @@ export default function VIPManagement() {
   React.useEffect(() => {
     const fetchVIPs = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/vip');
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip`);
         if (res.ok) {
           const data = await res.json();
           setVipRegistry(data.map(v => ({
@@ -70,7 +70,7 @@ export default function VIPManagement() {
             expectedArrivalTime: form.date,
             specialRequests: form.remarks
         };
-        const res = await fetch('http://localhost:5000/api/vip', {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)

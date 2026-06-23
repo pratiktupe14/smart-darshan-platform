@@ -58,7 +58,7 @@ export default function Scanner() {
   const triggerVerification = async (queryVal) => {
     if (!queryVal || !queryVal.trim()) return;
     try {
-      const res = await fetch('http://localhost:5000/api/bookings/verify-scanner', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/verify-scanner`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -101,7 +101,7 @@ export default function Scanner() {
     if (!scannedDevotee) return;
     try {
       console.log(`[Scanner] Sending counter action ${counterNum} for booking:`, scannedDevotee._id);
-      const res = await fetch('http://localhost:5000/api/bookings/verify-scanner/action', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/verify-scanner/action`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

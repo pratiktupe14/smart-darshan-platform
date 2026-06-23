@@ -29,8 +29,8 @@ export default function CapacityManagement() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const statsRes = await fetch('http://localhost:5000/api/stats');
-        const settingsRes = await fetch('http://localhost:5000/api/settings');
+        const statsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats`);
+        const settingsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/settings`);
         
         if (statsRes.ok) {
           const stats = await statsRes.json();
@@ -60,7 +60,7 @@ export default function CapacityManagement() {
 
   const handleSave = async () => {
     try {
-      await fetch('http://localhost:5000/api/settings', {
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/settings`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ visitorLimit })
@@ -78,7 +78,7 @@ export default function CapacityManagement() {
       if (!isNaN(parsed) && parsed > 0) {
         setVisitorLimit(parsed);
         try {
-          await fetch('http://localhost:5000/api/settings', {
+          await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/settings`, {
               method: 'PUT',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ visitorLimit: parsed })

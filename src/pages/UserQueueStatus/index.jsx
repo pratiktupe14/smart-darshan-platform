@@ -20,12 +20,12 @@ export default function UserQueueStatus() {
       if (!user || (!user.mobile && !user._id)) return;
       try {
         const identifier = user._id || user.mobile;
-        const res = await fetch(`http://localhost:5000/api/bookings/user/${identifier}`);
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/user/${identifier}`);
         if (res.ok) {
           const bookings = await res.json();
           const active = bookings.find(b => b.status === 'confirmed');
 
-          const qRes = await fetch(`http://localhost:5000/api/queue`);
+          const qRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
           const queueList = await qRes.json();
           
           const currentServing = queueList.filter(q => q.status === 'serving');
