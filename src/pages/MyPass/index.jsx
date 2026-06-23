@@ -23,95 +23,85 @@ export default function MyPass() {
   useEffect(() => {
     const fetchData = async () => {
       const guestMobile = localStorage.getItem('guestMobile');
-      if (!user && !guestMobile) {
-        console.log('[MyPass] Authentication Session: Null (No user logged in and no guest session)');
-        return;
-      }
       const identifier = user ? (user._id || user.id || user.mobileNumber || user.mobile) : guestMobile;
+      
+      console.log('Authenticated User ID:', user ? (user._id || user.id) : 'Guest/None');
+      
       if (!identifier) {
         console.log('[MyPass] No valid user identifier found yet. Auth Session:', user);
         return;
       }
       try {
-        console.log("Logged-in User ID:", user._id || user.id);
-        console.log("Authentication Session:", user);
-        
         const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/user/${identifier}`);
         if (res.ok) {
           const bookings = await res.json();
-          console.log("Database Query Result (Bookings):", bookings);
+          console.log('Booking Query Result:', bookings);
           
+          console.log('Status Filters: Active -> status != completed & cancelled, verificationStatus != completed');
           // An active booking is one whose status is confirmed, pending, or in progress of verification, but NOT completed or cancelled
           const active = bookings.find(b => b.status !== 'completed' && b.status !== 'cancelled' && b.verificationStatus !== 'completed');
           const history = bookings.filter(b => b.status === 'completed' || b.status === 'cancelled' || b.verificationStatus === 'completed');
           
-          console.log("My Pass Fetch Result (Active Booking):", active);
-          if (active) {
-            console.log("Booking User ID (Owner):", active.userId);
-          } else {
-            console.log("Booking User ID (Owner): None (No active booking found)");
-          }
+          console.log('My Pass Fetch Result:', active);
 
           setActiveBooking(active);
           setPassHistory(history);
 
           // Fetch queue status
-          const qRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
-          if (!qRes.ok) {
-            console.error('[MyPass] Error fetching queue status:', qRes.statusText);
-          }
-          const queueList = await qRes.json();
-          
-          const currentServing = queueList.filter(q => q.status === 'serving');
-          
-          let userToken = null;
-          let pos = 0;
-          let waitingQueue = queueList.filter(q => q.status === 'waiting');
-          if (active) {
-              userToken = queueList.find(q => q.bookingId && q.bookingId._id === active._id);
-              if (userToken && userToken.status === 'waiting') {
-                  pos = waitingQueue.findIndex(q => q._id === userToken._id) + 1;
-              }
-          }
-          
-          // Calculate journey stage and progress
-          let currentStage = 1;
-          let progress = 25;
-          if (active) {
-            const status = active.verificationStatus || 'none';
-            if (status === 'verified_entry') {
-              currentStage = 2;
-              progress = 50;
-            } else if (status === 'in_queue') {
-              currentStage = 3;
-              if (userToken && userToken.status === 'serving') {
-                progress = 85;
-              } else {
-                const scaledProgress = pos > 0 ? Math.max(60, Math.min(80, 85 - pos * 2)) : 75;
-                progress = scaledProgress;
-              }
-            } else if (status === 'completed') {
-              currentStage = 4;
-              progress = 100;
-            } else {
-              currentStage = 1;
-              progress = 25;
+          try {
+            const qRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
+            if (!qRes.ok) throw new Error('Queue fetch failed');
+            const queueList = await qRes.json();
+            
+            const currentServing = queueList.filter(q => q.status === 'serving');
+            let userToken = null;
+            let pos = 0;
+            let waitingQueue = queueList.filter(q => q.status === 'waiting');
+            if (active) {
+                userToken = queueList.find(q => q.bookingId && (q.bookingId._id === active._id || q.bookingId === active._id));
+                if (userToken && userToken.status === 'waiting') {
+                    pos = waitingQueue.findIndex(q => q._id === userToken._id) + 1;
+                }
             }
+            
+            // Calculate journey stage and progress
+            let currentStage = 1;
+            let progress = 25;
+            if (active) {
+              const status = active.verificationStatus || 'none';
+              if (status === 'verified_entry') {
+                currentStage = 2;
+                progress = 50;
+              } else if (status === 'in_queue') {
+                currentStage = 3;
+                if (userToken && userToken.status === 'serving') {
+                  progress = 85;
+                } else {
+                  const scaledProgress = pos > 0 ? Math.max(60, Math.min(80, 85 - pos * 2)) : 75;
+                  progress = scaledProgress;
+                }
+              } else if (status === 'completed') {
+                currentStage = 4;
+                progress = 100;
+              }
+            }
+            
+            setQueueInfo({
+                currentServingToken: currentServing.length > 0 ? currentServing[0].tokenNumber : 'None',
+                userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
+                position: pos,
+                estWait: pos * 2,
+                progress: progress,
+                currentStage: currentStage
+            });
+          } catch(err) {
+            console.error('Queue Fetch Error:', err);
           }
-          
-          setQueueInfo({
-              currentServingToken: currentServing.length > 0 ? currentServing[0].tokenNumber : 'None',
-              userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
-              position: pos,
-              estWait: pos * 2,
-              progress: progress,
-              currentStage: currentStage
-          });
         } else {
-          console.error('[MyPass] API Error fetching bookings:', res.status, res.statusText);
+          console.error('API Error fetching bookings:', res.status, res.statusText);
         }
       } catch (err) {
-        console.error('[MyPass] Database or API Error fetching booking data:', err);
+        console.error('Database Errors / Network Error:', err);
       }
     };
 
@@ -246,7 +236,7 @@ export default function MyPass() {
                   <span className="bg-primary-container text-on-primary-container px-4 py-1 rounded-full text-xs font-bold">Active Pass</span>
                   <div className="text-center">
                     <p className="text-sm text-on-surface-variant font-medium">{t('tokenId')}</p>
-                    <p className="text-3xl text-primary font-bold">#{queueInfo.userTokenNumber !== 'N/A' ? queueInfo.userTokenNumber : activeBooking.qrCode.split('-')[1]}</p>
+                    <p className="text-3xl text-primary font-bold">#{queueInfo.userTokenNumber !== 'N/A' ? queueInfo.userTokenNumber : (activeBooking.qrCode ? (activeBooking.qrCode.includes('-') ? activeBooking.qrCode.split('-')[1] : activeBooking.qrCode) : 'N/A')}</p>
                   </div>
                 </div>
                 
