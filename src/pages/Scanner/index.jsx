@@ -590,10 +590,10 @@ export default function Scanner() {
               <div className="mt-8 flex flex-wrap gap-4">
                 {(!counterId || counterId === '1') && (
                   <button 
-                    disabled={scannedDevotee.verificationStatus !== 'none'}
+                    disabled={['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus)}
                     onClick={() => handleCounterAction(1)}
                     className={`flex-1 min-w-[140px] py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all ${
-                      scannedDevotee.verificationStatus !== 'none' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                      ['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
                     }`}
                   >
                     <span className="material-symbols-outlined">verified</span>
@@ -602,10 +602,10 @@ export default function Scanner() {
                 )}
                 {(!counterId || counterId === '2') && (
                   <button 
-                    disabled={scannedDevotee.verificationStatus !== 'verified_entry'}
+                    disabled={['in_queue', 'completed'].includes(scannedDevotee.verificationStatus)}
                     onClick={() => handleCounterAction(2)}
                     className={`flex-1 min-w-[140px] py-3 border-2 border-secondary text-secondary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all ${
-                      scannedDevotee.verificationStatus !== 'verified_entry' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                      ['in_queue', 'completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
                     }`}
                   >
                     <span className="material-symbols-outlined">hourglass_top</span>
@@ -614,10 +614,10 @@ export default function Scanner() {
                 )}
                 {(!counterId || counterId === '3') && (
                   <button 
-                    disabled={scannedDevotee.verificationStatus !== 'in_queue'}
+                    disabled={scannedDevotee.verificationStatus === 'completed'}
                     onClick={() => handleCounterAction(3)}
                     className={`flex-1 min-w-[140px] py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-highest active:scale-95 transition-all ${
-                      scannedDevotee.verificationStatus !== 'in_queue' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                      scannedDevotee.verificationStatus === 'completed' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
                     }`}
                   >
                     <span className="material-symbols-outlined">check_circle</span>

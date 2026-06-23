@@ -189,29 +189,7 @@ router.post('/verify-scanner', async (req, res) => {
       return res.status(404).json({ error: 'Devotee / Booking record not found.' });
     }
 
-    // Counter specific validation
-    if (counterNumber) {
-      const cNum = parseInt(counterNumber);
-      if (cNum === 1) {
-        if (booking.verificationStatus === 'verified_entry' || booking.verificationStatus === 'in_queue' || booking.verificationStatus === 'completed') {
-          return res.status(400).json({ error: 'Entry Already Verified.' });
-        }
-      } else if (cNum === 2) {
-        if (booking.verificationStatus === 'in_queue' || booking.verificationStatus === 'completed') {
-          return res.status(400).json({ error: 'Already In Queue.' });
-        }
-        if (booking.verificationStatus === 'none') {
-          return res.status(400).json({ error: 'Devotee has not entered the temple yet. Please complete Counter 1 (Temple Entry) first.' });
-        }
-      } else if (cNum === 3) {
-        if (booking.verificationStatus === 'completed') {
-          return res.status(400).json({ error: 'Darshan Already Completed.' });
-        }
-        if (booking.verificationStatus === 'none' || booking.verificationStatus === 'verified_entry') {
-          return res.status(400).json({ error: 'Devotee is not in the queue yet. Please complete Counter 2 (Queue Entry) first.' });
-        }
-      }
-    }
+    // Note: status-specific validation is now processed when committing actions, not when scanning/searching.
 
     // Find corresponding queue entry to see if a token is assigned
     const Queue = require('../models/Queue');
@@ -249,12 +227,18 @@ router.post('/verify-scanner/action', async (req, res) => {
 
     if (counterNumber === 1) {
       // Counter 1: Temple Entry -> Verified Entry
+      if (booking.verificationStatus === 'verified_entry' || booking.verificationStatus === 'in_queue' || booking.verificationStatus === 'completed') {
+        return res.status(400).json({ error: 'Temple Entry is already completed.' });
+      }
       booking.verificationStatus = 'verified_entry';
       booking.enteredTemple = 'Yes';
       statusLabel = 'Temple Entry Completed';
       nextVerificationStatus = 'verified_entry';
     } else if (counterNumber === 2) {
       // Counter 2: Queue Entry -> In Queue
+      if (booking.verificationStatus === 'in_queue' || booking.verificationStatus === 'completed') {
+        return res.status(400).json({ error: 'Visitor is already marked In Queue.' });
+      }
       booking.verificationStatus = 'in_queue';
       statusLabel = 'Waiting in Queue';
       nextVerificationStatus = 'in_queue';
@@ -287,6 +271,9 @@ router.post('/verify-scanner/action', async (req, res) => {
       }
     } else if (counterNumber === 3) {
       // Counter 3: Darshan Completion -> Completed
+      if (booking.verificationStatus === 'completed') {
+        return res.status(400).json({ error: 'Darshan is already completed.' });
+      }
       booking.verificationStatus = 'completed';
       booking.status = 'completed';
       booking.darshanCompletedAt = new Date();
