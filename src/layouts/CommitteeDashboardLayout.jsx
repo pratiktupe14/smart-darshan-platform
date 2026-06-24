@@ -8,6 +8,17 @@ export default function CommitteeDashboardLayout() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  React.useEffect(() => {
+    if (isMobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isMobileMenuOpen]);
+
   const handleLogout = () => {
     if (window.confirm(t('confirmLogout'))) {
       localStorage.clear();
@@ -275,7 +286,7 @@ export default function CommitteeDashboardLayout() {
       )}
 
       {/* SideNavBar */}
-      <aside className={`fixed left-0 top-0 h-full w-64 bg-surface-container-low pt-20 px-4 space-y-2 border-r border-outline-variant z-40 transition-transform duration-300 ease-in-out flex flex-col ${
+      <aside className={`fixed left-0 top-0 h-full w-64 bg-surface-container-low pt-20 px-4 space-y-2 border-r border-outline-variant z-40 transition-transform duration-300 ease-in-out flex flex-col overflow-y-auto ${
         isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
       } lg:translate-x-0`}>
         <div className="mb-6 px-4">
