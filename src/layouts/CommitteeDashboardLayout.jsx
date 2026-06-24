@@ -46,18 +46,40 @@ export default function CommitteeDashboardLayout() {
   // Metrics State
   const [totalToday, setTotalToday] = useState(0);
   const [currentlyInside, setCurrentlyInside] = useState(0);
+  const [bookingsToday, setBookingsToday] = useState(0);
+  const [totalDevoteesInside, setTotalDevoteesInside] = useState(0);
+  const [totalPendingEntries, setTotalPendingEntries] = useState(0);
+  const [qrScansToday, setQrScansToday] = useState(0);
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
 
   React.useEffect(() => {
     const fetchData = async () => {
       try {
         const statsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats`);
+        const activitiesRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats/activities`);
         const queueRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
         const vipRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip`);
+        const announcementsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/announcements`);
         
         if (statsRes.ok) {
           const stats = await statsRes.json();
           setTotalToday(stats.visitorsToday);
           setCurrentlyInside(stats.visitorsInside);
+          setBookingsToday(stats.bookingsToday || 0);
+          setTotalDevoteesInside(stats.totalDevoteesInside || 0);
+          setTotalPendingEntries(stats.totalPendingEntries || 0);
+          setQrScansToday(stats.qrScansToday || 0);
+        }
+        
+        if (activitiesRes.ok) {
+          const acts = await activitiesRes.json();
+          setRecentActivities(acts);
+        }
+
+        if (announcementsRes.ok) {
+          const ann = await announcementsRes.json();
+          setAnnouncements(ann);
         }
         
         if (queueRes.ok) {
@@ -362,6 +384,12 @@ export default function CommitteeDashboardLayout() {
           vipPool, setVipPool,
           totalToday, setTotalToday,
           currentlyInside, setCurrentlyInside,
+          bookingsToday,
+          totalDevoteesInside,
+          totalPendingEntries,
+          qrScansToday,
+          recentActivities,
+          announcements, setAnnouncements,
           showToast
         }} />
       </main>

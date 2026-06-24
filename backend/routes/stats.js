@@ -34,6 +34,23 @@ router.get('/', async (req, res) => {
     // cancelledBookings
     const cancelledBookings = await Booking.countDocuments({ status: 'cancelled' });
     
+    // totalDevoteesInside (Status = verified_entry)
+    const devoteesInside = await Booking.find({ verificationStatus: 'verified_entry' });
+    let totalDevoteesInside = 0;
+    devoteesInside.forEach(b => totalDevoteesInside += (b.persons || 1));
+
+    // totalPendingEntries (Status = none)
+    const pendingEntriesBookings = await Booking.find({ verificationStatus: 'none', status: { $ne: 'cancelled' } });
+    let totalPendingEntries = 0;
+    pendingEntriesBookings.forEach(b => totalPendingEntries += (b.persons || 1));
+
+    // qrScansToday
+    const bookingsWithHistory = await Booking.find({ 'counterHistory.timestamp': { $gte: startOfDay } });
+    let qrScansToday = 0;
+    bookingsWithHistory.forEach(b => {
+      qrScansToday += b.counterHistory.filter(h => new Date(h.timestamp) >= startOfDay).length;
+    });
+
     res.json({
       bookingsToday,
       visitorsToday,
@@ -42,9 +59,40 @@ router.get('/', async (req, res) => {
       vipVisitors,
       completedDarshans,
       cancelledBookings,
+      totalDevoteesInside,
+      totalPendingEntries,
+      qrScansToday,
     });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Server Error' });
+  }
+});
+
+// Get recent activities across all bookings
+router.get('/activities', async (req, res) => {
+  try {
+    const bookings = await Booking.find({ 'counterHistory': { $not: { $size: 0 } } }).lean();
+    let activities = [];
+    bookings.forEach(b => {
+      b.counterHistory.forEach(h => {
+        activities.push({
+          action: h.status,
+          token: b.qrCode,
+          time: new Date(h.timestamp),
+          gate: `Counter ${h.counterNumber}`,
+          name: b.fullName
+        });
+      });
+    });
+    
+    // Sort descending by time
+    activities.sort((a, b) => b.time - a.time);
+    
+    res.json(activities.slice(0, 10)); // Top 10 recent activities
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server Error fetching activities' });
   }
 });
 
