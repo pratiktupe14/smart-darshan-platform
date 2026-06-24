@@ -330,4 +330,43 @@ router.post('/verify-scanner/action', async (req, res) => {
   }
 });
 
+// Get recent scans for a specific counter
+router.get('/verify-scanner/recent/:counterNumber', async (req, res) => {
+  try {
+    const counterNumber = parseInt(req.params.counterNumber);
+    if (!counterNumber) {
+      return res.status(400).json({ error: 'Counter Number is required.' });
+    }
+
+    // Find bookings where counterHistory has this counterNumber
+    const bookings = await Booking.find({
+      'counterHistory.counterNumber': counterNumber
+    }).lean();
+
+    const recentScans = bookings.map(b => {
+      // Find the latest specific history entry for this counter
+      const historyEntries = b.counterHistory.filter(h => h.counterNumber === counterNumber);
+      historyEntries.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      const historyEntry = historyEntries[0];
+
+      return {
+        name: b.fullName,
+        persons: b.persons,
+        gate: b.gateNo || 'Main Gate',
+        time: historyEntry ? new Date(historyEntry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '',
+        status: historyEntry ? historyEntry.status : 'Verified',
+        timestamp: historyEntry ? new Date(historyEntry.timestamp) : new Date(0)
+      };
+    });
+
+    // Sort the mapped results descending by the specific counter timestamp
+    recentScans.sort((a, b) => b.timestamp - a.timestamp);
+
+    res.json(recentScans.slice(0, 10)); // return top 10
+  } catch (err) {
+    console.error('Recent scans error:', err);
+    res.status(500).json({ error: 'Server Error fetching recent scans.' });
+  }
+});
+
 module.exports = router;

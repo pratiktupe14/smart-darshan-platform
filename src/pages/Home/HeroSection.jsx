@@ -33,8 +33,8 @@ export default function HeroSection() {
           </div>
         </div>
         <div className="relative mt-8 lg:mt-0">
-          <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border border-on-surface/5">
-            <img className="w-full h-[250px] lg:h-[500px] object-cover" alt="A grand, intricate Indian temple architecture with golden spires during sunset..." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBO33e142OHfbKh5UOWXJCCm5jzZtGlJ5V4ROsWrcSYXQ3BaVduLyOCXVYxRHvbPNgliJ6-7MKxzYIWsZICwYrQw4C3auJAxGYnJv4Kc4I_ZL1Nr6CunxLCzHYpEkmYTiO8nQsi3Hdr3Hm2kACtIkcec6bSbboAm_WgFX15BWB405spPcOKMFIVvyvVavPw5kvF0GcPx8Kjw4W3UWsDgTtops5iM4f0p_rI_dQ_qzU9T67zH26P9erUVogzw_JaVTpjP5Aia2UHzUA" />
+          <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border border-on-surface/5 bg-surface/50">
+            <img className="w-full h-auto object-cover" alt="Temple Hero View" src="/hero-temple.jpg" />
           </div>
         </div>
       </div>

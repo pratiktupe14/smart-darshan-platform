@@ -47,12 +47,25 @@ export default function Scanner() {
   const lastScanTimeRef = useRef(0);
 
   // Dynamic recent scans list state
-  const [recentScansList, setRecentScansList] = useState([
-    { name: 'Anjali Sharma', persons: 4, gate: 'Gate 2', time: '09:42 AM', status: 'Verified' },
-    { name: 'Vikram Mehta', persons: 1, gate: 'VIP Entry', time: '09:38 AM', status: 'Completed' },
-    { name: 'Sunita Deshpande', persons: 2, gate: 'Gate 1', time: '09:35 AM', status: 'Waiting' },
-    { name: 'Amit Patel', persons: 5, gate: 'Parking A', time: '09:31 AM', status: 'Verified' }
-  ]);
+  const [recentScansList, setRecentScansList] = useState([]);
+
+  // Fetch recent scans
+  const fetchRecentScans = async () => {
+    if (!counterId) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/verify-scanner/recent/${counterId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setRecentScansList(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch recent scans', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecentScans();
+  }, [counterId]);
 
   // Trigger scanner verification route
   const triggerVerification = async (queryVal) => {
@@ -71,21 +84,8 @@ export default function Scanner() {
         setScannedDevotee(data.booking);
         showToast(data.message);
 
-        // Add to recent scans
-        const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const statusMap = {
-          'verified_entry': 'Verified',
-          'in_queue': 'In Queue',
-          'completed': 'Completed'
-        };
-        const newScan = {
-          name: data.booking.fullName,
-          persons: data.booking.persons,
-          time: nowTime,
-          status: statusMap[data.booking.verificationStatus] || 'Verified',
-          gate: data.booking.gateNo || 'Gate 1'
-        };
-        setRecentScansList(prev => [newScan, ...prev.slice(0, 4)]);
+        // Refresh recent scans
+        fetchRecentScans();
       } else {
         setScannedDevotee(null); // Clear previous visitor data if search/validation fails
         showToast(data.error || 'Verification failed.');
@@ -118,21 +118,8 @@ export default function Scanner() {
         setSearchVehicle('');
         showToast(data.message);
 
-        // Add to recent scans
-        const nowTime = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const statusMap = {
-          'verified_entry': 'Verified',
-          'in_queue': 'In Queue',
-          'completed': 'Completed'
-        };
-        const newScan = {
-          name: data.booking.fullName,
-          persons: data.booking.persons,
-          time: nowTime,
-          status: statusMap[data.booking.verificationStatus] || 'Verified',
-          gate: data.booking.gateNo || 'Gate 1'
-        };
-        setRecentScansList(prev => [newScan, ...prev.slice(0, 4)]);
+        // Refresh recent scans
+        fetchRecentScans();
       } else {
         showToast(data.error || 'Failed to update counter status.');
       }
@@ -587,43 +574,61 @@ export default function Scanner() {
                 )}
               </div>
 
-              <div className="mt-8 flex flex-wrap gap-4">
-                {(!counterId || counterId === '1') && (
-                  <button 
-                    disabled={['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus)}
-                    onClick={() => handleCounterAction(1)}
-                    className={`flex-1 min-w-[140px] py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all ${
-                      ['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-                    }`}
-                  >
-                    <span className="material-symbols-outlined">verified</span>
-                    {t('verifyEntry') || 'Verify Entry'}
-                  </button>
+              <div className="mt-8 flex flex-col gap-4">
+                {(!counterId || counterId === '1') && ['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) && (
+                  <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
+                    Entry Already Verified
+                  </div>
                 )}
-                {(!counterId || counterId === '2') && (
-                  <button 
-                    disabled={scannedDevotee.verificationStatus !== 'verified_entry'}
-                    onClick={() => handleCounterAction(2)}
-                    className={`flex-1 min-w-[140px] py-3 border-2 border-secondary text-secondary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all ${
-                      scannedDevotee.verificationStatus !== 'verified_entry' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-                    }`}
-                  >
-                    <span className="material-symbols-outlined">hourglass_top</span>
-                    {t('markInQueue') || 'Mark In Queue'}
-                  </button>
+                {(!counterId || counterId === '2') && ['in_queue', 'completed'].includes(scannedDevotee.verificationStatus) && (
+                  <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
+                    Visitor Already Added to Queue
+                  </div>
                 )}
-                {(!counterId || counterId === '3') && (
-                  <button 
-                    disabled={scannedDevotee.verificationStatus !== 'in_queue'}
-                    onClick={() => handleCounterAction(3)}
-                    className={`flex-1 min-w-[140px] py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-highest active:scale-95 transition-all ${
-                      scannedDevotee.verificationStatus !== 'in_queue' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-                    }`}
-                  >
-                    <span className="material-symbols-outlined">check_circle</span>
-                    Mark Darshan Completed
-                  </button>
+                {(!counterId || counterId === '3') && ['completed'].includes(scannedDevotee.verificationStatus) && (
+                  <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
+                    Darshan Already Completed
+                  </div>
                 )}
+
+                <div className="flex flex-wrap gap-4">
+                  {(!counterId || counterId === '1') && (
+                    <button 
+                      disabled={['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus)}
+                      onClick={() => handleCounterAction(1)}
+                      className={`flex-1 min-w-[140px] py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all ${
+                        ['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                      }`}
+                    >
+                      <span className="material-symbols-outlined">verified</span>
+                      {t('verifyEntry') || 'Verify Entry'}
+                    </button>
+                  )}
+                  {(!counterId || counterId === '2') && (
+                    <button 
+                      disabled={scannedDevotee.verificationStatus !== 'verified_entry'}
+                      onClick={() => handleCounterAction(2)}
+                      className={`flex-1 min-w-[140px] py-3 border-2 border-secondary text-secondary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all ${
+                        scannedDevotee.verificationStatus !== 'verified_entry' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                      }`}
+                    >
+                      <span className="material-symbols-outlined">hourglass_top</span>
+                      {t('markInQueue') || 'Mark In Queue'}
+                    </button>
+                  )}
+                  {(!counterId || counterId === '3') && (
+                    <button 
+                      disabled={scannedDevotee.verificationStatus !== 'in_queue'}
+                      onClick={() => handleCounterAction(3)}
+                      className={`flex-1 min-w-[140px] py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-highest active:scale-95 transition-all ${
+                        scannedDevotee.verificationStatus !== 'in_queue' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
+                      }`}
+                    >
+                      <span className="material-symbols-outlined">check_circle</span>
+                      Mark Darshan Completed
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           ) : (
@@ -637,51 +642,7 @@ export default function Scanner() {
         {/* Right Column: Stats & Recent History */}
         <div className="lg:col-span-5 flex flex-col gap-6">
           
-          {/* Stats Grid */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white border border-outline-variant p-4 rounded-xl hover:-translate-y-1 transition-transform shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-primary/10 rounded-lg text-primary">
-                  <span className="material-symbols-outlined">group</span>
-                </div>
-                <p className="text-xs font-semibold text-on-surface-variant">{t('totalToday')}</p>
-              </div>
-              <p className="text-3xl font-bold text-primary">1,284</p>
-              <div className="mt-2 h-1.5 w-full bg-surface-container-highest rounded-full overflow-hidden">
-                <div className="bg-primary h-full w-3/4 rounded-full"></div>
-              </div>
-            </div>
-            <div className="bg-white border border-outline-variant p-4 rounded-xl hover:-translate-y-1 transition-transform shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-tertiary/10 rounded-lg text-tertiary">
-                  <span className="material-symbols-outlined">church</span>
-                </div>
-                <p className="text-xs font-semibold text-on-surface-variant">{t('insideTemple')}</p>
-              </div>
-              <p className="text-3xl font-bold text-tertiary">412</p>
-              <p className="text-[10px] text-tertiary mt-1 font-bold">Capacity: 60%</p>
-            </div>
-            <div className="bg-white border border-outline-variant p-4 rounded-xl hover:-translate-y-1 transition-transform shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-secondary/10 rounded-lg text-secondary">
-                  <span className="material-symbols-outlined">hourglass_empty</span>
-                </div>
-                <p className="text-xs font-semibold text-on-surface-variant">{t('queueCount')}</p>
-              </div>
-              <p className="text-3xl font-bold text-secondary">85</p>
-              <p className="text-[10px] text-on-surface-variant mt-1">Est. wait: 12 mins</p>
-            </div>
-            <div className="bg-white border border-outline-variant p-4 rounded-xl hover:-translate-y-1 transition-transform shadow-sm">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-error/10 rounded-lg text-error">
-                  <span className="material-symbols-outlined">pending_actions</span>
-                </div>
-                <p className="text-xs font-semibold text-on-surface-variant">{t('pending')}</p>
-              </div>
-              <p className="text-3xl font-bold text-error">12</p>
-              <p className="text-[10px] text-on-surface-variant mt-1">Requiring assistance</p>
-            </div>
-          </div>
+
 
           {/* Recent Scans List */}
           <div className="bg-white border border-outline-variant rounded-xl flex-1 flex flex-col overflow-hidden shadow-sm">
