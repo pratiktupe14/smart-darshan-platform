@@ -1,53 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 export default function VIPManagement() {
-  const [statusMessage, setStatusMessage] = useState('Intermittent VIP Access Active');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterDate, setFilterDate] = useState('');
-  
-  // VIP Registry State
   const [vipRegistry, setVipRegistry] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  React.useEffect(() => {
-    const fetchVIPs = async () => {
-      try {
-        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip`);
-        if (res.ok) {
-          const data = await res.json();
-          setVipRegistry(data.map(v => ({
-            id: v._id,
-            name: v.name,
-            mobile: v.mobileNumber,
-            date: new Date(v.expectedArrivalTime).toISOString().split('T')[0],
-            persons: v.partySize,
-            status: v.status.charAt(0).toUpperCase() + v.status.slice(1),
-            category: 'VIP'
-          })));
-        }
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    fetchVIPs();
-  }, []);
-
-  // Recent Activities State
-  const [activities, setActivities] = useState([
-    { id: 1, text: 'VIP Amit Shah entry activated by Gate 2 Operator.', time: '10:30 AM', source: 'System Log', type: 'bolt' },
-    { id: 2, text: 'Nirmala Sitharaman visit status updated to Completed.', time: '09:15 AM', source: 'Auto Updated', type: 'check' },
-    { id: 3, text: 'New VIP booking added for Rajnath Singh (Platinum Category).', time: 'Yesterday, 06:45 PM', source: 'Admin Panel', type: 'add' }
-  ]);
-
-  // Add VIP Entry Form State
+  // Form State
   const [form, setForm] = useState({
     name: '',
-    mobile: '',
-    vehicleNo: '',
-    category: 'Gold',
+    mobileNumber: '',
+    category: 'VIP Devotee',
     date: '',
     persons: '1',
+    idProof: '',
+    priorityLevel: 'Medium',
     remarks: ''
   });
+
+  const fetchVIPs = async () => {
+    try {
+      setIsLoading(true);
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip`);
+      if (res.ok) {
+        const data = await res.json();
+        setVipRegistry(data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch VIPs', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchVIPs();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -56,7 +44,7 @@ export default function VIPManagement() {
 
   const handleAddVIP = async (e) => {
     e.preventDefault();
-    if (!form.name || !form.mobile || !form.date) {
+    if (!form.name || !form.mobileNumber || !form.date) {
       alert('Please fill in Name, Mobile Number, and Visit Date.');
       return;
     }
@@ -64,11 +52,13 @@ export default function VIPManagement() {
     try {
         const payload = {
             name: form.name,
-            mobileNumber: form.mobile,
-            vehicleNumber: form.vehicleNo,
-            partySize: parseInt(form.persons, 10) || 1,
+            mobileNumber: form.mobileNumber,
+            category: form.category,
+            persons: parseInt(form.persons, 10) || 1,
             expectedArrivalTime: form.date,
-            specialRequests: form.remarks
+            idProof: form.idProof,
+            priorityLevel: form.priorityLevel,
+            remarks: form.remarks
         };
         const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip`, {
             method: 'POST',
@@ -77,43 +67,18 @@ export default function VIPManagement() {
         });
         
         if (res.ok) {
-            const added = await res.json();
-            const newVIP = {
-              id: added._id,
-              name: added.name,
-              mobile: added.mobileNumber,
-              date: new Date(added.expectedArrivalTime).toISOString().split('T')[0],
-              persons: added.partySize,
-              status: added.status.charAt(0).toUpperCase() + added.status.slice(1),
-              category: form.category
-            };
-
-            setVipRegistry(prev => [newVIP, ...prev]);
-
-            // Add activity log
-            const now = new Date();
-            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const newActivity = {
-              id: activities.length + 1,
-              text: `New VIP booking added for ${form.name} (${form.category} Category).`,
-              time: timeStr,
-              source: 'Admin Panel',
-              type: 'add'
-            };
-            setActivities(prev => [newActivity, ...prev]);
-
-            // Reset Form
+            await fetchVIPs();
             setForm({
               name: '',
-              mobile: '',
-              vehicleNo: '',
-              category: 'Gold',
+              mobileNumber: '',
+              category: 'VIP Devotee',
               date: '',
               persons: '1',
+              idProof: '',
+              priorityLevel: 'Medium',
               remarks: ''
             });
-
-            alert('VIP Entry added successfully to registry!');
+            alert('VIP Entry generated successfully!');
         }
     } catch (e) {
         console.error(e);
@@ -121,46 +86,68 @@ export default function VIPManagement() {
     }
   };
 
-  const triggerQueueAction = (actionType) => {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    let text = '';
-    let status = '';
-
-    if (actionType === 'activate') {
-      text = 'VIP priority passage activated globally.';
-      status = 'Exclusive VIP Entry Passage Active';
-    } else if (actionType === 'end') {
-      text = 'VIP priority passage terminated.';
-      status = 'Normal queue flow restored';
-    } else if (actionType === 'resume') {
-      text = 'Normal queue routing resumed.';
-      status = 'Intermittent VIP Access Active';
+  const handleCompleteDarshan = async (id) => {
+    if (!window.confirm('Mark Darshan as Completed?')) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip/${id}/complete`, {
+        method: 'PUT'
+      });
+      if (res.ok) {
+        fetchVIPs();
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to update status');
     }
+  };
 
-    setStatusMessage(status);
+  const handleDelete = async (id) => {
+    if (!window.confirm('Are you sure you want to delete this VIP entry?')) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip/${id}`, {
+        method: 'DELETE'
+      });
+      if (res.ok) {
+        fetchVIPs();
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Failed to delete VIP');
+    }
+  };
 
-    const newActivity = {
-      id: activities.length + 1,
-      text,
-      time: timeStr,
-      source: 'System Log',
-      type: 'bolt'
-    };
-    setActivities(prev => [newActivity, ...prev]);
+  const handleView = (vip) => {
+    alert(`VIP Details:\nToken: ${vip.tokenNumber}\nName: ${vip.name}\nStatus: ${vip.status}\nCategory: ${vip.category}\nMobile: ${vip.mobileNumber}\nPersons: ${vip.persons}\nVisit Date: ${new Date(vip.expectedArrivalTime).toLocaleDateString()}\nID Proof: ${vip.idProof || 'N/A'}\nPriority Level: ${vip.priorityLevel || 'N/A'}\nRemarks: ${vip.remarks || 'None'}`);
+  };
+
+  const handleEdit = (vip) => {
+    const newName = window.prompt("Edit VIP Name:", vip.name);
+    if (newName && newName !== vip.name) {
+      fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip/${vip._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName })
+      }).then(() => fetchVIPs());
+    }
   };
 
   // Stats calculation
-  const totalToday = vipRegistry.filter(v => v.date === new Date().toISOString().split('T')[0]).length;
-  const activeCount = vipRegistry.filter(v => v.status === 'Active').length;
-  const completedCount = vipRegistry.filter(v => v.status === 'Completed').length;
-  const upcomingCount = vipRegistry.filter(v => v.status === 'Scheduled').length;
+  const todayStr = new Date().toISOString().split('T')[0];
+  const totalVIPs = vipRegistry.length;
+  const activePasses = vipRegistry.filter(v => v.status === 'Pass Generated').length;
+  const completedDarshans = vipRegistry.filter(v => v.status === 'Darshan Completed').length;
+  const todayVisits = vipRegistry.filter(v => {
+    try {
+      return new Date(v.expectedArrivalTime).toISOString().split('T')[0] === todayStr;
+    } catch(e) { return false; }
+  }).length;
 
   // Filtering list
   const filteredVIPs = vipRegistry.filter(vip => {
-    const matchesSearch = vip.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          vip.mobile.includes(searchQuery);
-    const matchesDate = filterDate ? vip.date === filterDate : true;
+    const matchesSearch = (vip.name || '').toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          (vip.mobileNumber || '').includes(searchQuery) ||
+                          (vip.tokenNumber || '').toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesDate = filterDate ? new Date(vip.expectedArrivalTime).toISOString().split('T')[0] === filterDate : true;
     return matchesSearch && matchesDate;
   });
 
@@ -171,18 +158,8 @@ export default function VIPManagement() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-on-surface">VIP Management</h1>
           <p className="text-on-surface-variant text-sm font-medium mt-1">
-            Manage VIP visitors, priority darshan entries, and VIP queue access.
+            Manage VIP visitors, passes, and darshan completion.
           </p>
-        </div>
-        <div className="flex gap-3">
-          <button className="px-5 py-2.5 rounded-xl border border-secondary text-secondary font-bold text-sm hover:bg-secondary/5 transition-colors flex items-center gap-2 active:scale-95">
-            <span className="material-symbols-outlined text-sm">download</span>
-            Export List
-          </button>
-          <button className="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all flex items-center gap-2 active:scale-95">
-            <span className="material-symbols-outlined text-sm">add</span>
-            Add VIP Entry
-          </button>
         </div>
       </div>
 
@@ -191,21 +168,21 @@ export default function VIPManagement() {
         {/* Stat Card 1 */}
         <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant flex items-center gap-4 transition-all hover:shadow-md">
           <div className="w-12 h-12 rounded-xl bg-primary-container/20 flex items-center justify-center text-primary">
-            <span className="material-symbols-outlined filled-icon" style={{ fontVariationSettings: "'FILL' 1" }}>stars</span>
+            <span className="material-symbols-outlined filled-icon" style={{ fontVariationSettings: "'FILL' 1" }}>groups</span>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">VIP Visitors Today</p>
-            <h3 className="text-2xl font-bold text-on-surface">{totalToday || 156}</h3>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Total VIP Visitors</p>
+            <h3 className="text-2xl font-bold text-on-surface">{totalVIPs}</h3>
           </div>
         </div>
         {/* Stat Card 2 */}
         <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant flex items-center gap-4 transition-all hover:shadow-md">
           <div className="w-12 h-12 rounded-xl bg-tertiary-container/20 flex items-center justify-center text-tertiary">
-            <span className="material-symbols-outlined">running_with_errors</span>
+            <span className="material-symbols-outlined">confirmation_number</span>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Active VIP Entries</p>
-            <h3 className="text-2xl font-bold text-on-surface">{activeCount || 12}</h3>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Active VIP Passes</p>
+            <h3 className="text-2xl font-bold text-on-surface">{activePasses}</h3>
           </div>
         </div>
         {/* Stat Card 3 */}
@@ -214,71 +191,30 @@ export default function VIPManagement() {
             <span className="material-symbols-outlined filled-icon" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Completed VIP Visits</p>
-            <h3 className="text-2xl font-bold text-on-surface">{completedCount || 140}</h3>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Completed VIP Darshans</p>
+            <h3 className="text-2xl font-bold text-on-surface">{completedDarshans}</h3>
           </div>
         </div>
         {/* Stat Card 4 */}
         <div className="bg-surface-container-lowest p-5 rounded-xl border border-outline-variant flex items-center gap-4 transition-all hover:shadow-md">
           <div className="w-12 h-12 rounded-xl bg-secondary-container/20 flex items-center justify-center text-secondary">
-            <span className="material-symbols-outlined">event</span>
+            <span className="material-symbols-outlined">today</span>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Upcoming VIP Visits</p>
-            <h3 className="text-2xl font-bold text-on-surface">{upcomingCount || 4}</h3>
+            <p className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Today's VIP Visits</p>
+            <h3 className="text-2xl font-bold text-on-surface">{todayVisits}</h3>
           </div>
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Left Column: Queue Control & Entry Form */}
+        {/* Left Column: Entry Form */}
         <div className="lg:col-span-4 space-y-6">
-          {/* VIP Queue Control */}
-          <div className="bg-surface-container-lowest rounded-xl border-t-2 border-primary border-x border-b border-outline-variant p-6 shadow-soft overflow-hidden relative">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-on-surface flex items-center">
-                <span className="material-symbols-outlined mr-2 text-primary">traffic</span>
-                Queue Control
-              </h2>
-              <div className="flex items-center gap-2 px-3 py-1 bg-green-50 rounded-full">
-                <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                <span className="text-[10px] font-bold text-green-700">LIVE</span>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <button 
-                onClick={() => triggerQueueAction('activate')}
-                className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 active:scale-[0.98] transition-all shadow-md"
-              >
-                <span className="material-symbols-outlined">bolt</span>
-                Activate VIP Entry
-              </button>
-              <button 
-                onClick={() => triggerQueueAction('end')}
-                className="w-full flex items-center justify-center gap-2 py-4 border-2 border-secondary text-secondary rounded-xl font-bold text-sm hover:bg-secondary/5 active:scale-[0.98] transition-all"
-              >
-                <span className="material-symbols-outlined">stop_circle</span>
-                End VIP Entry
-              </button>
-              <button 
-                onClick={() => triggerQueueAction('resume')}
-                className="w-full flex items-center justify-center gap-2 py-3 text-on-surface-variant font-bold text-sm hover:text-primary transition-colors"
-              >
-                <span className="material-symbols-outlined">refresh</span>
-                Resume Normal Queue
-              </button>
-            </div>
-            <div className="mt-6 pt-6 border-t border-outline-variant/30 text-center">
-              <p className="text-[10px] font-bold text-on-surface-variant mb-1 uppercase tracking-wider">CURRENT STATUS</p>
-              <p className="text-sm font-bold text-primary">{statusMessage}</p>
-            </div>
-          </div>
-
           {/* Add VIP Entry Form */}
           <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-soft">
             <h2 className="text-lg font-bold text-on-surface mb-6 flex items-center">
               <span className="material-symbols-outlined mr-2 text-primary">person_add</span>
-              Add VIP Entry
+              Generate VIP Pass
             </h2>
             <form onSubmit={handleAddVIP} className="space-y-4">
               <div className="space-y-1">
@@ -296,8 +232,8 @@ export default function VIPManagement() {
                 <div className="space-y-1">
                   <label className="text-xs font-bold text-on-surface-variant">Mobile Number</label>
                   <input 
-                    name="mobile"
-                    value={form.mobile}
+                    name="mobileNumber"
+                    value={form.mobileNumber}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-xl border border-outline-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm" 
                     placeholder="+91 98765 00000" 
@@ -305,13 +241,13 @@ export default function VIPManagement() {
                   />
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-on-surface-variant">Vehicle No.</label>
+                  <label className="text-xs font-bold text-on-surface-variant">ID Proof (Optional)</label>
                   <input 
-                    name="vehicleNo"
-                    value={form.vehicleNo}
+                    name="idProof"
+                    value={form.idProof}
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-xl border border-outline-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm" 
-                    placeholder="AB 01 CD 2345" 
+                    placeholder="Aadhar / PAN" 
                     type="text"
                   />
                 </div>
@@ -325,12 +261,29 @@ export default function VIPManagement() {
                     onChange={handleInputChange}
                     className="w-full px-4 py-2 rounded-xl border border-outline-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm bg-transparent appearance-none"
                   >
-                    <option value="Gold">Gold</option>
-                    <option value="Platinum">Platinum</option>
-                    <option value="State Guest">State Guest</option>
+                    <option value="Trustee">Trustee</option>
+                    <option value="Donor">Donor</option>
+                    <option value="Guest">Guest</option>
+                    <option value="Special Guest">Special Guest</option>
+                    <option value="VIP Devotee">VIP Devotee</option>
                   </select>
                 </div>
                 <div className="space-y-1">
+                  <label className="text-xs font-bold text-on-surface-variant">Priority Level</label>
+                  <select 
+                    name="priorityLevel"
+                    value={form.priorityLevel}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 rounded-xl border border-outline-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm bg-transparent appearance-none"
+                  >
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-1">
                   <label className="text-xs font-bold text-on-surface-variant">Visit Date</label>
                   <input 
                     name="date"
@@ -340,20 +293,20 @@ export default function VIPManagement() {
                     type="date"
                   />
                 </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-on-surface-variant">Number of Persons</label>
+                  <input 
+                    name="persons"
+                    value={form.persons}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-2 rounded-xl border border-outline-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm" 
+                    min="1" 
+                    type="number"
+                  />
+                </div>
               </div>
               <div className="space-y-1">
-                <label className="text-xs font-bold text-on-surface-variant">Number of Persons</label>
-                <input 
-                  name="persons"
-                  value={form.persons}
-                  onChange={handleInputChange}
-                  className="w-full px-4 py-2 rounded-xl border border-outline-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm" 
-                  min="1" 
-                  type="number"
-                />
-              </div>
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-on-surface-variant">Remarks</label>
+                <label className="text-xs font-bold text-on-surface-variant">Remarks / Notes</label>
                 <textarea 
                   name="remarks"
                   value={form.remarks}
@@ -367,13 +320,13 @@ export default function VIPManagement() {
                 type="submit"
                 className="w-full py-3 bg-primary text-on-primary rounded-xl font-bold text-sm transition-all active:scale-[0.98] shadow-md hover:bg-primary/95 mt-2"
               >
-                Add VIP Entry
+                Generate VIP Pass
               </button>
             </form>
           </div>
         </div>
 
-        {/* Right Column: List and Activities */}
+        {/* Right Column: List */}
         <div className="lg:col-span-8 space-y-6">
           {/* Search & Filter Row */}
           <div className="bg-surface-container-lowest p-4 rounded-xl border border-outline-variant flex flex-col md:flex-row items-center gap-4">
@@ -383,7 +336,7 @@ export default function VIPManagement() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-outline-variant focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary text-sm" 
-                placeholder="Search by Name or Mobile..." 
+                placeholder="Search by Name, Mobile or Token..." 
                 type="text"
               />
             </div>
@@ -413,50 +366,77 @@ export default function VIPManagement() {
               <table className="w-full text-left">
                 <thead className="bg-surface-container-low text-xs font-bold text-on-surface-variant uppercase tracking-wider">
                   <tr>
-                    <th className="px-6 py-4">VIP Name</th>
-                    <th className="px-6 py-4">Mobile Number</th>
+                    <th className="px-6 py-4">VIP Token</th>
+                    <th className="px-6 py-4">VIP Details</th>
                     <th className="px-6 py-4">Visit Date</th>
-                    <th className="px-6 py-4 text-center">Persons</th>
                     <th className="px-6 py-4">Status</th>
-                    <th className="px-6 py-4">Action</th>
+                    <th className="px-6 py-4">Created Date</th>
+                    <th className="px-6 py-4 text-center">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant/30 text-sm">
-                  {filteredVIPs.map((vip) => (
-                    <tr key={vip.id} className="hover:bg-surface-container-low/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center">
-                          <div className="w-8 h-8 rounded-full bg-secondary-container/30 text-secondary flex items-center justify-center mr-3 font-bold text-[12px]">
-                            {vip.name.split(' ').map(n => n[0]).join('')}
-                          </div>
-                          <span className="font-bold text-on-surface">{vip.name}</span>
-                        </div>
+                  {!isLoading && filteredVIPs.map((vip) => (
+                    <tr key={vip._id} className="hover:bg-surface-container-low/50 transition-colors">
+                      <td className="px-6 py-4 font-bold text-primary whitespace-nowrap">
+                        {vip.tokenNumber}
                       </td>
-                      <td className="px-6 py-4 font-medium text-on-surface-variant">{vip.mobile}</td>
-                      <td className="px-6 py-4 font-medium text-on-surface-variant">{vip.date}</td>
-                      <td className="px-6 py-4 text-center font-bold">{vip.persons}</td>
                       <td className="px-6 py-4">
+                        <div className="font-bold text-on-surface">{vip.name}</div>
+                        <div className="text-xs text-on-surface-variant mt-0.5">{vip.category} • {vip.persons} Persons</div>
+                        <div className="text-xs text-on-surface-variant mt-0.5">{vip.mobileNumber}</div>
+                      </td>
+                      <td className="px-6 py-4 font-medium text-on-surface-variant whitespace-nowrap">
+                        {new Date(vip.expectedArrivalTime).toLocaleDateString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`px-3 py-1 rounded-full text-xs font-bold border ${
-                          vip.status === 'Active' 
+                          vip.status === 'Pass Generated' 
                             ? 'bg-primary-container/20 text-primary border-primary-container/40' 
-                            : vip.status === 'Scheduled'
-                            ? 'bg-surface-container-high text-on-surface-variant border-outline-variant/50'
-                            : vip.status === 'Completed'
-                            ? 'bg-green-100 text-green-700 border-green-200'
-                            : 'bg-red-50 text-red-600 border-red-100'
+                            : 'bg-green-100 text-green-700 border-green-200'
                         }`}>
                           {vip.status}
                         </span>
                       </td>
+                      <td className="px-6 py-4 text-xs font-medium text-on-surface-variant whitespace-nowrap">
+                        {new Date(vip.createdAt).toLocaleDateString()}
+                      </td>
                       <td className="px-6 py-4">
-                        <button className="text-primary hover:underline font-bold text-xs">Details</button>
+                         <div className="flex items-center justify-center gap-3">
+                           <button onClick={() => handleView(vip)} className="text-secondary hover:text-secondary/80 font-bold text-xs" title="View Details">
+                             <span className="material-symbols-outlined text-[18px]">visibility</span>
+                           </button>
+                           <button onClick={() => handleEdit(vip)} className="text-blue-600 hover:text-blue-800 font-bold text-xs" title="Edit VIP">
+                             <span className="material-symbols-outlined text-[18px]">edit</span>
+                           </button>
+                           {vip.status === 'Pass Generated' && (
+                             <button onClick={() => handleCompleteDarshan(vip._id)} className="text-green-600 hover:text-green-800 font-bold text-xs" title="Mark Darshan Completed">
+                               <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                             </button>
+                           )}
+                           <button onClick={() => handleDelete(vip._id)} className="text-error hover:text-error/80 font-bold text-xs" title="Delete Entry">
+                             <span className="material-symbols-outlined text-[18px]">delete</span>
+                           </button>
+                         </div>
                       </td>
                     </tr>
                   ))}
-                  {filteredVIPs.length === 0 && (
+                  {!isLoading && filteredVIPs.length === 0 && (
                     <tr>
-                      <td colSpan="6" className="text-center py-8 text-on-surface-variant font-medium">
-                        No VIP registry entries match filters.
+                      <td colSpan="6" className="text-center py-12">
+                         <div className="flex flex-col items-center justify-center text-on-surface-variant">
+                           <span className="material-symbols-outlined text-4xl mb-2 opacity-50">search_off</span>
+                           <p className="font-medium">No VIP Records Found</p>
+                         </div>
+                      </td>
+                    </tr>
+                  )}
+                  {isLoading && (
+                    <tr>
+                      <td colSpan="6" className="text-center py-12">
+                         <div className="flex flex-col items-center justify-center text-primary">
+                           <span className="material-symbols-outlined text-4xl mb-2 animate-spin">sync</span>
+                           <p className="font-medium text-sm">Loading records...</p>
+                         </div>
                       </td>
                     </tr>
                   )}
@@ -465,49 +445,8 @@ export default function VIPManagement() {
             </div>
             <div className="p-4 border-t border-outline-variant flex justify-between items-center bg-surface-container-low/30">
               <p className="text-xs text-on-surface-variant font-medium">
-                Showing {filteredVIPs.length} of {vipRegistry.length} entries
+                Showing {filteredVIPs.length} entries
               </p>
-              <div className="flex gap-2">
-                <button className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors active:scale-95">
-                  <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-                </button>
-                <button className="p-2 border border-outline-variant rounded-lg hover:bg-surface-container-high transition-colors active:scale-95">
-                  <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent VIP Activities */}
-          <div className="bg-surface-container-lowest rounded-xl border border-outline-variant p-6 shadow-soft">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-bold text-on-surface">Recent Activities</h2>
-              <button className="text-xs font-bold text-primary hover:underline">View All</button>
-            </div>
-            <div className="space-y-6">
-              {activities.map((activity) => (
-                <div key={activity.id} className="flex gap-4">
-                  <div className="mt-1">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      activity.type === 'bolt' 
-                        ? 'bg-primary/10 text-primary' 
-                        : activity.type === 'check'
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-secondary-container/20 text-secondary'
-                    }`}>
-                      <span className="material-symbols-outlined text-[18px]">{activity.type}</span>
-                    </div>
-                  </div>
-                  <div className="flex-1 pb-4 border-b border-outline-variant/30 last:border-0 last:pb-0">
-                    <p className="text-sm text-on-surface leading-relaxed">
-                      {activity.text}
-                    </p>
-                    <p className="text-[10px] text-on-surface-variant font-medium mt-1">
-                      {activity.time} • {activity.source}
-                    </p>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
