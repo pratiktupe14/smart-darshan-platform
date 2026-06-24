@@ -314,7 +314,7 @@ export default function OperationsOverview() {
       {/* Add New Notice Modal */}
       {isAddNoticeModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-[90vw] max-w-md p-6 shadow-2xl border border-outline-variant animate-in fade-in zoom-in-95 duration-200 text-on-surface">
+          <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl border border-outline-variant animate-in fade-in zoom-in-95 duration-200 text-on-surface">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-bold flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">add_alert</span>
