@@ -9,12 +9,12 @@ export default function Announcements() {
     <section className="py-xxl px-margin-mobile md:px-margin-desktop bg-surface-container-high relative overflow-hidden">
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
       <div className="max-w-[80rem] mx-auto relative z-10">
-        <div className="flex justify-between items-end mb-xxl">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-xxl">
           <div className="max-w-[36rem]">
             <h2 className="font-section-title text-section-title text-on-surface mb-sm">{t('noticeBoard')}</h2>
             <p className="text-on-surface-variant font-body text-body">{t('noticeSubtitle')}</p>
           </div>
-          <Link className="hidden md:flex items-center gap-2 text-primary font-bold hover:underline" to="/dashboard/announcements">
+          <Link className="flex items-center gap-2 text-primary font-bold hover:underline" to="/dashboard/announcements">
             {t('viewAllNotices')}
             <span className="material-symbols-outlined">arrow_forward</span>
           </Link>

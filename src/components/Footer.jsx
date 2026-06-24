@@ -61,7 +61,7 @@ export default function Footer() {
             </ul>
           </div>
         </div>
-        <div className="pt-xl border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-md">
+        <div className="pt-xl border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-md text-center md:text-left">
           <p className="font-label-sm text-label-sm text-surface-variant/60">
             © 2024 TempleFlow Management Systems. All rights reserved.
           </p>
