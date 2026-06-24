@@ -6,6 +6,7 @@ export default function CommitteeDashboardLayout() {
   const navigate = useNavigate();
   const { t, currentLanguage, setLanguage } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     if (window.confirm(t('confirmLogout'))) {
@@ -203,6 +204,13 @@ export default function CommitteeDashboardLayout() {
       {/* TopNavBar */}
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-10 h-16 bg-surface border-b border-outline-variant">
         <div className="flex items-center gap-4">
+          <button 
+            onClick={() => setIsMobileMenuOpen(true)}
+            className="lg:hidden p-2 -ml-2 text-on-surface hover:bg-surface-container-high rounded-full transition-colors"
+            aria-label="Open Menu"
+          >
+            <span className="material-symbols-outlined">menu</span>
+          </button>
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-3xl">temple_hindu</span>
             <span className="font-display text-2xl font-extrabold text-primary tracking-tighter">TemplePortal</span>
@@ -258,8 +266,18 @@ export default function CommitteeDashboardLayout() {
         </div>
       </header>
 
-      {/* SideNavBar (Desktop Only) */}
-      <aside className="hidden lg:flex flex-col h-full w-64 fixed left-0 top-0 bg-surface-container-low pt-20 px-4 space-y-2 border-r border-outline-variant z-40">
+      {/* Mobile Backdrop */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        ></div>
+      )}
+
+      {/* SideNavBar */}
+      <aside className={`fixed left-0 top-0 h-full w-64 bg-surface-container-low pt-20 px-4 space-y-2 border-r border-outline-variant z-40 transition-transform duration-300 ease-in-out flex flex-col ${
+        isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+      } lg:translate-x-0`}>
         <div className="mb-6 px-4">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold">T</div>
@@ -276,31 +294,31 @@ export default function CommitteeDashboardLayout() {
           </div>
         </div>
         <nav className="space-y-1">
-          <Link className={getSidebarLinkClasses('/dashboard/committee/dashboard')} to="/dashboard/committee/dashboard">
+          <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/dashboard')} to="/dashboard/committee/dashboard">
             <span className="material-symbols-outlined">dashboard</span> {t('dashboard')}
           </Link>
-          <Link className={getSidebarLinkClasses('/dashboard/committee/scanner')} to="/dashboard/committee/scanner">
+          <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/scanner')} to="/dashboard/committee/scanner">
             <span className="material-symbols-outlined">qr_code_scanner</span> QR Scanner &amp; Verification
           </Link>
-          <Link className={getSidebarLinkClasses('/dashboard/committee')} to="/dashboard/committee">
+          <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee')} to="/dashboard/committee">
             <span className="material-symbols-outlined">groups</span> {t('queueStatus')}
           </Link>
-          <Link className={getSidebarLinkClasses('/dashboard/committee/scanner-verification')} to="/dashboard/committee/scanner-verification">
+          <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/scanner-verification')} to="/dashboard/committee/scanner-verification">
             <span className="material-symbols-outlined">verified_user</span> {t('newEntry')}
           </Link>
-          <Link className={getSidebarLinkClasses('/dashboard/committee/parking')} to="/dashboard/committee/parking">
+          <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/parking')} to="/dashboard/committee/parking">
             <span className="material-symbols-outlined">local_parking</span> {t('parkingManagement')}
           </Link>
-          <Link className={getSidebarLinkClasses('/dashboard/committee/counter/1')} to="/dashboard/committee/counter/1">
+          <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/counter/1')} to="/dashboard/committee/counter/1">
             <span className="material-symbols-outlined">meeting_room</span> Counter 1 – Temple Entry
           </Link>
-          <Link className={getSidebarLinkClasses('/dashboard/committee/counter/2')} to="/dashboard/committee/counter/2">
+          <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/counter/2')} to="/dashboard/committee/counter/2">
             <span className="material-symbols-outlined">queue</span> Counter 2 – Queue Management
           </Link>
-          <Link className={getSidebarLinkClasses('/dashboard/committee/counter/3')} to="/dashboard/committee/counter/3">
+          <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/counter/3')} to="/dashboard/committee/counter/3">
             <span className="material-symbols-outlined">check_circle</span> Counter 3 – Darshan Completion
           </Link>
-          <Link className={getSidebarLinkClasses('/dashboard/committee/announcements')} to="/dashboard/committee/announcements">
+          <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/announcements')} to="/dashboard/committee/announcements">
             <span className="material-symbols-outlined">campaign</span> {t('announcements')}
           </Link>
         </nav>
@@ -321,7 +339,7 @@ export default function CommitteeDashboardLayout() {
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-grow lg:ml-64 pt-20 px-4 md:px-10 pb-12 z-0 relative flex flex-col">
+      <main className="flex-grow ml-0 lg:ml-64 pt-20 px-4 md:px-10 pb-12 z-0 relative flex flex-col">
         <Outlet context={{
           activeToken, setActiveToken,
           activeName, setActiveName,
@@ -348,7 +366,7 @@ export default function CommitteeDashboardLayout() {
       {/* 1. New Entry Modal */}
       {isNewEntryOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-outline-variant animate-in fade-in zoom-in-95 duration-200 text-on-surface">
+          <div className="bg-white rounded-2xl w-[90vw] max-w-md p-6 shadow-2xl border border-outline-variant animate-in fade-in zoom-in-95 duration-200 text-on-surface">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-lg font-bold flex items-center gap-2">
                 <span className="material-symbols-outlined text-primary">person_add</span>

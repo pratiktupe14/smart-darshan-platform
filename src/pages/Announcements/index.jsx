@@ -239,7 +239,7 @@ export default function Announcements() {
           {/* Create / Edit Modal */}
           {showModal && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-              <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl border border-outline-variant/30 text-on-surface">
+              <div className="bg-white p-6 rounded-xl w-[90vw] md:max-w-md shadow-2xl border border-outline-variant/30 text-on-surface">
                 <h2 className="text-xl font-bold mb-4">
                   {modalType === 'create' ? (t('createAnnouncement') || 'Create Announcement') : 'Edit Announcement'}
                 </h2>

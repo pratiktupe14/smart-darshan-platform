@@ -479,7 +479,7 @@ export default function Scanner() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mt-6 p-4 bg-surface-container-low rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6 p-4 bg-surface-container-low rounded-lg">
                 <div>
                   <p className="text-xs text-on-surface-variant">{t('phone') || 'Mobile Number'}</p>
                   <p className="font-bold text-on-surface">{scannedDevotee.mobile}</p>

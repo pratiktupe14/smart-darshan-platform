@@ -121,7 +121,7 @@ export default function Parking() {
                   <div className="flex items-center gap-2"><div className="w-3 h-3 bg-blue-500 rounded-full"></div> {t('disabled')}</div>
                 </div>
               </div>
-              <div className="grid grid-cols-4 sm:grid-cols-5 md:grid-cols-10 gap-3">
+              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-10 gap-3">
                 {/* Simulated Grid */}
                 <div className="h-14 flex items-center justify-center rounded-lg bg-orange-100 text-orange-800 border border-orange-300 font-bold text-xs hover:scale-105 transition-transform cursor-pointer shadow-sm">P-01</div>
                 <div className="h-14 flex items-center justify-center rounded-lg bg-green-100 text-green-800 border border-green-300 font-bold text-xs hover:scale-105 transition-transform cursor-pointer shadow-sm">P-02</div>
