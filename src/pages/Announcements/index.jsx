@@ -236,51 +236,7 @@ export default function Announcements() {
             </button>
           )}
 
-          {/* Create / Edit Modal */}
-          {showModal && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
-              <div className="bg-white p-6 rounded-xl w-[90vw] md:max-w-md shadow-2xl border border-outline-variant/30 text-on-surface">
-                <h2 className="text-xl font-bold mb-4">
-                  {modalType === 'create' ? (t('createAnnouncement') || 'Create Announcement') : 'Edit Announcement'}
-                </h2>
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-on-surface-variant mb-2">Title</label>
-                    <input 
-                      className="w-full p-3 bg-surface-container-low border border-outline-variant/50 rounded-lg outline-none focus:border-primary transition-all text-sm font-semibold" 
-                      placeholder="Enter announcement title" 
-                      value={newTitle} 
-                      onChange={(e) => setNewTitle(e.target.value)} 
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-on-surface-variant mb-2">Content</label>
-                    <textarea 
-                      className="w-full p-3 bg-surface-container-low border border-outline-variant/50 rounded-lg outline-none focus:border-primary transition-all text-sm font-semibold h-32 resize-none" 
-                      placeholder="Enter announcement content" 
-                      value={newContent} 
-                      onChange={(e) => setNewContent(e.target.value)} 
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-outline-variant/10">
-                  <button 
-                    className="px-4 py-2 border border-outline-variant rounded-lg hover:bg-surface-container-low text-xs font-bold text-on-surface-variant transition-colors" 
-                    onClick={() => setShowModal(false)}
-                  >
-                    {t('cancel') || 'Cancel'}
-                  </button>
-                  <button 
-                    className="px-5 py-2 bg-primary text-white rounded-lg hover:brightness-110 text-xs font-bold transition-all shadow-md" 
-                    onClick={modalType === 'create' ? handleCreate : handleEdit}
-                  >
-                    {t('submit') || 'Submit'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-          
+
           {/* Search & Filters */}
           <div className="flex flex-col md:flex-row gap-4 items-center overflow-x-auto pb-2 scrollbar-hide">
             <div className="flex gap-2 flex-wrap">
@@ -482,6 +438,56 @@ export default function Announcements() {
 
         </aside>
       </div>
+
+      {/* Create / Edit Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] p-4 backdrop-blur-sm" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 100 }}>
+          <div 
+            className="bg-white p-6 rounded-xl shadow-2xl border border-outline-variant/30 text-on-surface relative flex flex-col gap-4" 
+            style={{ width: '90%', maxWidth: '450px', minWidth: '320px', backgroundColor: 'white', borderRadius: '1rem' }}
+          >
+            <h2 className="text-xl font-bold">
+              {modalType === 'create' ? (t('createAnnouncement') || 'Create Announcement') : 'Edit Announcement'}
+            </h2>
+            <div className="flex flex-col gap-4 w-full">
+              <div className="w-full">
+                <label className="block text-xs font-bold text-on-surface-variant mb-2">Title</label>
+                <input 
+                  className="w-full p-3 bg-surface-container-low border border-outline-variant/50 rounded-lg outline-none focus:border-primary transition-all text-sm font-semibold box-border" 
+                  style={{ width: '100%' }}
+                  placeholder="Enter announcement title" 
+                  value={newTitle} 
+                  onChange={(e) => setNewTitle(e.target.value)} 
+                />
+              </div>
+              <div className="w-full">
+                <label className="block text-xs font-bold text-on-surface-variant mb-2">Content</label>
+                <textarea 
+                  className="w-full p-3 bg-surface-container-low border border-outline-variant/50 rounded-lg outline-none focus:border-primary transition-all text-sm font-semibold h-32 resize-none box-border" 
+                  style={{ width: '100%' }}
+                  placeholder="Enter announcement content" 
+                  value={newContent} 
+                  onChange={(e) => setNewContent(e.target.value)} 
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-outline-variant/10 w-full">
+              <button 
+                className="px-4 py-2 border border-outline-variant rounded-lg hover:bg-surface-container-low text-xs font-bold text-on-surface-variant transition-colors cursor-pointer" 
+                onClick={() => setShowModal(false)}
+              >
+                {t('cancel') || 'Cancel'}
+              </button>
+              <button 
+                className="px-5 py-2 bg-primary text-white rounded-lg hover:brightness-110 text-xs font-bold transition-all shadow-md cursor-pointer" 
+                onClick={modalType === 'create' ? handleCreate : handleEdit}
+              >
+                {t('submit') || 'Submit'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }

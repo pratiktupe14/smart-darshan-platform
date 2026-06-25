@@ -134,10 +134,6 @@ export default function DashboardLayout() {
                 <span className="material-symbols-outlined">speed</span>
                 <span className="text-sm">{t('capacityManagement')}</span>
               </Link>
-              <Link to="/dashboard/vip" className={getLinkClasses('/dashboard/vip')}>
-                <span className="material-symbols-outlined font-variation-settings-['FILL'_1]">stars</span>
-                <span className="text-sm">{t('vipManagement')}</span>
-              </Link>
 
               <Link to="/dashboard/admin/announcements" className={getLinkClasses('/dashboard/admin/announcements')}>
                 <span className="material-symbols-outlined">campaign</span>

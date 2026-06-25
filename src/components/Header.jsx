@@ -19,9 +19,6 @@ export default function Header() {
         </div>
         <nav className="hidden md:flex items-center gap-xl">
           <Link className="font-label-sm text-label-sm text-primary font-bold border-b-2 border-primary py-1" to="/">{t('home')}</Link>
-          <Link className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" to="#features">{t('features')}</Link>
-          <Link className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" to="#queue">{t('queueStatus')}</Link>
-          <Link className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" to="#contact">{t('contact')}</Link>
         </nav>
         <div className="flex items-center gap-md">
           <select 
@@ -33,6 +30,7 @@ export default function Header() {
             <option value="en">English</option>
             <option value="hi">हिंदी</option>
             <option value="mr">मराठी</option>
+            <option value="gu">ગુજરાતી</option>
           </select>
           <Link className="hidden sm:block font-button text-button px-6 py-2.5 rounded-xl border-1.5 border-primary text-primary hover:bg-primary/5 transition-all text-center" to="/login">
             {t('login')}
@@ -54,9 +52,6 @@ export default function Header() {
         <div className="md:hidden absolute top-20 left-0 w-full bg-surface border-b border-on-surface/10 shadow-lg flex flex-col p-4 gap-4 animate-in slide-in-from-top-2">
           <nav className="flex flex-col gap-4">
             <Link onClick={() => setIsMobileMenuOpen(false)} className="font-label-sm text-label-sm text-primary font-bold border-b-2 border-primary py-1 w-fit" to="/">{t('home')}</Link>
-            <Link onClick={() => setIsMobileMenuOpen(false)} className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" to="#features">{t('features')}</Link>
-            <Link onClick={() => setIsMobileMenuOpen(false)} className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" to="#queue">{t('queueStatus')}</Link>
-            <Link onClick={() => setIsMobileMenuOpen(false)} className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" to="#contact">{t('contact')}</Link>
           </nav>
           <div className="h-px bg-outline-variant/30 w-full my-2"></div>
           <div className="flex flex-col gap-3">
@@ -68,6 +63,7 @@ export default function Header() {
               <option value="en">English</option>
               <option value="hi">हिंदी</option>
               <option value="mr">मराठी</option>
+              <option value="gu">ગુજરાતી</option>
             </select>
             <Link onClick={() => setIsMobileMenuOpen(false)} className="font-button text-button w-full px-6 py-3 rounded-xl border-1.5 border-primary text-primary text-center" to="/login">
               {t('login')}

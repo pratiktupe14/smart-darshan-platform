@@ -336,6 +336,9 @@ export default function CommitteeDashboardLayout() {
           <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee')} to="/dashboard/committee">
             <span className="material-symbols-outlined">groups</span> {t('queueStatus')}
           </Link>
+          <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/vip')} to="/dashboard/committee/vip">
+            <span className="material-symbols-outlined font-variation-settings-['FILL'_1]">stars</span> {t('vipManagement')}
+          </Link>
           <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/scanner-verification')} to="/dashboard/committee/scanner-verification">
             <span className="material-symbols-outlined">verified_user</span> {t('newEntry')}
           </Link>

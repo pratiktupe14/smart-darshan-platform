@@ -24,6 +24,8 @@ export default function AdminDashboard() {
   const [servingToken, setServingToken] = useState('None');
   const [queueFlowRate, setQueueFlowRate] = useState(0);
   const [nextTokens, setNextTokens] = useState([]);
+  const [recentActivities, setRecentActivities] = useState([]);
+  const [staffAnalytics, setStaffAnalytics] = useState([]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -42,6 +44,18 @@ export default function AdminDashboard() {
         const statsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats`);
         const settingsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/settings`);
         const queueRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
+        const activitiesRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats/activities`);
+        const staffRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats/staff`);
+        
+        if (activitiesRes.ok) {
+          const acts = await activitiesRes.json();
+          setRecentActivities(acts);
+        }
+        
+        if (staffRes.ok) {
+          const staff = await staffRes.json();
+          setStaffAnalytics(staff);
+        }
         
         if (statsRes.ok && settingsRes.ok && queueRes.ok) {
           const statsData = await statsRes.json();
@@ -433,16 +447,35 @@ export default function AdminDashboard() {
                 <thead className="text-xs font-bold text-on-surface-variant uppercase font-label-sm border-b border-outline-variant">
                   <tr>
                     <th className="py-3 px-2">Devotee / ID</th>
-                    <th className="py-3 px-2">Type</th>
                     <th className="py-3 px-2">Action</th>
+                    <th className="py-3 px-2">Staff Member</th>
+                    <th className="py-3 px-2">Gate</th>
                     <th className="py-3 px-2">Timestamp</th>
-                    <th className="py-3 px-2">Status</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline-variant text-sm">
-                  <tr>
-                    <td colSpan="5" className="text-center py-4 text-on-surface-variant text-sm">No recent activities.</td>
-                  </tr>
+                  {recentActivities.length > 0 ? recentActivities.map((act, idx) => (
+                    <tr key={idx} className="hover:bg-surface-container-lowest transition-colors">
+                      <td className="py-3 px-2">
+                        <p className="font-bold text-on-surface">{act.name}</p>
+                        <p className="text-[10px] text-on-surface-variant font-medium">{act.token || 'N/A'}</p>
+                      </td>
+                      <td className="py-3 px-2">
+                        <span className="bg-primary-container text-on-primary-container px-2 py-1 rounded text-xs font-bold uppercase tracking-wider">
+                          {act.action}
+                        </span>
+                      </td>
+                      <td className="py-3 px-2 font-medium">{act.staffName}</td>
+                      <td className="py-3 px-2 text-on-surface-variant text-xs">{act.gate}</td>
+                      <td className="py-3 px-2 text-on-surface-variant text-xs">
+                        {new Date(act.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </td>
+                    </tr>
+                  )) : (
+                    <tr>
+                      <td colSpan="5" className="text-center py-8 text-on-surface-variant text-sm font-medium">No recent activities found.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -491,6 +524,35 @@ export default function AdminDashboard() {
           </div>
         </div>
 
+      </div>
+
+      {/* Staff Performance Analytics */}
+      <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-soft">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-lg font-bold flex items-center gap-2">
+            <span className="material-symbols-outlined text-secondary font-variation-settings-['FILL'_1]">badge</span>
+            Committee Staff Analytics
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {staffAnalytics.length > 0 ? staffAnalytics.map((staff, idx) => (
+            <div key={idx} className="p-4 rounded-xl border border-outline-variant hover:border-secondary transition-all bg-surface flex flex-col justify-between h-full group">
+              <div>
+                <p className="font-bold text-on-surface text-lg group-hover:text-secondary transition-colors">{staff.name}</p>
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-xs text-on-surface-variant font-bold uppercase tracking-wider">Entries Processed</p>
+                  <p className="text-2xl font-extrabold text-secondary">{staff.scans}</p>
+                </div>
+              </div>
+              <p className="text-[10px] text-on-surface-variant mt-4 font-bold flex items-center gap-1 border-t border-outline-variant/50 pt-2">
+                <span className="material-symbols-outlined text-[12px]">schedule</span>
+                Last Active: {new Date(staff.lastActive).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+              </p>
+            </div>
+          )) : (
+            <p className="text-sm text-on-surface-variant col-span-full font-medium py-4">No staff analytics available yet. Data will appear when entries are verified.</p>
+          )}
+        </div>
       </div>
 
       {/* Bottom Section: Quick Actions & Notifications Center */}

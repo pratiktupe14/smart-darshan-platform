@@ -40,13 +40,13 @@ function App() {
             <Route path="scanner-verification" element={<OfflineVerification />} />
             <Route path="parking" element={<Parking />} />
             <Route path="announcements" element={<Announcements />} />
+            <Route path="vip" element={<VIPManagement />} />
           </Route>
           <Route path="/dashboard" element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="admin" element={<AdminDashboard />} />
             <Route path="admin/announcements" element={<Announcements />} />
             <Route path="capacity" element={<CapacityManagement />} />
-            <Route path="vip" element={<VIPManagement />} />
             <Route path="book" element={<BookDarshan />} />
 
 
