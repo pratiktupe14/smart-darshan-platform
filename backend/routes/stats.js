@@ -48,7 +48,9 @@ router.get('/', async (req, res) => {
     const bookingsWithHistory = await Booking.find({ 'counterHistory.timestamp': { $gte: startOfDay } });
     let qrScansToday = 0;
     bookingsWithHistory.forEach(b => {
-      qrScansToday += b.counterHistory.filter(h => new Date(h.timestamp) >= startOfDay).length;
+      if (b.counterHistory && Array.isArray(b.counterHistory)) {
+        qrScansToday += b.counterHistory.filter(h => new Date(h.timestamp) >= startOfDay).length;
+      }
     });
 
     res.json({

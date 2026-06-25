@@ -181,13 +181,13 @@ export default function BookDarshan() {
               </h1>
             </div>
             
-            <div className="relative rounded-xl overflow-hidden h-64 md:h-80 shadow-lg">
+            <div className="relative rounded-xl overflow-hidden shadow-lg w-full flex items-center justify-center bg-black/5">
               <img 
-                className="w-full h-full object-cover" 
-                alt="Temple at golden hour" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZHAdgxartigihM3jAQQvG0VuwDWm-5slSsUxnhnZLoBEMi8Cw1vsZFHPQpz2sPLs0s4SuB348S5PPZFLnLILEgyIobxBcmL6CcpEFgY6SNxz10FCejRcJM2FhXYvqrWjmtZS2G6fegZ3CJlCvXqrRoqVkJwUAsQUaNf9kM1wiJV_3KLYphFLegxSa6Y255OhHMVX0iKoYW-mjSPRcFHpNPueygZMR8Joef3n1ptnKupJ7b3QCMr9X991r0rwEJPBWysK65a4dwDY"
+                className="w-full h-auto object-contain" 
+                alt="Darshan Preview" 
+                src="/guru-image.jpg"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex flex-col justify-end p-6">
+              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-6 pt-12">
                 <p className="text-white font-headline-md text-headline-md">Shri Mahakaal Mandir</p>
                 <p className="text-white/80 font-label-md text-label-md flex items-center gap-2">
                   <span className="material-symbols-outlined text-[18px]">location_on</span> Ujjain, Madhya Pradesh
