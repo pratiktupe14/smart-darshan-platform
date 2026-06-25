@@ -48,7 +48,9 @@ router.get('/', async (req, res) => {
     const bookingsWithHistory = await Booking.find({ 'counterHistory.timestamp': { $gte: startOfDay } });
     let qrScansToday = 0;
     bookingsWithHistory.forEach(b => {
-      qrScansToday += b.counterHistory.filter(h => new Date(h.timestamp) >= startOfDay).length;
+      if (b.counterHistory && Array.isArray(b.counterHistory)) {
+        qrScansToday += b.counterHistory.filter(h => new Date(h.timestamp) >= startOfDay).length;
+      }
     });
 
     res.json({
@@ -75,15 +77,17 @@ router.get('/activities', async (req, res) => {
     const bookings = await Booking.find({ 'counterHistory': { $not: { $size: 0 } } }).lean();
     let activities = [];
     bookings.forEach(b => {
-      b.counterHistory.forEach(h => {
-        activities.push({
-          action: h.status,
-          token: b.qrCode,
-          time: new Date(h.timestamp),
-          gate: `Counter ${h.counterNumber}`,
-          name: b.fullName
+      if (b.counterHistory && Array.isArray(b.counterHistory)) {
+        b.counterHistory.forEach(h => {
+          activities.push({
+            action: h.status,
+            token: b.qrCode,
+            time: new Date(h.timestamp),
+            gate: `Counter ${h.counterNumber}`,
+            name: b.fullName
+          });
         });
-      });
+      }
     });
     
     // Sort descending by time
