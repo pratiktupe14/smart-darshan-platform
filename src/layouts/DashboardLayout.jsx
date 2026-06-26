@@ -62,6 +62,7 @@ export default function DashboardLayout() {
               <option value="en">EN</option>
               <option value="hi">HI</option>
               <option value="mr">MR</option>
+              <option value="gu">GU</option>
             </select>
             <button className="p-2 hover:bg-surface-container-high rounded-full transition-colors relative">
               <span className="material-symbols-outlined text-xl md:text-2xl">notifications</span>
@@ -225,6 +226,12 @@ export default function DashboardLayout() {
                 className={`${currentLanguage === 'mr' ? 'text-primary font-bold' : 'text-on-surface-variant'} text-sm hover:underline`}
               >
                 Marathi
+              </button>
+              <button 
+                onClick={() => setLanguage('gu')} 
+                className={`${currentLanguage === 'gu' ? 'text-primary font-bold' : 'text-on-surface-variant'} text-sm hover:underline`}
+              >
+                Gujarati
               </button>
             </div>
           </div>

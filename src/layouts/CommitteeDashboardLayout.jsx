@@ -267,6 +267,7 @@ export default function CommitteeDashboardLayout() {
               <option value="en">EN</option>
               <option value="hi">HI</option>
               <option value="mr">MR</option>
+              <option value="gu">GU</option>
             </select>
             <button className="p-2 hover:bg-surface-container-high rounded-full transition-colors relative">
               <span className="material-symbols-outlined">notifications</span>

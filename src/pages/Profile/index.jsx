@@ -346,6 +346,7 @@ export default function Profile() {
                   <option value="en">English (US)</option>
                   <option value="hi">Hindi (हिन्दी)</option>
                   <option value="mr">Marathi (मराठी)</option>
+                  <option value="gu">Gujarati (ગુજરાતી)</option>
                 </select>
                 <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">keyboard_arrow_down</span>
               </div>

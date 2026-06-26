@@ -292,25 +292,25 @@ export default function Dashboard() {
 
           {/* Temple Directions Card */}
           <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-outline-variant">
-            <div className="h-32 md:h-40 relative group cursor-pointer overflow-hidden">
+            <a href="https://www.google.com/maps/place/ardhanareshwari+nag+jotirling/@20.6836728,73.7838213,17z/data=!3m1!4b1!4m6!3m5!1s0x3bde3de27d6c9e1d:0x42fcd5a79fa923be!8m2!3d20.6836728!4d73.7864016!16s%2Fg%2F11b7jjr46p?hl=en-IN&entry=ttu&g_ep=EgoyMDI2MDYyMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noreferrer" className="block h-32 md:h-40 relative group cursor-pointer overflow-hidden">
               <img className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt="Map view" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1NtQZMeVBKwdrnShTWtGDF6zEyIndWZEj-W4F7JovzgJVUtPWr9zMBmF9N5WhXlIKUVk08vlfivc3i94CVUsPWf40UCuyI1g37rwIfv666ETz7-VzSF--JXHonZdUs3tac5DA7_ZDLlX2aOBrJLY3tdGaUp1I2ktDnh70dXDzCcVY0fMfHdNta5mSbTGAqReavHWW6ecqYPiCFoGUEf9gGHPkHDQbLNV1c44JQ3dn19P51o4vQaDk6cpTFA8xUa9pjb3oR627dgk" />
               <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <span className="bg-white text-primary px-4 py-2 rounded-full font-semibold text-xs md:text-sm shadow-xl">View Larger Map</span>
               </div>
-            </div>
+            </a>
             <div className="p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-on-surface truncate">Main Temple Complex</p>
-                  <p className="text-[10px] md:text-xs text-on-surface-variant truncate">Gate No. 3, North Entrance, Sector 42A</p>
+                  <p className="text-sm font-semibold text-on-surface truncate">Ardhanareshwari Nag Jotirling</p>
+                  <p className="text-[10px] md:text-xs text-on-surface-variant truncate">Tap map to open directions</p>
                 </div>
-                <button className="p-2 bg-primary text-on-primary rounded-full hover:scale-110 transition-transform shrink-0">
-                  <span className="material-symbols-outlined text-[18px] md:text-[20px]">directions</span>
-                </button>
+                <a href="https://www.google.com/maps/place/ardhanareshwari+nag+jotirling/@20.6836728,73.7838213,17z/data=!3m1!4b1!4m6!3m5!1s0x3bde3de27d6c9e1d:0x42fcd5a79fa923be!8m2!3d20.6836728!4d73.7864016!16s%2Fg%2F11b7jjr46p?hl=en-IN&entry=ttu&g_ep=EgoyMDI2MDYyMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noreferrer" className="inline-block p-2 bg-primary text-on-primary rounded-full hover:scale-110 transition-transform shrink-0">
+                  <span className="material-symbols-outlined text-[18px] md:text-[20px] block">directions</span>
+                </a>
               </div>
-              <button className="w-full mt-3 h-10 border border-outline text-on-surface-variant rounded-lg text-xs font-medium hover:bg-surface-container-low transition-colors">
+              <a href="https://www.google.com/maps/place/ardhanareshwari+nag+jotirling/@20.6836728,73.7838213,17z/data=!3m1!4b1!4m6!3m5!1s0x3bde3de27d6c9e1d:0x42fcd5a79fa923be!8m2!3d20.6836728!4d73.7864016!16s%2Fg%2F11b7jjr46p?hl=en-IN&entry=ttu&g_ep=EgoyMDI2MDYyMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noreferrer" className="flex items-center justify-center w-full mt-3 h-10 border border-outline text-on-surface-variant rounded-lg text-xs font-medium hover:bg-surface-container-low transition-colors">
                 Open in Google Maps
-              </button>
+              </a>
             </div>
           </div>
         </div>

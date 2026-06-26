@@ -56,7 +56,9 @@ export default function Footer() {
               </li>
               <li className="flex gap-2">
                 <span className="material-symbols-outlined text-primary-fixed text-sm">location_on</span>
-                Temple HQ, Main Road, Spiritual Center, 560001
+                <a href="https://www.google.com/maps/place/ardhanareshwari+nag+jotirling/@20.6836728,73.7838213,17z/data=!3m1!4b1!4m6!3m5!1s0x3bde3de27d6c9e1d:0x42fcd5a79fa923be!8m2!3d20.6836728!4d73.7864016!16s%2Fg%2F11b7jjr46p?hl=en-IN&entry=ttu&g_ep=EgoyMDI2MDYyMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noreferrer" className="hover:text-primary-fixed hover:underline transition-colors">
+                  Ardhanareshwari Nag Jotirling
+                </a>
               </li>
             </ul>
           </div>

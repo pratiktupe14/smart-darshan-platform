@@ -144,15 +144,13 @@ export default function BookDarshan() {
       {/* TopNavBar */}
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-10 h-16 bg-surface dark:bg-background border-b border-outline-variant dark:border-outline">
         <div className="flex items-center gap-4">
-          <Link to="/" className="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">
+          <Link to="/dashboard" className="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">
             TemplePortal
           </Link>
         </div>
         <nav className="hidden md:flex gap-8 items-center">
-          <Link to="/" className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors">{t('home')}</Link>
           <span className="font-label-md text-label-md text-primary font-bold border-b-2 border-primary cursor-default">{t('bookDarshan')}</span>
           <a className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">{t('bookings')}</a>
-          <a className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">E-Prasad</a>
         </nav>
         <div className="flex items-center gap-4">
           <select 
@@ -164,6 +162,7 @@ export default function BookDarshan() {
             <option value="en">EN</option>
             <option value="hi">HI</option>
             <option value="mr">MR</option>
+            <option value="gu">GU</option>
           </select>
           <button className="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-high rounded-full transition-all">notifications</button>
           <button className="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-high rounded-full transition-all">account_circle</button>
@@ -187,12 +186,6 @@ export default function BookDarshan() {
                 alt="Darshan Preview" 
                 src="/guru-image.jpg"
               />
-              <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex flex-col justify-end p-6 pt-12">
-                <p className="text-white font-headline-md text-headline-md">Shri Mahakaal Mandir</p>
-                <p className="text-white/80 font-label-md text-label-md flex items-center gap-2">
-                  <span className="material-symbols-outlined text-[18px]">location_on</span> Ujjain, Madhya Pradesh
-                </p>
-              </div>
             </div>
           </div>
 

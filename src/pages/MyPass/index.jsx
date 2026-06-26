@@ -424,17 +424,17 @@ export default function MyPass() {
             </div>
             
             <div className="space-y-4">
-              <div className="rounded-xl overflow-hidden h-40 relative group cursor-pointer">
+              <a href="https://www.google.com/maps/place/ardhanareshwari+nag+jotirling/@20.6836728,73.7838213,17z/data=!3m1!4b1!4m6!3m5!1s0x3bde3de27d6c9e1d:0x42fcd5a79fa923be!8m2!3d20.6836728!4d73.7864016!16s%2Fg%2F11b7jjr46p?hl=en-IN&entry=ttu&g_ep=EgoyMDI2MDYyMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noreferrer" className="block rounded-xl overflow-hidden h-40 relative group cursor-pointer hover:opacity-90 transition-opacity">
                 <img 
                   className="w-full h-full object-cover" 
                   alt="Map" 
                   src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5n-uotQottW_pWYMQVIMb0Binv8SC8W3L8bw4otbKMzWFAzGHvKqgflFNMHkVxE5sBzvyAVW8bjg-YilLHmn-_XBWcSeh1rFuMaOGGBvL-GEnRFod1bT5ggMT-k8ZdoxC2ZCREcbenkIbHi1D9TpKa1J-uEIH0KgX3QQUeOdvnjGynMsU8B_idF3eSzisjsw7HXtgRx93u2tufAKC8fXzQ7h3nVPazUDOhrlEiL73Kam6AFUX0urFZheYgLinSjdhbGoOyNnkGOY"
                 />
-              </div>
+              </a>
               
               <div>
-                <p className="text-base font-semibold text-on-surface">Sri Meenakshi Temple</p>
-                <p className="text-xs text-on-surface-variant leading-relaxed font-medium">Madurai Main Rd, Madurai, Tamil Nadu 625001, India</p>
+                <p className="text-base font-semibold text-on-surface">Ardhanareshwari Nag Jotirling</p>
+                <p className="text-xs text-on-surface-variant leading-relaxed font-medium">Click the map above to open in Google Maps and get directions to the temple.</p>
               </div>
             </div>
           </div>
