@@ -12,7 +12,8 @@ export default function UserQueueStatus() {
     estWait: 0,
     progress: 0,
     currentStage: 1,
-    nextTokens: []
+    nextTokens: [],
+    hasActivePass: false
   });
 
   useEffect(() => {
@@ -78,7 +79,8 @@ export default function UserQueueStatus() {
               estWait: pos * 2,
               progress: progress,
               currentStage: currentStage,
-              nextTokens: waitingQueue.slice(0, 5).map(q => q.tokenNumber)
+              nextTokens: waitingQueue.slice(0, 5).map(q => q.tokenNumber),
+              hasActivePass: !!active
           });
         }
       } catch (err) {
@@ -105,8 +107,10 @@ export default function UserQueueStatus() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Personal Status & Progress */}
         <div className="lg:col-span-8 space-y-6">
-          {/* My Queue Card */}
-          <div className="bg-surface-container-lowest border border-outline/10 rounded-xl p-8 shadow-sm relative overflow-hidden group hover:-translate-y-0.5 transition-all duration-300">
+          {queueInfo.hasActivePass ? (
+            <>
+              {/* My Queue Card */}
+              <div className="bg-surface-container-lowest border border-outline/10 rounded-xl p-8 shadow-sm relative overflow-hidden group hover:-translate-y-0.5 transition-all duration-300">
             <div className="absolute top-0 right-0 w-32 h-32 -mr-8 -mt-8 bg-primary/5 rounded-full blur-3xl group-hover:bg-primary/10 transition-colors duration-500"></div>
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
               <div className="space-y-4">
@@ -206,11 +210,25 @@ export default function UserQueueStatus() {
               <span className="material-symbols-outlined">download</span>
               {t('downloadPass')}
             </button>
-            <button className="flex items-center justify-center gap-3 bg-white border-2 border-primary/20 text-primary py-4 rounded-xl font-bold hover:bg-primary/5 transition-all active:scale-95">
+            <a href="https://www.google.com/maps/place/ardhanareshwari+nag+jotirling/@20.6836728,73.7838213,17z/data=!3m1!4b1!4m6!3m5!1s0x3bde3de27d6c9e1d:0x42fcd5a79fa923be!8m2!3d20.6836728!4d73.7864016!16s%2Fg%2F11b7jjr46p?hl=en-IN&entry=ttu&g_ep=EgoyMDI2MDYyMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noreferrer" className="flex items-center justify-center gap-3 bg-white border-2 border-primary/20 text-primary py-4 rounded-xl font-bold hover:bg-primary/5 transition-all active:scale-95">
               <span className="material-symbols-outlined">near_me</span>
               Open Directions
-            </button>
+            </a>
           </div>
+            </>
+          ) : (
+            <div className="bg-surface-container-lowest border border-outline/10 rounded-xl p-8 shadow-sm text-center space-y-4 py-20">
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="material-symbols-outlined text-4xl text-primary">confirmation_number</span>
+              </div>
+              <h3 className="text-2xl font-bold text-on-surface">No Active Darshan Pass</h3>
+              <p className="text-on-surface-variant">You don't have an active darshan pass. Please book a darshan to see your live queue status and journey tracker.</p>
+              <button onClick={() => window.location.href='/dashboard/book'} className="mt-8 inline-flex items-center gap-2 bg-primary text-white px-8 py-3 rounded-full font-bold hover:bg-primary/90 transition-colors shadow-md">
+                <span className="material-symbols-outlined">add</span>
+                Book Darshan
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Live Data & Info */}
