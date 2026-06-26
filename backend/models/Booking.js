@@ -55,6 +55,9 @@ const bookingSchema = new mongoose.Schema({
   darshanCompletedAt: {
     type: Date,
   },
+  cancelledAt: {
+    type: Date,
+  },
   qrCode: {
     type: String,
   },

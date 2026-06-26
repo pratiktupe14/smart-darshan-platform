@@ -369,4 +369,36 @@ router.get('/verify-scanner/recent/:counterNumber', async (req, res) => {
   }
 });
 
+// Cancel a booking
+router.put('/:id/cancel', async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found.' });
+    }
+    
+    // Only allow cancellation if booking is confirmed and hasn't started the journey
+    if (booking.status !== 'confirmed' || (booking.verificationStatus && booking.verificationStatus !== 'none')) {
+      return res.status(400).json({ error: 'Cannot cancel this booking. The journey has already started or it is not active.' });
+    }
+
+    booking.status = 'cancelled';
+    booking.cancelledAt = new Date();
+    
+    // Update queue status if applicable (just in case they somehow got into the queue)
+    const Queue = require('../models/Queue');
+    const queueEntry = await Queue.findOne({ bookingId: booking._id });
+    if (queueEntry) {
+      queueEntry.status = 'cancelled';
+      await queueEntry.save();
+    }
+
+    await booking.save();
+    res.json({ message: 'Booking cancelled successfully.', booking });
+  } catch (err) {
+    console.error('Cancel booking error:', err);
+    res.status(500).json({ error: 'Server Error during cancellation.' });
+  }
+});
+
 module.exports = router;

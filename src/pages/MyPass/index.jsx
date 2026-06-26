@@ -54,8 +54,13 @@ export default function MyPass() {
             active.forEach(activeBooking => {
               let userToken = queueList.find(q => q.bookingId && (q.bookingId._id === activeBooking._id || q.bookingId === activeBooking._id));
               let pos = 0;
+              let peopleAhead = 0;
               if (userToken && userToken.status === 'waiting') {
-                  pos = waitingQueue.findIndex(q => q._id === userToken._id) + 1;
+                  const qIndex = waitingQueue.findIndex(q => q._id === userToken._id);
+                  pos = qIndex + 1;
+                  for (let i = 0; i < qIndex; i++) {
+                      peopleAhead += waitingQueue[i].bookingId ? (waitingQueue[i].bookingId.persons || 1) : 1;
+                  }
               }
               
               let currentStage = 1;
@@ -77,10 +82,12 @@ export default function MyPass() {
                 progress = 100;
               }
               
+              const waitTime = peopleAhead === 0 ? 0 : Math.max(2, peopleAhead * 2);
+
               newMap[activeBooking._id] = {
                   userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
                   position: pos,
-                  estWait: pos * 2,
+                  estWait: waitTime,
                   progress: progress,
                   currentStage: currentStage
               };
@@ -106,6 +113,26 @@ export default function MyPass() {
 
     return () => clearInterval(timer);
   }, [user]);
+
+  const cancelBooking = async (bookingId) => {
+    if (window.confirm("Are you sure you want to cancel this Darshan booking? This action cannot be undone.")) {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/${bookingId}/cancel`, {
+          method: 'PUT',
+        });
+        if (res.ok) {
+          // Instantly hide it from active bookings, next interval will push it to history
+          setActiveBookings(prev => prev.filter(b => b._id !== bookingId));
+        } else {
+          const data = await res.json();
+          alert(data.error || "Failed to cancel booking.");
+        }
+      } catch (err) {
+        console.error("Error cancelling booking:", err);
+        alert("Server error while cancelling booking.");
+      }
+    }
+  };
 
   const downloadPDF = async (activeBooking, qInfo) => {
     if (!activeBooking) return;
@@ -278,6 +305,15 @@ export default function MyPass() {
                               <span className="material-symbols-outlined text-[18px]">wallet</span>
                               Add to Wallet
                             </button>
+                            {activeBooking.status === 'confirmed' && (!activeBooking.verificationStatus || activeBooking.verificationStatus === 'none') && (
+                              <button 
+                                onClick={() => cancelBooking(activeBooking._id)}
+                                className="flex items-center gap-1 border-2 border-error text-error px-4 py-2 rounded-lg text-sm font-semibold hover:bg-error/5 transition-all cursor-pointer ml-auto"
+                              >
+                                <span className="material-symbols-outlined text-[18px]">cancel</span>
+                                Cancel Pass
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -352,9 +388,9 @@ export default function MyPass() {
           ) : (
             <div className="bg-surface-container-lowest rounded-xl border border-outline/10 p-12 flex flex-col items-center justify-center text-center shadow-sm w-full">
               <span className="material-symbols-outlined text-6xl text-outline-variant mb-4">confirmation_number</span>
-              <h2 className="text-2xl font-bold text-on-surface mb-4">No Active Journey</h2>
+              <h2 className="text-2xl font-bold text-on-surface mb-4">No Active Pass</h2>
               <div className="text-on-surface-variant mb-8 w-full max-w-[450px] space-y-2">
-                <p>Your Darshan has been completed successfully. You do not have any active journey at this time.</p>
+                <p>You do not have any active Darshan pass.</p>
               </div>
               <Link to="/dashboard/book" className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-md">
                 Book New Darshan
