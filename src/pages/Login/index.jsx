@@ -136,54 +136,56 @@ export default function Login() {
 
   return (
     <div className="bg-background min-h-screen flex flex-col font-body-md text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed">
-      <main className="flex-grow flex flex-col md:flex-row items-stretch justify-center min-h-screen relative overflow-hidden">
-        <div className="hidden md:flex md:flex-1 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10"></div>
-          <div className="absolute inset-0 flex flex-col justify-end p-16 z-20">
-            <h2 className="text-white font-display text-[40px] font-extrabold leading-tight mb-4">
-              Welcome to<br/>Smart Darshan Manager
-            </h2>
-            <p className="text-white/80 font-body-lg max-w-[28rem]">
-              Experience the divine with our premium temple management solutions, designed for the modern spiritual era.
-            </p>
-          </div>
-          <div className="w-full h-full">
+      <main className="flex-grow flex items-center justify-center min-h-screen p-4 md:p-8 lg:p-12 relative overflow-hidden bg-surface-container-lowest/50">
+        <div className="w-full max-w-[1500px] flex flex-col md:flex-row items-center justify-evenly gap-8 lg:gap-16">
+          
+          {/* Desktop Image Container tightly wrapped */}
+          <div className="hidden md:flex relative overflow-hidden rounded-[2rem] shadow-2xl border border-on-surface/10 w-full max-w-[800px] shrink">
             <img 
               alt="Ancient Indian Temple" 
-              className="w-full h-full object-cover" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjwSzrRreOkVDV3GlDdzgUklsQamSVfWHRfkMMI56r1hklT0xyX9V0VdGccZhD8OkEpPm-sVtJhZTZQdGiugqWwO5ZlZEOIoylWxttp2Kqa-cSIBxibv0c1vHjhHeiHgy7r1OHJ-StHlS0HpFyP-GfQZZzSyb5O3_RU7N8DLCakrJsHzd1uK36_a7L4p7QjrHWNgVy_DEEscb9q5aTeLsHOGhHGLOKi2T8i6kkDyhWThyO13ddpSlvmWky3sb0mu4B6bZfcSmZCLg"
+              className="w-full h-auto object-contain block bg-black/5" 
+              src="/temple-view.jpg"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute inset-0 flex flex-col justify-end p-10 lg:p-14 z-20 pointer-events-none">
+              <h2 className="text-white font-display text-[32px] lg:text-[40px] font-extrabold leading-tight mb-4 drop-shadow-lg">
+                Welcome to<br/>शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)
+              </h2>
+              <p className="text-white/90 font-body-lg max-w-[28rem] drop-shadow-md">
+                Experience the divine with our premium temple management solutions, designed for the modern spiritual era.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="block md:hidden w-full h-64 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-          <div className="absolute inset-0 flex items-end p-6 z-20">
-            <h2 className="text-white font-headline-md font-bold">Welcome to Smart Darshan</h2>
+          {/* Mobile Image Container tightly wrapped */}
+          <div className="block md:hidden relative overflow-hidden rounded-2xl shadow-xl w-full border border-on-surface/10">
+            <img 
+              alt="Ancient Indian Temple" 
+              className="w-full h-auto object-contain block bg-black/5" 
+              src="/temple-view.jpg"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute inset-0 flex items-end p-6 z-20 pointer-events-none">
+              <h2 className="text-white font-headline-sm font-bold drop-shadow-md">Welcome to शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</h2>
+            </div>
           </div>
-          <img 
-            alt="Ancient Indian Temple" 
-            className="w-full h-full object-cover" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjwSzrRreOkVDV3GlDdzgUklsQamSVfWHRfkMMI56r1hklT0xyX9V0VdGccZhD8OkEpPm-sVtJhZTZQdGiugqWwO5ZlZEOIoylWxttp2Kqa-cSIBxibv0c1vHjhHeiHgy7r1OHJ-StHlS0HpFyP-GfQZZzSyb5O3_RU7N8DLCakrJsHzd1uK36_a7L4p7QjrHWNgVy_DEEscb9q5aTeLsHOGhHGLOKi2T8i6kkDyhWThyO13ddpSlvmWky3sb0mu4B6bZfcSmZCLg"
-          />
-        </div>
 
-        <div className="flex-1 flex items-center justify-center p-8 md:p-16 z-10 bg-background">
-          <div className="w-full max-w-[480px]">
+          <div className="w-full max-w-[480px] flex flex-col justify-center z-10 shrink-0">
+            <div className="w-full">
             <header className="mb-stack-lg text-center stagger-in" style={{ opacity: 1 }}>
               <div className="inline-flex items-center justify-center p-3 bg-white rounded-xl shrine-glow mb-4">
                 <span className="material-symbols-outlined text-[40px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
                   temple_hindu
                 </span>
               </div>
-              <h1 className="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">Smart Darshan</h1>
+              <h1 className="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">Samarth Darshan Portal</h1>
               <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mt-1">Temple Management System</p>
             </header>
 
             <div className="bg-surface-container-lowest p-8 md:p-10 rounded-lg shrine-glow border border-outline-variant/30 stagger-in" style={{ opacity: 1 }}>
               {view === 'mobile' && (
                 <div>
-                  <h2 className="font-headline-md text-headline-md text-on-surface mb-6">Welcome to Smart Darshan</h2>
+                  <h2 className="font-headline-md text-headline-md text-on-surface mb-6">Welcome to शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</h2>
                   
                   {/* Role Selection Segmented Control */}
                   <div className="flex p-1 bg-surface-container-high rounded-lg mb-6">
@@ -395,6 +397,7 @@ export default function Login() {
             </div>
           </div>
         </div>
+        </div>
       </main>
       
       <footer className="w-full py-stack-md px-container-mobile flex flex-col md:flex-row justify-between items-center gap-stack-sm bg-surface-container-low dark:bg-surface-container-lowest border-t border-outline-variant/10">
@@ -402,7 +405,7 @@ export default function Login() {
           <span className="material-symbols-outlined text-primary text-[20px]">shield</span>
           <span className="font-label-sm text-on-surface-variant text-label-sm">&nbsp; &nbsp; &nbsp; &nbsp;Secure 256-bit Encrypted Session</span>
         </div>
-        <p className="font-label-sm text-label-sm text-on-surface-variant">© 2024 TempleConnect Management System. All rights reserved.</p>
+        <p className="font-label-sm text-label-sm text-on-surface-variant">© 2024 Samarth Darshan Portal. All rights reserved.</p>
         <div className="flex gap-4">
           <a className="text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">Support</a>
           <a className="text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">Terms</a>

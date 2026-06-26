@@ -276,7 +276,7 @@ export default function OfflineVerification() {
           <div class="ticket">
             <div class="header">
               <div>
-                <h2 style="margin: 0; color: #8f4e00;">TemplePortal Pass</h2>
+                <h2 style="margin: 0; color: #8f4e00;">शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड) Pass</h2>
                 <span style="font-size: 11px; color: #554336;">OFFLINE VISITOR ENTRY</span>
               </div>
               <div class="token">#${devotee.token}</div>

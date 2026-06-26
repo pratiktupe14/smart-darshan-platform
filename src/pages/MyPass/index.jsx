@@ -102,7 +102,7 @@ export default function MyPass() {
     };
 
     fetchData();
-    const timer = setInterval(fetchData, 10000);
+    const timer = setInterval(fetchData, 3000);
 
     return () => clearInterval(timer);
   }, [user]);
@@ -113,7 +113,7 @@ export default function MyPass() {
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       doc.setFontSize(24);
       doc.setTextColor(0, 0, 0);
-      doc.text("Sri Meenakshi Temple", 105, 25, { align: "center" });
+      doc.text("शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)", 105, 25, { align: "center" });
       
       doc.setFontSize(16);
       doc.setTextColor(100, 100, 100);
@@ -228,7 +228,7 @@ export default function MyPass() {
                       <div className="flex-grow space-y-6">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h2 className="text-xl font-bold text-on-surface">Sri Meenakshi Temple</h2>
+                            <h2 className="text-xl font-bold text-on-surface">शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</h2>
                             <p className="text-primary font-medium">Main Sanctum Darshan</p>
                           </div>
                           <div className="text-right">
@@ -352,13 +352,12 @@ export default function MyPass() {
           ) : (
             <div className="bg-surface-container-lowest rounded-xl border border-outline/10 p-12 flex flex-col items-center justify-center text-center shadow-sm w-full">
               <span className="material-symbols-outlined text-6xl text-outline-variant mb-4">confirmation_number</span>
-              <h2 className="text-2xl font-bold text-on-surface mb-4">No Active Pass Found</h2>
+              <h2 className="text-2xl font-bold text-on-surface mb-4">No Active Journey</h2>
               <div className="text-on-surface-variant mb-8 w-full max-w-[450px] space-y-2">
-                <p>You do not have any active darshan bookings at the moment.</p>
-                <p>Book a darshan slot to generate your digital pass.</p>
+                <p>Your Darshan has been completed successfully. You do not have any active journey at this time.</p>
               </div>
               <Link to="/dashboard/book" className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-md">
-                Book Darshan Now
+                Book New Darshan
               </Link>
             </div>
           )}
@@ -379,7 +378,7 @@ export default function MyPass() {
                   {passHistory.map(pass => (
                     <tr key={pass._id} className="hover:bg-surface-bright transition-colors cursor-pointer group">
                       <td className="px-6 py-4 text-on-surface-variant">{new Date(pass.darshanDate).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 text-on-surface">Sri Meenakshi Temple</td>
+                      <td className="px-6 py-4 text-on-surface">शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</td>
                       <td className="px-6 py-4 text-right">
                         <span className="bg-on-tertiary-container text-tertiary px-4 py-1 rounded-full text-xs font-bold inline-block capitalize">{pass.status}</span>
                       </td>

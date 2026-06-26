@@ -7,11 +7,6 @@ export default function OperationsOverview() {
   const navigate = useNavigate();
 
   const {
-    activeToken, setActiveToken,
-    activeName, setActiveName,
-    activeType, setActiveType,
-    isNextLoading, setIsNextLoading,
-    isPaused, setIsPaused,
     queueList, setQueueList,
     vipPool, setVipPool,
     totalToday, setTotalToday,
@@ -73,34 +68,11 @@ export default function OperationsOverview() {
     }
   };
 
-  const handleNextToken = () => {
-    if (isPaused) {
-      showToast('Queue is paused. Please resume first.');
-      return;
-    }
-    if (queueList.length === 0) {
-      showToast('Queue is empty!');
-      return;
-    }
-
-    setIsNextLoading(true);
-    setTimeout(() => {
-      const nextPerson = queueList[0];
-      setActiveToken(nextPerson.id);
-      setActiveName(nextPerson.name);
-      setActiveType(nextPerson.isVip ? 'VIP DARSHAN' : 'REGULAR DARSHAN');
-      
-      setQueueList(queueList.slice(1));
-      setCurrentlyInside(prev => prev + 1);
-      showToast(`Called Token ${nextPerson.id}`);
-      setIsNextLoading(false);
-    }, 400);
-  };
 
   return (
     <div className="max-w-7xl mx-auto w-full flex flex-col gap-8">
       {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
         <div className="glass-card p-6 rounded-xl flex flex-col gap-1 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 text-primary/10 group-hover:text-primary/20 transition-colors">
             <span className="material-symbols-outlined text-7xl">group</span>
@@ -124,16 +96,6 @@ export default function OperationsOverview() {
           </div>
         </div>
 
-        <div className="glass-card p-6 rounded-xl flex flex-col gap-1 relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 text-primary/10 group-hover:text-primary/20 transition-colors">
-            <span className="material-symbols-outlined text-7xl">confirmation_number</span>
-          </div>
-          <p className="text-on-surface-variant text-xs font-bold uppercase tracking-wider font-label-sm">{t('currentToken')}</p>
-          <p className="text-primary text-3xl font-extrabold">{activeToken}</p>
-          <div className="mt-2 flex items-center gap-1 text-on-surface-variant text-xs font-medium">
-            <span>Last updated 2m ago</span>
-          </div>
-        </div>
 
         <div className="glass-card p-6 rounded-xl flex flex-col gap-1 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 text-primary/10 group-hover:text-primary/20 transition-colors">
@@ -189,7 +151,7 @@ export default function OperationsOverview() {
           <span className="material-symbols-outlined text-primary">bolt</span>
           {t('quickActions')}
         </h3>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <Link 
             to="/dashboard/committee/scanner"
             className="flex flex-col items-center justify-center gap-3 p-6 bg-primary text-white rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all transform hover:-translate-y-1 text-center"
@@ -213,15 +175,6 @@ export default function OperationsOverview() {
             <span className="material-symbols-outlined text-3xl text-primary">local_parking</span>
             <span className="text-sm font-bold">{t('parkingManagement')}</span>
           </Link>
-          
-          <button 
-            onClick={handleNextToken}
-            disabled={isPaused || isNextLoading}
-            className="flex flex-col items-center justify-center gap-3 p-6 bg-surface-container-high border border-outline-variant text-on-surface rounded-xl hover:bg-surface-variant transition-all transform hover:-translate-y-1 disabled:opacity-50 disabled:cursor-not-allowed text-center"
-          >
-            <span className="material-symbols-outlined text-3xl text-tertiary">arrow_circle_right</span>
-            <span className="text-sm font-bold">{t('nextToken')}</span>
-          </button>
         </div>
       </section>
 

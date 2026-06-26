@@ -16,17 +16,27 @@ router.get('/', async (req, res) => {
     let visitorsToday = 0;
     todaysBookings.forEach(b => visitorsToday += (b.persons || 1));
     
-    // visitorsInside (say, sum of persons in queue where status is waiting or serving)
-    const queueInside = await Queue.find({ status: { $in: ['waiting', 'serving'] } }).populate('bookingId');
+    // visitorsInside = Currently Inside (Temple Entry + Waiting in Queue) -> verificationStatus in ['verified_entry', 'in_queue']
+    const bookingsInside = await Booking.find({ verificationStatus: { $in: ['verified_entry', 'in_queue'] } });
     let visitorsInside = 0;
-    let vipVisitors = 0;
-    queueInside.forEach(q => {
-      const p = q.bookingId ? q.bookingId.persons : 1;
-      visitorsInside += p;
-      if (q.isVip) vipVisitors += p;
+    bookingsInside.forEach(b => {
+      visitorsInside += (b.persons || 1);
     });
     
-    const queueCount = queueInside.length;
+    // queueCount = Waiting in Queue -> verificationStatus === 'in_queue'
+    const queueInsideBookings = await Booking.find({ verificationStatus: 'in_queue' });
+    let queueCount = 0;
+    queueInsideBookings.forEach(b => {
+      queueCount += (b.persons || 1);
+    });
+
+    // Calculate VIP Visitors currently inside queue based on Queue collection
+    const vipQueue = await Queue.find({ status: { $in: ['waiting', 'serving'] }, isVip: true }).populate('bookingId');
+    let vipVisitors = 0;
+    vipQueue.forEach(q => {
+      const p = q.bookingId ? q.bookingId.persons : 1;
+      vipVisitors += p;
+    });
     
     // completedDarshans
     const completedDarshans = await Queue.countDocuments({ status: 'completed' });

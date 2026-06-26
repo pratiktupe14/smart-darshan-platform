@@ -144,8 +144,8 @@ export default function BookDarshan() {
       {/* TopNavBar */}
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-10 h-16 bg-surface dark:bg-background border-b border-outline-variant dark:border-outline">
         <div className="flex items-center gap-4">
-          <Link to="/dashboard" className="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">
-            TemplePortal
+          <Link to="/" className="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">
+            शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)
           </Link>
         </div>
         <nav className="hidden md:flex gap-8 items-center">

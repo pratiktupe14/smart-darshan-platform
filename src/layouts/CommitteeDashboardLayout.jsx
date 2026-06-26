@@ -29,13 +29,7 @@ export default function CommitteeDashboardLayout() {
 
 
   // --- STATES PRESERVED ACROSS CHILDREN ---
-  // Serving Controller States
-  const [activeToken, setActiveToken] = useState('None');
-  const [activeName, setActiveName] = useState('N/A');
-  const [activeType, setActiveType] = useState('N/A');
-  const [isNextLoading, setIsNextLoading] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [isPaused, setIsPaused] = useState(false);
 
   // Queue List State
   const [queueList, setQueueList] = useState([]);
@@ -85,34 +79,29 @@ export default function CommitteeDashboardLayout() {
         if (queueRes.ok) {
           const queue = await queueRes.json();
           const waiting = queue.filter(q => q.status === 'waiting');
-          const serving = queue.filter(q => q.status === 'serving');
           
-          if (serving.length > 0) {
-            setActiveToken(serving[0].tokenNumber);
-            setActiveName(serving[0].bookingId ? serving[0].bookingId.fullName : 'Guest');
-            setActiveType('DARSHAN');
-          } else {
-            setActiveToken('None');
-            setActiveName('N/A');
-          }
-          
-          setQueueList(waiting.map(q => ({
+          setQueueList(waiting.map((q, index) => ({
             id: q.tokenNumber,
+            queueId: q._id,
+            bookingData: q.bookingId,
             name: q.bookingId ? q.bookingId.fullName : 'Guest',
+            persons: q.bookingId ? q.bookingId.persons : 1,
             type: 'Regular',
-            checkIn: new Date(q.createdAt).toLocaleTimeString(),
-            wait: '...',
-            isVip: false
+            checkIn: new Date(q.checkInTime || q.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            wait: `${Math.max(5, (index + 1) * 3)}m`,
+            isVip: q.isVip || false,
+            position: index + 1
           })));
         }
         
         if (vipRes.ok) {
           const vips = await vipRes.json();
-          setVipPool(vips.map(v => ({
-            id: v._id.substring(0, 8),
+          const activeVips = vips.filter(v => ['Pass Generated', 'Temple Entry', 'Waiting in Queue'].includes(v.status));
+          setVipPool(activeVips.map(v => ({
+            id: v.tokenNumber || v._id.substring(0, 8),
             name: v.name,
-            members: `${v.partySize} Members`,
-            checkIn: new Date(v.expectedArrivalTime).toLocaleTimeString(),
+            members: `${v.persons || 1} Members`,
+            checkIn: v.expectedArrivalTime ? new Date(v.expectedArrivalTime).toLocaleTimeString() : new Date().toLocaleTimeString(),
             type: 'VIP Member',
             isVip: true
           })));
@@ -246,7 +235,7 @@ export default function CommitteeDashboardLayout() {
           </button>
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-3xl">temple_hindu</span>
-            <span className="font-display text-2xl font-extrabold text-primary tracking-tighter">TemplePortal</span>
+            <span className="font-display text-2xl font-extrabold text-primary tracking-tighter">Samarth Darshan Portal</span>
           </div>
           <div className="hidden md:block h-6 w-px bg-outline-variant mx-2"></div>
           <h1 className="hidden md:block font-headline-md text-2xl font-semibold text-on-surface">{t('committeeTitle')}</h1>
@@ -316,7 +305,7 @@ export default function CommitteeDashboardLayout() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold">T</div>
             <div>
-              <div className="font-label-md text-sm font-bold text-on-surface">Temple Admin</div>
+              <div className="font-label-md text-sm font-bold text-on-surface">Samarth Darshan Portal Admin</div>
               <div className="flex items-center gap-1.5">
                 <span className="font-label-sm text-xs text-on-surface-variant">Committee Member</span>
                 <span className="text-[6px] text-on-surface-variant">•</span>
@@ -378,12 +367,7 @@ export default function CommitteeDashboardLayout() {
       {/* Main Content Area */}
       <main className="flex-grow ml-0 lg:ml-64 pt-20 px-4 md:px-10 pb-12 z-0 relative flex flex-col">
         <Outlet context={{
-          activeToken, setActiveToken,
-          activeName, setActiveName,
-          activeType, setActiveType,
-          isNextLoading, setIsNextLoading,
           toastMessage, setToastMessage,
-          isPaused, setIsPaused,
           queueList, setQueueList,
           vipPool, setVipPool,
           totalToday, setTotalToday,

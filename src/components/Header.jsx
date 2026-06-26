@@ -14,7 +14,7 @@ export default function Header() {
             temple_hindu
           </span>
           <span className="font-hero-title text-card-title font-bold text-primary tracking-tight">
-            Smart Darshan
+            Samarth Darshan Portal
           </span>
         </div>
         <nav className="hidden md:flex items-center gap-xl">
