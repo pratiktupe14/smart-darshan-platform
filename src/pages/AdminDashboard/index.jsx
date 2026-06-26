@@ -172,7 +172,7 @@ export default function AdminDashboard() {
         </div>
         <div className="flex items-center gap-6">
           <div className="flex flex-col items-end">
-            <p className="text-sm font-bold text-primary">Sri Devi Temple</p>
+            <p className="text-sm font-bold text-primary">शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</p>
             <p className="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant font-label-sm">
               Udaipur, India
             </p>

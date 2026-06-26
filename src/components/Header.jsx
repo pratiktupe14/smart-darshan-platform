@@ -14,7 +14,7 @@ export default function Header() {
             temple_hindu
           </span>
           <span className="font-hero-title text-card-title font-bold text-primary tracking-tight">
-            Smart Darshan
+            शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)
           </span>
         </div>
         <nav className="hidden md:flex items-center gap-xl">

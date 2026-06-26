@@ -49,7 +49,7 @@ const translations = {
     realTimeUpdates: "Real-Time Updates",
     realTimeUpdatesDesc: "Receive SMS and app alerts about festival timings and administrative changes.",
     announcementsTitle: "Announcements & Notices",
-    officialPortal: "Official Smart Darshan Portal",
+    officialPortal: "Official शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड) Portal",
     verifyAtGate: "Verify at Gate",
     slot: "Slot",
     noticeBoard: "Temple Notice Board",
