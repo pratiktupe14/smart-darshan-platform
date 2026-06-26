@@ -301,7 +301,7 @@ export default function Dashboard() {
             <div className="p-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0">
-                  <p className="text-sm font-semibold text-on-surface truncate">Main Temple Complex</p>
+                  <p className="text-sm font-semibold text-on-surface truncate">शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</p>
                   <p className="text-[10px] md:text-xs text-on-surface-variant truncate">Gate No. 3, North Entrance, Sector 42A</p>
                 </div>
                 <button className="p-2 bg-primary text-on-primary rounded-full hover:scale-110 transition-transform shrink-0">

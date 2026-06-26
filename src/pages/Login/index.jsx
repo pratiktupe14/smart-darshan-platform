@@ -141,30 +141,30 @@ export default function Login() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10"></div>
           <div className="absolute inset-0 flex flex-col justify-end p-16 z-20">
             <h2 className="text-white font-display text-[40px] font-extrabold leading-tight mb-4">
-              Welcome to<br/>Smart Darshan Manager
+              Welcome to<br/>शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)
             </h2>
             <p className="text-white/80 font-body-lg max-w-[28rem]">
               Experience the divine with our premium temple management solutions, designed for the modern spiritual era.
             </p>
           </div>
-          <div className="w-full h-full">
+          <div className="w-full h-full flex items-center justify-center bg-black/5">
             <img 
               alt="Ancient Indian Temple" 
-              className="w-full h-full object-cover" 
-              src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjwSzrRreOkVDV3GlDdzgUklsQamSVfWHRfkMMI56r1hklT0xyX9V0VdGccZhD8OkEpPm-sVtJhZTZQdGiugqWwO5ZlZEOIoylWxttp2Kqa-cSIBxibv0c1vHjhHeiHgy7r1OHJ-StHlS0HpFyP-GfQZZzSyb5O3_RU7N8DLCakrJsHzd1uK36_a7L4p7QjrHWNgVy_DEEscb9q5aTeLsHOGhHGLOKi2T8i6kkDyhWThyO13ddpSlvmWky3sb0mu4B6bZfcSmZCLg"
+              className="w-full h-full object-contain" 
+              src="/guru-image.jpg"
             />
           </div>
         </div>
 
-        <div className="block md:hidden w-full h-64 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10"></div>
-          <div className="absolute inset-0 flex items-end p-6 z-20">
-            <h2 className="text-white font-headline-md font-bold">Welcome to Smart Darshan</h2>
+        <div className="block md:hidden w-full h-auto relative overflow-hidden flex items-center justify-center bg-black/5">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 pointer-events-none"></div>
+          <div className="absolute inset-0 flex items-end p-6 z-20 pointer-events-none">
+            <h2 className="text-white font-headline-md font-bold">Welcome to शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</h2>
           </div>
           <img 
             alt="Ancient Indian Temple" 
-            className="w-full h-full object-cover" 
-            src="https://lh3.googleusercontent.com/aida-public/AB6AXuCjwSzrRreOkVDV3GlDdzgUklsQamSVfWHRfkMMI56r1hklT0xyX9V0VdGccZhD8OkEpPm-sVtJhZTZQdGiugqWwO5ZlZEOIoylWxttp2Kqa-cSIBxibv0c1vHjhHeiHgy7r1OHJ-StHlS0HpFyP-GfQZZzSyb5O3_RU7N8DLCakrJsHzd1uK36_a7L4p7QjrHWNgVy_DEEscb9q5aTeLsHOGhHGLOKi2T8i6kkDyhWThyO13ddpSlvmWky3sb0mu4B6bZfcSmZCLg"
+            className="w-full h-auto max-h-[50vh] object-contain" 
+            src="/guru-image.jpg"
           />
         </div>
 
@@ -176,14 +176,14 @@ export default function Login() {
                   temple_hindu
                 </span>
               </div>
-              <h1 className="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">Smart Darshan</h1>
+              <h1 className="font-headline-md text-headline-md font-extrabold text-primary tracking-tight">Samarth Darshan Portal</h1>
               <p className="font-label-md text-label-md text-on-surface-variant uppercase tracking-widest mt-1">Temple Management System</p>
             </header>
 
             <div className="bg-surface-container-lowest p-8 md:p-10 rounded-lg shrine-glow border border-outline-variant/30 stagger-in" style={{ opacity: 1 }}>
               {view === 'mobile' && (
                 <div>
-                  <h2 className="font-headline-md text-headline-md text-on-surface mb-6">Welcome to Smart Darshan</h2>
+                  <h2 className="font-headline-md text-headline-md text-on-surface mb-6">Welcome to शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</h2>
                   
                   {/* Role Selection Segmented Control */}
                   <div className="flex p-1 bg-surface-container-high rounded-lg mb-6">
@@ -402,7 +402,7 @@ export default function Login() {
           <span className="material-symbols-outlined text-primary text-[20px]">shield</span>
           <span className="font-label-sm text-on-surface-variant text-label-sm">&nbsp; &nbsp; &nbsp; &nbsp;Secure 256-bit Encrypted Session</span>
         </div>
-        <p className="font-label-sm text-label-sm text-on-surface-variant">© 2024 TempleConnect Management System. All rights reserved.</p>
+        <p className="font-label-sm text-label-sm text-on-surface-variant">© 2024 Samarth Darshan Portal. All rights reserved.</p>
         <div className="flex gap-4">
           <a className="text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">Support</a>
           <a className="text-on-surface-variant hover:text-primary transition-colors font-label-sm text-label-sm" href="#">Terms</a>

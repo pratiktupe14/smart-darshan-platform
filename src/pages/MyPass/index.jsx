@@ -113,7 +113,7 @@ export default function MyPass() {
       const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
       doc.setFontSize(24);
       doc.setTextColor(0, 0, 0);
-      doc.text("Sri Meenakshi Temple", 105, 25, { align: "center" });
+      doc.text("शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)", 105, 25, { align: "center" });
       
       doc.setFontSize(16);
       doc.setTextColor(100, 100, 100);
@@ -228,7 +228,7 @@ export default function MyPass() {
                       <div className="flex-grow space-y-6">
                         <div className="flex justify-between items-start">
                           <div>
-                            <h2 className="text-xl font-bold text-on-surface">Sri Meenakshi Temple</h2>
+                            <h2 className="text-xl font-bold text-on-surface">शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</h2>
                             <p className="text-primary font-medium">Main Sanctum Darshan</p>
                           </div>
                           <div className="text-right">
@@ -379,7 +379,7 @@ export default function MyPass() {
                   {passHistory.map(pass => (
                     <tr key={pass._id} className="hover:bg-surface-bright transition-colors cursor-pointer group">
                       <td className="px-6 py-4 text-on-surface-variant">{new Date(pass.darshanDate).toLocaleDateString()}</td>
-                      <td className="px-6 py-4 text-on-surface">Sri Meenakshi Temple</td>
+                      <td className="px-6 py-4 text-on-surface">शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</td>
                       <td className="px-6 py-4 text-right">
                         <span className="bg-on-tertiary-container text-tertiary px-4 py-1 rounded-full text-xs font-bold inline-block capitalize">{pass.status}</span>
                       </td>
@@ -433,7 +433,7 @@ export default function MyPass() {
               </div>
               
               <div>
-                <p className="text-base font-semibold text-on-surface">Sri Meenakshi Temple</p>
+                <p className="text-base font-semibold text-on-surface">शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</p>
                 <p className="text-xs text-on-surface-variant leading-relaxed font-medium">Madurai Main Rd, Madurai, Tamil Nadu 625001, India</p>
               </div>
             </div>

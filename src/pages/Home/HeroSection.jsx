@@ -33,8 +33,8 @@ export default function HeroSection() {
           </div>
         </div>
         <div className="relative mt-8 lg:mt-0">
-          <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border border-on-surface/5 bg-surface/50">
-            <img className="w-full h-auto object-cover" alt="Temple Hero View" src="/hero-temple.jpg" />
+          <div className="relative z-10 rounded-3xl overflow-hidden shadow-2xl border border-on-surface/5 bg-surface/50 flex items-center justify-center">
+            <img className="w-full h-auto max-h-[75vh] object-contain" alt="Temple Hero View" src="/guru-image.jpg" />
           </div>
         </div>
       </div>

@@ -172,7 +172,7 @@ export default function AdminDashboard() {
         </div>
         <div className="flex items-center gap-6">
           <div className="flex flex-col items-end">
-            <p className="text-sm font-bold text-primary">Sri Devi Temple</p>
+            <p className="text-sm font-bold text-primary">Samarth Darshan Portal</p>
             <p className="text-[10px] uppercase tracking-wider font-bold text-on-surface-variant font-label-sm">
               Udaipur, India
             </p>

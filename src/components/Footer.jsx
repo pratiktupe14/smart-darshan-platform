@@ -11,7 +11,7 @@ export default function Footer() {
               <span className="material-symbols-outlined text-primary-fixed text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
                 temple_hindu
               </span>
-              <span className="font-card-title text-card-title font-bold text-primary-fixed">TempleFlow</span>
+              <span className="font-card-title text-card-title font-bold text-primary-fixed">Samarth Darshan Portal</span>
             </div>
             <p className="font-body text-sm text-surface-variant/80 leading-relaxed mb-xl">
               Modernizing spiritual administration with reverence and efficiency. Providing seamless darshan experiences for devotees worldwide.
@@ -56,14 +56,14 @@ export default function Footer() {
               </li>
               <li className="flex gap-2">
                 <span className="material-symbols-outlined text-primary-fixed text-sm">location_on</span>
-                Temple HQ, Main Road, Spiritual Center, 560001
+                शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड), Main Road, Spiritual Center, 560001
               </li>
             </ul>
           </div>
         </div>
         <div className="pt-xl border-t border-outline-variant/10 flex flex-col md:flex-row justify-between items-center gap-md text-center md:text-left">
           <p className="font-label-sm text-label-sm text-surface-variant/60">
-            © 2024 TempleFlow Management Systems. All rights reserved.
+            © 2024 Samarth Darshan Portal. All rights reserved.
           </p>
           <div className="flex gap-xl">
             <a className="text-[10px] text-surface-variant/40 hover:text-primary-fixed uppercase tracking-widest" href="#">Designed for Devotion</a>

@@ -111,7 +111,7 @@ export default function DashboardLayout() {
                 <span className="material-symbols-outlined">temple_hindu</span>
               </div>
               <div>
-                <p className="font-label-md text-label-md font-bold text-primary">Temple Admin</p>
+                <p className="font-label-md text-label-md font-bold text-primary">Samarth Darshan Portal Admin</p>
                 <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-bold">Management Console</p>
               </div>
             </div>
@@ -199,8 +199,8 @@ export default function DashboardLayout() {
         <footer className="w-full mt-auto py-10 px-4 md:px-10 bg-surface-container-highest border-t border-outline-variant">
           <div className="max-w-[1600px] mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
             <div className="flex flex-col gap-2">
-              <h2 className="text-2xl font-extrabold text-primary">Temple&nbsp; &nbsp; Portal</h2>
-              <p className="text-sm text-on-surface-variant">© 2024 Mo&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;dern Temple Trust. All Rights Reserved.</p>
+              <h2 className="text-2xl font-extrabold text-primary">Samarth Darshan Portal</h2>
+              <p className="text-sm text-on-surface-variant">© 2024 Samarth Darshan Portal. All Rights Reserved.</p>
             </div>
             <div className="flex flex-wrap justify-center gap-4 md:gap-8">
               <a className="text-on-surface-variant hover:underline decoration-primary transition-opacity text-sm font-medium" href="#">Contact Us</a>

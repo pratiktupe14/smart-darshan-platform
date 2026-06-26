@@ -234,7 +234,7 @@ export default function CommitteeDashboardLayout() {
           </button>
           <div className="flex items-center gap-2">
             <span className="material-symbols-outlined text-primary text-3xl">temple_hindu</span>
-            <span className="font-display text-2xl font-extrabold text-primary tracking-tighter">TemplePortal</span>
+            <span className="font-display text-2xl font-extrabold text-primary tracking-tighter">Samarth Darshan Portal</span>
           </div>
           <div className="hidden md:block h-6 w-px bg-outline-variant mx-2"></div>
           <h1 className="hidden md:block font-headline-md text-2xl font-semibold text-on-surface">{t('committeeTitle')}</h1>
@@ -303,7 +303,7 @@ export default function CommitteeDashboardLayout() {
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center text-white font-bold">T</div>
             <div>
-              <div className="font-label-md text-sm font-bold text-on-surface">Temple Admin</div>
+              <div className="font-label-md text-sm font-bold text-on-surface">Samarth Darshan Portal Admin</div>
               <div className="flex items-center gap-1.5">
                 <span className="font-label-sm text-xs text-on-surface-variant">Committee Member</span>
                 <span className="text-[6px] text-on-surface-variant">•</span>

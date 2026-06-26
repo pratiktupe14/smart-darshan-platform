@@ -49,7 +49,7 @@ const translations = {
     realTimeUpdates: "Real-Time Updates",
     realTimeUpdatesDesc: "Receive SMS and app alerts about festival timings and administrative changes.",
     announcementsTitle: "Announcements & Notices",
-    officialPortal: "Official Smart Darshan Portal",
+    officialPortal: "Official Samarth Darshan Portal",
     verifyAtGate: "Verify at Gate",
     slot: "Slot",
     noticeBoard: "Temple Notice Board",
