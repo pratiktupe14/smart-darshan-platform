@@ -136,40 +136,42 @@ export default function Login() {
 
   return (
     <div className="bg-background min-h-screen flex flex-col font-body-md text-on-background selection:bg-primary-fixed selection:text-on-primary-fixed">
-      <main className="flex-grow flex flex-col md:flex-row items-stretch justify-center min-h-screen relative overflow-hidden">
-        <div className="hidden md:flex md:flex-1 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent z-10"></div>
-          <div className="absolute inset-0 flex flex-col justify-end p-16 z-20">
-            <h2 className="text-white font-display text-[40px] font-extrabold leading-tight mb-4">
-              Welcome to<br/>शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)
-            </h2>
-            <p className="text-white/80 font-body-lg max-w-[28rem]">
-              Experience the divine with our premium temple management solutions, designed for the modern spiritual era.
-            </p>
-          </div>
-          <div className="w-full h-full flex items-center justify-center bg-black/5">
+      <main className="flex-grow flex items-center justify-center min-h-screen p-4 md:p-8 lg:p-12 relative overflow-hidden bg-surface-container-lowest/50">
+        <div className="w-full max-w-[1500px] flex flex-col md:flex-row items-center justify-evenly gap-8 lg:gap-16">
+          
+          {/* Desktop Image Container tightly wrapped */}
+          <div className="hidden md:flex relative overflow-hidden rounded-[2rem] shadow-2xl border border-on-surface/10 w-full max-w-[800px] shrink">
             <img 
               alt="Ancient Indian Temple" 
-              className="w-full h-full object-contain" 
-              src="/guru-image.jpg"
+              className="w-full h-auto object-contain block bg-black/5" 
+              src="/temple-view.jpg"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute inset-0 flex flex-col justify-end p-10 lg:p-14 z-20 pointer-events-none">
+              <h2 className="text-white font-display text-[32px] lg:text-[40px] font-extrabold leading-tight mb-4 drop-shadow-lg">
+                Welcome to<br/>शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)
+              </h2>
+              <p className="text-white/90 font-body-lg max-w-[28rem] drop-shadow-md">
+                Experience the divine with our premium temple management solutions, designed for the modern spiritual era.
+              </p>
+            </div>
           </div>
-        </div>
 
-        <div className="block md:hidden w-full h-auto relative overflow-hidden flex items-center justify-center bg-black/5">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10 pointer-events-none"></div>
-          <div className="absolute inset-0 flex items-end p-6 z-20 pointer-events-none">
-            <h2 className="text-white font-headline-md font-bold">Welcome to शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</h2>
+          {/* Mobile Image Container tightly wrapped */}
+          <div className="block md:hidden relative overflow-hidden rounded-2xl shadow-xl w-full border border-on-surface/10">
+            <img 
+              alt="Ancient Indian Temple" 
+              className="w-full h-auto object-contain block bg-black/5" 
+              src="/temple-view.jpg"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent z-10 pointer-events-none"></div>
+            <div className="absolute inset-0 flex items-end p-6 z-20 pointer-events-none">
+              <h2 className="text-white font-headline-sm font-bold drop-shadow-md">Welcome to शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</h2>
+            </div>
           </div>
-          <img 
-            alt="Ancient Indian Temple" 
-            className="w-full h-auto max-h-[50vh] object-contain" 
-            src="/guru-image.jpg"
-          />
-        </div>
 
-        <div className="flex-1 flex items-center justify-center p-8 md:p-16 z-10 bg-background">
-          <div className="w-full max-w-[480px]">
+          <div className="w-full max-w-[480px] flex flex-col justify-center z-10 shrink-0">
+            <div className="w-full">
             <header className="mb-stack-lg text-center stagger-in" style={{ opacity: 1 }}>
               <div className="inline-flex items-center justify-center p-3 bg-white rounded-xl shrine-glow mb-4">
                 <span className="material-symbols-outlined text-[40px] text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
@@ -394,6 +396,7 @@ export default function Login() {
               </Link>
             </div>
           </div>
+        </div>
         </div>
       </main>
       
