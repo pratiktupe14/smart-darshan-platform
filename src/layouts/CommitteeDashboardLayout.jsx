@@ -96,11 +96,12 @@ export default function CommitteeDashboardLayout() {
         
         if (vipRes.ok) {
           const vips = await vipRes.json();
-          setVipPool(vips.map(v => ({
-            id: v._id.substring(0, 8),
+          const activeVips = vips.filter(v => ['Pass Generated', 'Temple Entry', 'Waiting in Queue'].includes(v.status));
+          setVipPool(activeVips.map(v => ({
+            id: v.tokenNumber || v._id.substring(0, 8),
             name: v.name,
-            members: `${v.partySize} Members`,
-            checkIn: new Date(v.expectedArrivalTime).toLocaleTimeString(),
+            members: `${v.persons || 1} Members`,
+            checkIn: v.expectedArrivalTime ? new Date(v.expectedArrivalTime).toLocaleTimeString() : new Date().toLocaleTimeString(),
             type: 'VIP Member',
             isVip: true
           })));

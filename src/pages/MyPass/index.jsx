@@ -102,7 +102,7 @@ export default function MyPass() {
     };
 
     fetchData();
-    const timer = setInterval(fetchData, 10000);
+    const timer = setInterval(fetchData, 3000);
 
     return () => clearInterval(timer);
   }, [user]);
@@ -352,13 +352,12 @@ export default function MyPass() {
           ) : (
             <div className="bg-surface-container-lowest rounded-xl border border-outline/10 p-12 flex flex-col items-center justify-center text-center shadow-sm w-full">
               <span className="material-symbols-outlined text-6xl text-outline-variant mb-4">confirmation_number</span>
-              <h2 className="text-2xl font-bold text-on-surface mb-4">No Active Pass Found</h2>
+              <h2 className="text-2xl font-bold text-on-surface mb-4">No Active Journey</h2>
               <div className="text-on-surface-variant mb-8 w-full max-w-[450px] space-y-2">
-                <p>You do not have any active darshan bookings at the moment.</p>
-                <p>Book a darshan slot to generate your digital pass.</p>
+                <p>Your Darshan has been completed successfully. You do not have any active journey at this time.</p>
               </div>
               <Link to="/dashboard/book" className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-md">
-                Book Darshan Now
+                Book New Darshan
               </Link>
             </div>
           )}

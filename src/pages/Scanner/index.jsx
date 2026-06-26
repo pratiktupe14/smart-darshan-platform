@@ -147,8 +147,8 @@ export default function Scanner() {
       const constraints = {
         video: { 
           facingMode: mode,
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          width: { ideal: 1280, max: 1920 },
+          height: { ideal: 1280, max: 1920 }
         }
       };
 
@@ -301,12 +301,12 @@ export default function Scanner() {
               </span>
             </div>
             
-            <div className="relative overflow-hidden bg-inverse-surface rounded-xl aspect-video md:aspect-[16/10] flex flex-col items-center justify-center border-4 border-surface-container">
+            <div className="relative overflow-hidden bg-inverse-surface rounded-xl min-h-[50vh] sm:min-h-[400px] flex flex-col items-center justify-center border-4 border-surface-container">
               
               {/* Dynamic Camera Feed / Video Element */}
               <video 
                 ref={videoRef}
-                className={`absolute inset-0 w-full h-full object-cover z-0 ${isCameraActive ? 'block' : 'hidden'}`}
+                className={`absolute inset-0 w-full h-full object-contain z-0 ${isCameraActive ? 'block' : 'hidden'}`}
                 playsInline
                 muted
               />
@@ -356,17 +356,17 @@ export default function Scanner() {
                     </>
                   )}
                   
-                  <div className="flex flex-wrap gap-3 justify-center">
+                  <div className="flex flex-col sm:flex-row w-full px-6 gap-3 justify-center">
                     <button 
                       onClick={() => startCamera(facingMode)}
-                      className="px-6 py-2.5 bg-primary text-on-primary rounded-full font-bold shadow-md hover:scale-[1.02] transition-all text-xs"
+                      className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 bg-primary text-on-primary rounded-full font-bold shadow-md hover:scale-[1.02] transition-all text-xs"
                     >
                       Start Camera
                     </button>
                     
                     <button 
                       onClick={handleScanQrSimulated}
-                      className="px-6 py-2.5 bg-surface-container-highest text-on-surface font-bold rounded-full shadow-md hover:scale-[1.02] transition-all text-xs"
+                      className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 bg-surface-container-highest text-on-surface font-bold rounded-full shadow-md hover:scale-[1.02] transition-all text-xs"
                     >
                       Simulate QR Scan
                     </button>
@@ -376,24 +376,24 @@ export default function Scanner() {
 
               {/* Video control overlays */}
               {isCameraActive && (
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 z-30">
+                <div className="absolute bottom-4 left-0 right-0 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 z-30 px-4">
                   <button 
                     onClick={handleSwitchCamera}
-                    className="px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow"
+                    className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow"
                   >
                     <span className="material-symbols-outlined text-sm">switch_camera</span>
                     Switch Camera
                   </button>
                   <button 
                     onClick={stopCamera}
-                    className="px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow"
+                    className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow"
                   >
                     <span className="material-symbols-outlined text-sm">videocam_off</span>
                     Stop Camera
                   </button>
                   <button 
                     onClick={handleScanQrSimulated}
-                    className="px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow"
+                    className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow"
                   >
                     <span className="material-symbols-outlined text-sm">construction</span>
                     Simulate Scan
@@ -407,7 +407,7 @@ export default function Scanner() {
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-on-surface-variant">{t('tokenNumber')}</label>
                 <input 
-                  className="px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" 
+                  className="w-full min-h-[44px] px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" 
                   placeholder="T-5421" 
                   type="text" 
                   value={searchToken}
@@ -417,7 +417,7 @@ export default function Scanner() {
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-on-surface-variant">{t('mobileNumber')}</label>
                 <input 
-                  className="px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" 
+                  className="w-full min-h-[44px] px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" 
                   placeholder="+91 987..." 
                   type="tel" 
                   value={searchMobile}
@@ -427,7 +427,7 @@ export default function Scanner() {
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-on-surface-variant">{t('vehicleNumber')}</label>
                 <input 
-                  className="px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" 
+                  className="w-full min-h-[44px] px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" 
                   placeholder="MH12 AB..." 
                   type="text" 
                   value={searchVehicle}
@@ -437,7 +437,7 @@ export default function Scanner() {
             </div>
             <button 
               onClick={handleManualSearch}
-              className="w-full mt-4 py-3 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors"
+              className="w-full min-h-[44px] mt-4 py-3 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors"
             >
               {t('manualSearch')}
             </button>
@@ -591,12 +591,12 @@ export default function Scanner() {
                   </div>
                 )}
 
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-col sm:flex-row gap-4">
                   {(!counterId || counterId === '1') && (
                     <button 
                       disabled={['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus)}
                       onClick={() => handleCounterAction(1)}
-                      className={`flex-1 min-w-[140px] py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all ${
+                      className={`w-full sm:flex-1 min-h-[44px] py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all ${
                         ['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
                       }`}
                     >
@@ -608,7 +608,7 @@ export default function Scanner() {
                     <button 
                       disabled={scannedDevotee.verificationStatus !== 'verified_entry'}
                       onClick={() => handleCounterAction(2)}
-                      className={`flex-1 min-w-[140px] py-3 border-2 border-secondary text-secondary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all ${
+                      className={`w-full sm:flex-1 min-h-[44px] py-3 border-2 border-secondary text-secondary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all ${
                         scannedDevotee.verificationStatus !== 'verified_entry' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
                       }`}
                     >
@@ -620,7 +620,7 @@ export default function Scanner() {
                     <button 
                       disabled={scannedDevotee.verificationStatus !== 'in_queue'}
                       onClick={() => handleCounterAction(3)}
-                      className={`flex-1 min-w-[140px] py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-highest active:scale-95 transition-all ${
+                      className={`w-full sm:flex-1 min-h-[44px] py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-highest active:scale-95 transition-all ${
                         scannedDevotee.verificationStatus !== 'in_queue' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
                       }`}
                     >

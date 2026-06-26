@@ -59,8 +59,11 @@ export default function CommitteeDashboard() {
       });
       if (res.ok) {
         showToast('Devotee Darshan Completed!');
-        setQueueList(prev => prev.filter(q => q.bookingData?._id !== bookingId));
-        setCurrentlyInside(prev => Math.max(0, prev - 1));
+        setQueueList(prev => {
+          const newQueue = prev.filter(q => q.bookingData?._id !== bookingId);
+          return newQueue.map((q, i) => ({ ...q, position: i + 1 }));
+        });
+        setCurrentlyInside(prev => Math.max(0, prev - (selectedDevotee?.persons || 1)));
         setSelectedDevotee(null);
       } else {
         const err = await res.json();
@@ -82,14 +85,21 @@ export default function CommitteeDashboard() {
       type: 'VIP Member',
       checkIn: vipItem.checkIn,
       wait: '0m',
-      isVip: true
+      isVip: true,
+      persons: parseInt(vipItem.members) || 1
     };
-    setQueueList(prev => [promotedDevotee, ...prev]);
+    setQueueList(prev => {
+      const newQueue = [promotedDevotee, ...prev];
+      return newQueue.map((q, i) => ({ ...q, position: i + 1 }));
+    });
     showToast(`Pushed ${vipItem.name} (${vipItem.id}) to top of Live Queue!`);
   };
 
   const handleDelete = (tokenId) => {
-    setQueueList(prev => prev.filter(item => item.id !== tokenId));
+    setQueueList(prev => {
+      const newQueue = prev.filter(item => item.id !== tokenId);
+      return newQueue.map((q, i) => ({ ...q, position: i + 1 }));
+    });
     setVipPool(prev => prev.filter(item => item.id !== tokenId));
     showToast(`Removed Token ${tokenId} from waitlist`);
   };
