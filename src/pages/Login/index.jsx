@@ -7,7 +7,7 @@ export default function Login() {
   const { loginUser } = useUser();
   const [role, setRole] = useState('user');
   const [view, setView] = useState('mobile');
-  const [loginMethod, setLoginMethod] = useState('email'); // 'mobile' or 'email'
+  const [loginMethod, setLoginMethod] = useState('login'); // 'login' or 'register'
   const [mobileNumber, setMobileNumber] = useState('');
   const [emailAddress, setEmailAddress] = useState('');
   const [fullName, setFullName] = useState('');
@@ -34,49 +34,57 @@ export default function Login() {
     }, 100);
   };
 
-  const handleEmailSubmit = async (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
-    if (!emailAddress || !password || !fullName) {
-      alert('Please enter your name, email and password.');
+    if (!emailAddress || !password) {
+      alert('Please enter your email/mobile and password.');
       return;
     }
     
     try {
-      // Try register first
-      let response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/register`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: emailAddress, password, fullName, role })
+        body: JSON.stringify({ identifier: emailAddress, password })
       });
-      
-      let data = await response.json();
-      
-      if (!response.ok && data.message === 'User already exists') {
-        // Try login
-        response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: emailAddress, password })
-        });
-        data = await response.json();
-      }
+      const data = await response.json();
       
       if (response.ok) {
         loginUser(data.user, data.user.role || role, data.token);
-        
-        if (data.user.role === 'admin') {
-          navigate('/dashboard/admin');
-        } else if (data.user.role === 'committee') {
-          navigate('/dashboard/committee');
-        } else {
-          navigate('/dashboard');
-        }
+        navigate(data.user.role === 'admin' ? '/dashboard/admin' : data.user.role === 'committee' ? '/dashboard/committee' : '/dashboard');
       } else {
         alert(data.message || 'Login failed');
       }
     } catch (err) {
       console.error(err);
       alert('An error occurred during login');
+    }
+  };
+
+  const handleRegisterSubmit = async (e) => {
+    e.preventDefault();
+    if (!emailAddress || !password || !fullName || !mobileNumber) {
+      alert('Please fill all fields.');
+      return;
+    }
+    
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailAddress, password, fullName, mobileNumber, role })
+      });
+      const data = await response.json();
+      
+      if (response.ok) {
+        loginUser(data.user, data.user.role || role, data.token);
+        navigate(data.user.role === 'admin' ? '/dashboard/admin' : data.user.role === 'committee' ? '/dashboard/committee' : '/dashboard');
+      } else {
+        alert(data.message || 'Registration failed');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('An error occurred during registration');
     }
   };
 
@@ -209,60 +217,75 @@ export default function Login() {
                     </button>
                   </div>
 
-                  {/* Login Method Segmented Control */}
+                  {/* Login/Register Segmented Control */}
                   <div className="flex p-1 bg-surface-container/50 rounded-lg mb-6 border border-outline-variant/30">
                     <button 
                       type="button"
-                      className={`flex-1 py-1.5 font-label-md text-xs font-bold rounded-md transition-all ${loginMethod === 'mobile' ? 'bg-white text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
-                      onClick={() => setLoginMethod('mobile')}
+                      className={`flex-1 py-1.5 font-label-md text-xs font-bold rounded-md transition-all ${loginMethod === 'login' ? 'bg-white text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+                      onClick={() => setLoginMethod('login')}
                     >
-                      Mobile Number
+                      Login
                     </button>
                     <button 
                       type="button"
-                      className={`flex-1 py-1.5 font-label-md text-xs font-bold rounded-md transition-all ${loginMethod === 'email' ? 'bg-white text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
-                      onClick={() => setLoginMethod('email')}
+                      className={`flex-1 py-1.5 font-label-md text-xs font-bold rounded-md transition-all ${loginMethod === 'register' ? 'bg-white text-primary shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+                      onClick={() => setLoginMethod('register')}
                     >
-                      Email Address
+                      Register
                     </button>
                   </div>
 
-                  {loginMethod === 'mobile' ? (
-                    <>
-                      <p className="font-body-md text-body-md text-on-surface-variant mb-6">Enter your mobile number to login or create your account instantly.</p>
+                  {loginMethod === 'login' ? (
+                    <form onSubmit={handleLoginSubmit} className="space-y-6">
+                      <p className="font-body-md text-body-md text-on-surface-variant mb-6">Enter your email or mobile number and password to log in.</p>
                       
-                      <div className="space-y-6">
-                        <div className="group">
-                          <label className="block font-label-md text-label-md text-on-surface mb-2 ml-1" htmlFor="mobile">Mobile Number</label>
-                          <div className="relative flex items-center">
-                            <div className="absolute left-4 flex items-center gap-2 pr-3 border-r border-outline-variant/50">
-                              <span className="text-on-surface font-semibold text-body-md">+91</span>
-                              <span className="material-symbols-outlined text-[18px] text-on-surface-variant">keyboard_arrow_down</span>
-                            </div>
-                            <input 
-                              className="w-full pl-24 pr-4 py-4 rounded-lg bg-surface border-outline-variant/50 border focus:border-primary focus:ring-4 focus:ring-primary-container/20 transition-all font-body-lg text-body-lg tracking-wider" 
-                              id="mobile" 
-                              maxLength="10" 
-                              placeholder="98765 43210" 
-                              type="tel"
-                              value={mobileNumber}
-                              onChange={(e) => setMobileNumber(e.target.value)}
-                            />
-                          </div>
-                        </div>
-                        
-                        <button 
-                          className="w-full py-4 bg-primary hover:bg-on-primary-fixed-variant text-white font-bold rounded-lg transition-all transform active:scale-[0.98] shadow-lg shadow-primary/20 flex items-center justify-center gap-2" 
-                          onClick={handleMobileSubmit}
-                        >
-                          <span>Send OTP</span>
-                          <span className="material-symbols-outlined">arrow_forward</span>
+                      <div className="group">
+                        <label className="block font-label-md text-label-md text-on-surface mb-2 ml-1" htmlFor="identifier">Email Address or Mobile Number</label>
+                        <input 
+                          className="w-full px-4 py-4 rounded-lg bg-surface border-outline-variant/50 border focus:border-primary focus:ring-4 focus:ring-primary-container/20 transition-all font-body-lg text-body-lg tracking-normal" 
+                          id="identifier" 
+                          placeholder="Email or Mobile" 
+                          type="text"
+                          value={emailAddress}
+                          onChange={(e) => setEmailAddress(e.target.value)}
+                          required
+                        />
+                      </div>
+                      
+                      <div className="group">
+                        <label className="block font-label-md text-label-md text-on-surface mb-2 ml-1" htmlFor="password">Password</label>
+                        <input 
+                          className="w-full px-4 py-4 rounded-lg bg-surface border-outline-variant/50 border focus:border-primary focus:ring-4 focus:ring-primary-container/20 transition-all font-body-lg text-body-lg tracking-normal" 
+                          id="password" 
+                          placeholder="••••••••" 
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          required
+                        />
+                      </div>
+                      
+                      <button 
+                        type="submit"
+                        className="w-full py-4 bg-primary hover:bg-on-primary-fixed-variant text-white font-bold rounded-lg transition-all transform active:scale-[0.98] shadow-lg shadow-primary/20 flex items-center justify-center gap-2" 
+                      >
+                        <span>Login</span>
+                        <span className="material-symbols-outlined">login</span>
+                      </button>
+
+                      <div className="text-center mt-4">
+                        <button type="button" onClick={() => {
+                          if(!emailAddress) { alert("Please enter your mobile number in the field above first."); return; }
+                          setMobileNumber(emailAddress);
+                          handleMobileSubmit();
+                        }} className="text-xs font-bold text-primary hover:underline">
+                          Or login with OTP (Mobile Only)
                         </button>
                       </div>
-                    </>
+                    </form>
                   ) : (
-                    <form onSubmit={handleEmailSubmit} className="space-y-6">
-                      <p className="font-body-md text-body-md text-on-surface-variant mb-6">Enter your name, email and password to log in or register.</p>
+                    <form onSubmit={handleRegisterSubmit} className="space-y-6">
+                      <p className="font-body-md text-body-md text-on-surface-variant mb-6">Create a new account by filling out the details below.</p>
                       
                       <div className="group">
                         <label className="block font-label-md text-label-md text-on-surface mb-2 ml-1" htmlFor="name">Full Name</label>
@@ -273,6 +296,20 @@ export default function Login() {
                           type="text"
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
+                          required
+                        />
+                      </div>
+
+                      <div className="group">
+                        <label className="block font-label-md text-label-md text-on-surface mb-2 ml-1" htmlFor="mobile">Mobile Number</label>
+                        <input 
+                          className="w-full px-4 py-4 rounded-lg bg-surface border-outline-variant/50 border focus:border-primary focus:ring-4 focus:ring-primary-container/20 transition-all font-body-lg text-body-lg tracking-normal" 
+                          id="mobile" 
+                          placeholder="98765 43210" 
+                          type="tel"
+                          maxLength="10"
+                          value={mobileNumber}
+                          onChange={(e) => setMobileNumber(e.target.value)}
                           required
                         />
                       </div>
@@ -307,8 +344,8 @@ export default function Login() {
                         type="submit"
                         className="w-full py-4 bg-primary hover:bg-on-primary-fixed-variant text-white font-bold rounded-lg transition-all transform active:scale-[0.98] shadow-lg shadow-primary/20 flex items-center justify-center gap-2" 
                       >
-                        <span>Login</span>
-                        <span className="material-symbols-outlined">login</span>
+                        <span>Register Account</span>
+                        <span className="material-symbols-outlined">person_add</span>
                       </button>
                     </form>
                   )}

@@ -10,6 +10,8 @@ export default function CommitteeDashboard() {
     vipPool, setVipPool,
     totalToday, setTotalToday,
     currentlyInside, setCurrentlyInside,
+    queueCount,
+    totalPendingEntries,
     showToast
   } = useOutletContext();
 
@@ -150,43 +152,50 @@ export default function CommitteeDashboard() {
   return (
     <div className="flex-1 w-full animate-in fade-in duration-200">
       {/* Dashboard Stats Bento */}
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <section className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
         <div className="md:col-span-1 tonal-layer p-6 rounded-xl flex flex-col justify-between">
           <div>
-            <span className="font-label-sm text-xs text-on-surface-variant block mb-1 font-medium">{t('totalToday')}</span>
-            <h3 className="font-display text-primary leading-none text-[32px] md:text-[48px] font-extrabold tracking-tighter">{totalToday.toLocaleString()}</h3>
+            <span className="font-label-sm text-xs text-on-surface-variant block mb-1 font-medium">Total Tokens in Queue</span>
+            <h3 className="font-display text-primary leading-none text-[32px] md:text-[48px] font-extrabold tracking-tighter">{queueList.length}</h3>
           </div>
-          <div className="mt-4 flex items-center gap-1 text-green-700 font-label-sm text-xs font-semibold">
-            <span className="material-symbols-outlined text-sm">trending_up</span> +12% from avg
+          <div className="mt-4 flex items-center gap-1 text-primary font-label-sm text-xs font-semibold">
+            <span className="material-symbols-outlined text-sm">confirmation_number</span> Active tokens
+          </div>
+        </div>
+        <div className="md:col-span-1 tonal-layer p-6 rounded-xl flex flex-col justify-between">
+          <div>
+            <span className="font-label-sm text-xs text-on-surface-variant block mb-1 font-medium">Devotees in Queue</span>
+            <h3 className="font-display text-primary text-[32px] md:text-[48px] font-extrabold tracking-tighter leading-none">{queueCount}</h3>
+          </div>
+          <div className="mt-4 flex items-center gap-1 text-primary font-label-sm text-xs font-semibold">
+            <span className="material-symbols-outlined text-sm">groups</span> Total persons waiting
           </div>
         </div>
         <div className="md:col-span-1 tonal-layer p-6 rounded-xl flex flex-col justify-between">
           <div>
             <span className="font-label-sm text-xs text-on-surface-variant block mb-1 font-medium">{t('currentlyInside')}</span>
-            <h3 className="font-display text-primary text-[32px] md:text-[48px] font-extrabold tracking-tighter leading-none">{currentlyInside}</h3>
+            <h3 className="font-display text-primary leading-none text-[32px] md:text-[48px] font-extrabold tracking-tighter">{currentlyInside}</h3>
           </div>
           <div className="mt-4 flex items-center gap-1 text-on-secondary-container font-label-sm text-xs font-semibold">
-            <span className="material-symbols-outlined text-sm">group</span> 85% capacity
+            <span className="material-symbols-outlined text-sm">group</span> Temple & Queue
           </div>
         </div>
         <div className="md:col-span-1 tonal-layer p-6 rounded-xl flex flex-col justify-between">
           <div>
-            <span className="font-label-sm text-xs text-on-surface-variant block mb-1 font-medium">{t('avgWaitTime')}</span>
-            <h3 className="font-display text-primary leading-none text-[32px] md:text-[48px] font-extrabold tracking-tighter">24<span className="text-2xl">m</span></h3>
+            <span className="font-label-sm text-xs text-on-surface-variant block mb-1 font-medium">Pending Devotees</span>
+            <h3 className="font-display text-primary text-[32px] md:text-[48px] font-extrabold tracking-tighter leading-none">{totalPendingEntries}</h3>
           </div>
-          <div className="mt-4 flex items-center gap-1 text-error font-label-sm text-xs font-semibold">
-            <span className="material-symbols-outlined text-sm">schedule</span> +5m delay
+          <div className="mt-4 flex items-center gap-1 text-on-surface-variant font-label-sm text-xs font-semibold">
+            <span className="material-symbols-outlined text-sm">hourglass_empty</span> Yet to enter
           </div>
         </div>
-        <div className="md:col-span-1 tonal-layer p-6 rounded-xl bg-[#fef1e5] border-[#fde4d0] border">
-          <span className="font-label-sm text-xs text-primary block mb-3 font-semibold">Crowd Analytics</span>
-          <div className="h-16 flex items-end gap-1">
-            <div className="flex-1 bg-primary/20 h-8 rounded-t-sm"></div>
-            <div className="flex-1 bg-primary/40 h-12 rounded-t-sm"></div>
-            <div className="flex-1 bg-primary/60 h-16 rounded-t-sm"></div>
-            <div className="flex-1 bg-primary/80 h-14 rounded-t-sm"></div>
-            <div className="flex-1 bg-primary h-10 rounded-t-sm"></div>
-            <div className="flex-1 bg-primary/40 h-6 rounded-t-sm"></div>
+        <div className="md:col-span-1 tonal-layer p-6 rounded-xl flex flex-col justify-between">
+          <div>
+            <span className="font-label-sm text-xs text-on-surface-variant block mb-1 font-medium">{t('totalToday')}</span>
+            <h3 className="font-display text-primary text-[32px] md:text-[48px] font-extrabold tracking-tighter leading-none">{totalToday.toLocaleString()}</h3>
+          </div>
+          <div className="mt-4 flex items-center gap-1 text-green-700 font-label-sm text-xs font-semibold">
+            <span className="material-symbols-outlined text-sm">trending_up</span> Today's bookings
           </div>
         </div>
       </section>
@@ -326,7 +335,7 @@ export default function CommitteeDashboard() {
                         <div className="text-xs text-on-surface-variant flex flex-wrap gap-x-4 gap-y-1 mt-1.5 font-medium">
                           <span><strong className="text-on-surface">Queue Pos:</strong> #{item.position}</span>
                           <span><strong className="text-on-surface">Persons:</strong> {item.persons}</span>
-                          <span><strong className="text-on-surface">Entry:</strong> {item.checkIn}</span>
+                          <span><strong className="text-on-surface">People Ahead:</strong> {item.peopleAhead}</span>
                           <span><strong className="text-on-surface">Est. Wait:</strong> {item.wait}</span>
                         </div>
                       </div>

@@ -9,12 +9,17 @@ const JWT_SECRET = process.env.JWT_SECRET || 'fallback_secret_key';
 // Register User
 router.post('/register', async (req, res) => {
   try {
-    const { email, password, fullName, role } = req.body;
+    const { email, password, fullName, mobileNumber, role } = req.body;
     
+    if (!email || !password || !fullName || !mobileNumber) {
+      return res.status(400).json({ message: 'All fields are required' });
+    }
+
     // Check if user exists
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ $or: [{ email }, { mobileNumber }] });
     if (user) {
-      return res.status(400).json({ message: 'User already exists' });
+      if (user.email === email) return res.status(400).json({ message: 'User with this email already exists' });
+      if (user.mobileNumber === mobileNumber) return res.status(400).json({ message: 'User with this mobile number already exists' });
     }
 
     // Hash password
@@ -25,6 +30,7 @@ router.post('/register', async (req, res) => {
       email,
       password: hashedPassword,
       fullName,
+      mobileNumber,
       role: role || 'user',
     });
 
@@ -65,9 +71,16 @@ router.post('/register', async (req, res) => {
 // Login User
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { identifier, password } = req.body;
 
-    let user = await User.findOne({ email });
+    if (!identifier || !password) {
+      return res.status(400).json({ message: 'Please provide both email/mobile and password' });
+    }
+
+    const isEmail = identifier.includes('@');
+    const query = isEmail ? { email: identifier } : { mobileNumber: identifier };
+
+    let user = await User.findOne(query);
     if (!user) {
       return res.status(400).json({ message: 'Invalid Credentials' });
     }

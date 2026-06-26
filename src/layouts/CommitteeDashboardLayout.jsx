@@ -40,6 +40,7 @@ export default function CommitteeDashboardLayout() {
   // Metrics State
   const [totalToday, setTotalToday] = useState(0);
   const [currentlyInside, setCurrentlyInside] = useState(0);
+  const [queueCount, setQueueCount] = useState(0);
   const [bookingsToday, setBookingsToday] = useState(0);
   const [totalDevoteesInside, setTotalDevoteesInside] = useState(0);
   const [totalPendingEntries, setTotalPendingEntries] = useState(0);
@@ -60,6 +61,7 @@ export default function CommitteeDashboardLayout() {
           const stats = await statsRes.json();
           setTotalToday(stats.visitorsToday);
           setCurrentlyInside(stats.visitorsInside);
+          setQueueCount(stats.queueCount || 0);
           setBookingsToday(stats.bookingsToday || 0);
           setTotalDevoteesInside(stats.totalDevoteesInside || 0);
           setTotalPendingEntries(stats.totalPendingEntries || 0);
@@ -80,18 +82,29 @@ export default function CommitteeDashboardLayout() {
           const queue = await queueRes.json();
           const waiting = queue.filter(q => q.status === 'waiting');
           
-          setQueueList(waiting.map((q, index) => ({
-            id: q.tokenNumber,
-            queueId: q._id,
-            bookingData: q.bookingId,
-            name: q.bookingId ? q.bookingId.fullName : 'Guest',
-            persons: q.bookingId ? q.bookingId.persons : 1,
-            type: 'Regular',
-            checkIn: new Date(q.checkInTime || q.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            wait: `${Math.max(5, (index + 1) * 3)}m`,
-            isVip: q.isVip || false,
-            position: index + 1
-          })));
+          let peopleAheadCounter = 0;
+          setQueueList(waiting.map((q, index) => {
+            const persons = q.bookingId ? q.bookingId.persons : 1;
+            const currentPeopleAhead = peopleAheadCounter;
+            const waitTime = currentPeopleAhead === 0 ? 0 : Math.max(2, currentPeopleAhead * 2);
+            
+            const item = {
+              id: q.tokenNumber,
+              queueId: q._id,
+              bookingData: q.bookingId,
+              name: q.bookingId ? q.bookingId.fullName : 'Guest',
+              persons: persons,
+              type: 'Regular',
+              checkIn: new Date(q.checkInTime || q.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              wait: `${waitTime}m`,
+              isVip: q.isVip || false,
+              position: index + 1,
+              peopleAhead: currentPeopleAhead
+            };
+            
+            peopleAheadCounter += persons;
+            return item;
+          }));
         }
         
         if (vipRes.ok) {
@@ -372,6 +385,7 @@ export default function CommitteeDashboardLayout() {
           vipPool, setVipPool,
           totalToday, setTotalToday,
           currentlyInside, setCurrentlyInside,
+          queueCount, setQueueCount,
           bookingsToday,
           totalDevoteesInside,
           totalPendingEntries,
