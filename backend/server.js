@@ -24,6 +24,7 @@ app.use('/api/queue', require('./routes/queue'));
 app.use('/api/stats', require('./routes/stats'));
 app.use('/api/vip', require('./routes/vip'));
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/notifications', require('./routes/notifications'));
 
 // Start server
 app.listen(PORT, () => {

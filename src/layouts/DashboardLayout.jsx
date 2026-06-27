@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useUser } from '../context/UserContext';
@@ -8,9 +8,88 @@ export default function DashboardLayout() {
   const navigate = useNavigate();
   const { t, currentLanguage, setLanguage } = useLanguage();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const notificationRef = useRef(null);
 
   const { user, userRole, logoutUser } = useUser();
   const userName = user?.fullName || '';
+
+  const fetchNotifications = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/notifications`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setNotifications(data);
+      }
+    } catch (err) {
+      console.error('Error fetching notifications:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      const interval = setInterval(fetchNotifications, 30000);
+      return () => clearInterval(interval);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (notificationRef.current && !notificationRef.current.contains(event.target)) {
+        setIsNotificationsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleMarkAsRead = async (id, e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/notifications/${id}/read`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setNotifications(notifications.map(n => n._id === id ? { ...n, isRead: true } : n));
+      }
+    } catch (err) {
+      console.error('Error marking as read:', err);
+    }
+  };
+
+  const handleMarkAllAsRead = async (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/notifications/read-all`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        setNotifications(notifications.map(n => ({ ...n, isRead: true })));
+      }
+    } catch (err) {
+      console.error('Error marking all as read:', err);
+    }
+  };
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
 
   const isAdminView = location.pathname.startsWith('/dashboard/admin') || 
                       location.pathname.startsWith('/dashboard/capacity') || 
@@ -64,10 +143,67 @@ export default function DashboardLayout() {
               <option value="mr">MR</option>
               <option value="gu">GU</option>
             </select>
-            <button className="p-2 hover:bg-surface-container-high rounded-full transition-colors relative">
-              <span className="material-symbols-outlined text-xl md:text-2xl">notifications</span>
-              <span className="absolute top-2 right-2 w-2 h-2 bg-primary rounded-full"></span>
-            </button>
+            <div className="relative" ref={notificationRef}>
+              <button 
+                onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                className="p-2 hover:bg-surface-container-high rounded-full transition-colors relative"
+              >
+                <span className="material-symbols-outlined text-xl md:text-2xl">notifications</span>
+                {unreadCount > 0 && (
+                  <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-white text-[10px] font-bold rounded-full flex items-center justify-center">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                )}
+              </button>
+              {isNotificationsOpen && (
+                <div className="absolute right-0 mt-2 w-80 md:w-96 bg-surface rounded-xl shadow-lg border border-outline-variant py-2 z-50 flex flex-col max-h-[80vh]">
+                  <div className="px-4 py-2 border-b border-outline-variant flex justify-between items-center bg-surface sticky top-0 z-10">
+                    <h3 className="font-bold text-on-surface">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <button 
+                        onClick={handleMarkAllAsRead}
+                        className="text-xs text-primary font-bold hover:underline"
+                      >
+                        Mark all as read
+                      </button>
+                    )}
+                  </div>
+                  <div className="overflow-y-auto flex-1 custom-scrollbar">
+                    {notifications.length === 0 ? (
+                      <div className="px-4 py-6 text-center text-on-surface-variant text-sm">
+                        No Notifications
+                      </div>
+                    ) : (
+                      notifications.map(notification => (
+                        <div 
+                          key={notification._id} 
+                          onClick={() => {
+                            if (!notification.isRead) handleMarkAsRead(notification._id);
+                          }}
+                          className={`px-4 py-3 border-b border-outline-variant last:border-0 hover:bg-surface-container-low transition-colors cursor-pointer ${notification.isRead ? 'opacity-70' : 'bg-primary-container/10'}`}
+                        >
+                          <div className="flex justify-between items-start gap-2 mb-1">
+                            <h4 className="font-bold text-sm text-on-surface flex-1">{notification.title}</h4>
+                            {!notification.isRead && (
+                              <button 
+                                onClick={(e) => handleMarkAsRead(notification._id, e)}
+                                className="w-2 h-2 rounded-full bg-primary flex-shrink-0 mt-1"
+                                aria-label="Mark as read"
+                                title="Mark as read"
+                              />
+                            )}
+                          </div>
+                          <p className="text-xs text-on-surface-variant mb-2">{notification.message}</p>
+                          <div className="text-[10px] text-on-surface-variant/70 font-medium">
+                            {new Date(notification.createdAt).toLocaleString()}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="relative">
               <button 
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
