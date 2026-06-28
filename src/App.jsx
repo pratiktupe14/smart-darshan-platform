@@ -22,6 +22,8 @@ import OfflineVerification from './pages/OfflineVerification';
 import AdminDashboard from './pages/AdminDashboard';
 import CapacityManagement from './pages/CapacityManagement';
 import VIPManagement from './pages/VIPManagement';
+import Support from './pages/Support';
+import AdminSupport from './pages/AdminSupport';
 
 function App() {
   return (
@@ -46,6 +48,7 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="admin" element={<AdminDashboard />} />
             <Route path="admin/announcements" element={<Announcements />} />
+            <Route path="admin/support" element={<AdminSupport />} />
             <Route path="capacity" element={<CapacityManagement />} />
             <Route path="book" element={<BookDarshan />} />
 
@@ -57,6 +60,7 @@ function App() {
             <Route path="announcements" element={<Announcements />} />
             <Route path="scanner" element={<Scanner />} />
             <Route path="parking" element={<Parking />} />
+            <Route path="support" element={<Support />} />
           </Route>
         </Routes>
       </Router>

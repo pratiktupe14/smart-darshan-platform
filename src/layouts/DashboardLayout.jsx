@@ -281,6 +281,11 @@ export default function DashboardLayout() {
                 <span className="material-symbols-outlined">analytics</span>
                 <span className="text-sm">{t('reportsAnalytics')}</span>
               </Link>
+              
+              <Link to="/dashboard/admin/support" className={getLinkClasses('/dashboard/admin/support')}>
+                <span className="material-symbols-outlined">support_agent</span>
+                <span className="text-sm">Support Requests</span>
+              </Link>
 
             </nav>
             <div className="mt-auto pb-6 pt-4 flex flex-col gap-2">
@@ -322,6 +327,10 @@ export default function DashboardLayout() {
               <Link to="/dashboard/profile" className={getLinkClasses('/dashboard/profile')}>
                 <span className="material-symbols-outlined">account_circle</span>
                 <span className="text-sm">{t('profile')}</span>
+              </Link>
+              <Link to="/dashboard/support" className={getLinkClasses('/dashboard/support')}>
+                <span className="material-symbols-outlined">contact_support</span>
+                <span className="text-sm">Support & Contact</span>
               </Link>
             </nav>
           </>
