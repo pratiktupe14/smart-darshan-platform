@@ -17,6 +17,10 @@ const systemSettingsSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  templeName: {
+    type: String,
+    default: "शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)",
+  },
   updatedAt: {
     type: Date,
     default: Date.now,

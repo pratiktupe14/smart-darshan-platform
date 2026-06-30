@@ -14,6 +14,7 @@ export default function Support() {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+  const [templeName, setTempleName] = useState('शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)');
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -28,6 +29,23 @@ export default function Support() {
       fetchRequests();
     }
   }, [user]);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch(`${API_URL}/settings`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.templeName) {
+            setTempleName(data.templeName);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch settings', err);
+      }
+    };
+    fetchSettings();
+  }, [API_URL]);
 
   const fetchRequests = async () => {
     try {
@@ -120,7 +138,7 @@ export default function Support() {
               <div className="flex items-start gap-4">
                 <span className="material-symbols-outlined text-on-surface-variant mt-1">account_balance</span>
                 <div>
-                  <p className="font-semibold text-on-surface">Shri Vitthal Rukmini Mandir</p>
+                  <p className="font-semibold text-on-surface break-words whitespace-normal">{templeName}</p>
                   <p className="text-sm text-on-surface-variant">Pandharpur, Maharashtra 413304</p>
                 </div>
               </div>
