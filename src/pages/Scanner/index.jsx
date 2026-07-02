@@ -29,7 +29,7 @@ export default function Scanner() {
   // Search input states
   const [searchToken, setSearchToken] = useState('');
   const [searchMobile, setSearchMobile] = useState('');
-  const [searchVehicle, setSearchVehicle] = useState('');
+  const [searchBookingId, setSearchBookingId] = useState('');
 
   // Scanned devotee details state
   const [scannedDevotee, setScannedDevotee] = useState(null);
@@ -115,7 +115,7 @@ export default function Scanner() {
         setScannedDevotee(null); // Clear details for the next visitor
         setSearchToken('');
         setSearchMobile('');
-        setSearchVehicle('');
+        setSearchBookingId('');
         showToast(data.message);
 
         // Refresh recent scans
@@ -257,14 +257,14 @@ export default function Scanner() {
   const handleManualSearch = (e) => {
     e.preventDefault();
     if (searchToken.trim()) {
-      triggerVerification(searchToken);
+      triggerVerification(searchToken.trim().toUpperCase());
       setSearchToken('');
     } else if (searchMobile.trim()) {
-      triggerVerification(searchMobile);
+      triggerVerification(searchMobile.trim().replace(/\s+/g, ''));
       setSearchMobile('');
-    } else if (searchVehicle.trim()) {
-      triggerVerification(searchVehicle);
-      setSearchVehicle('');
+    } else if (searchBookingId.trim()) {
+      triggerVerification(searchBookingId.trim());
+      setSearchBookingId('');
     } else {
       showToast('Please enter at least one field to search.');
     }
@@ -425,13 +425,13 @@ export default function Scanner() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-on-surface-variant">{t('vehicleNumber')}</label>
+                <label className="text-xs font-semibold text-on-surface-variant">Booking ID</label>
                 <input 
                   className="w-full min-h-[44px] px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" 
-                  placeholder="MH12 AB..." 
+                  placeholder="64a7b..." 
                   type="text" 
-                  value={searchVehicle}
-                  onChange={(e) => setSearchVehicle(e.target.value)}
+                  value={searchBookingId}
+                  onChange={(e) => setSearchBookingId(e.target.value)}
                 />
               </div>
             </div>
@@ -577,17 +577,27 @@ export default function Scanner() {
               <div className="mt-8 flex flex-col gap-4">
                 {(!counterId || counterId === '1') && ['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) && (
                   <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
-                    Entry Already Verified
+                    Already processed at this counter.
                   </div>
                 )}
                 {(!counterId || counterId === '2') && ['in_queue', 'completed'].includes(scannedDevotee.verificationStatus) && (
                   <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
-                    Visitor Already Added to Queue
+                    Already processed at this counter.
                   </div>
                 )}
                 {(!counterId || counterId === '3') && ['completed'].includes(scannedDevotee.verificationStatus) && (
                   <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
-                    Darshan Already Completed
+                    Already processed at this counter.
+                  </div>
+                )}
+                {counterId === '2' && scannedDevotee.verificationStatus === 'none' && (
+                  <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
+                    This booking is not eligible for this counter.
+                  </div>
+                )}
+                {counterId === '3' && ['none', 'verified_entry'].includes(scannedDevotee.verificationStatus) && (
+                  <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
+                    This booking is not eligible for this counter.
                   </div>
                 )}
 

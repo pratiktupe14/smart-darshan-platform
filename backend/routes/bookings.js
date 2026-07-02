@@ -177,16 +177,16 @@ router.post('/verify-scanner', async (req, res) => {
     }
     if (!booking && searchTokenNumber && searchTokenNumber !== 'N/A') {
       const Queue = require('../models/Queue');
-      const qEntry = await Queue.findOne({ tokenNumber: searchTokenNumber }).populate('bookingId');
+      const qEntry = await Queue.findOne({ tokenNumber: new RegExp('^' + searchTokenNumber + '$', 'i') }).sort({ checkInTime: -1 }).populate('bookingId');
       if (qEntry && qEntry.bookingId) {
         booking = qEntry.bookingId;
       } else {
-        booking = await Booking.findOne({ qrCode: searchTokenNumber });
+        booking = await Booking.findOne({ qrCode: new RegExp('^' + searchTokenNumber + '$', 'i') });
       }
     }
 
     if (!booking) {
-      return res.status(404).json({ error: 'Devotee / Booking record not found.' });
+      return res.status(404).json({ error: 'No booking found.' });
     }
 
     // Note: status-specific validation is now processed when committing actions, not when scanning/searching.
