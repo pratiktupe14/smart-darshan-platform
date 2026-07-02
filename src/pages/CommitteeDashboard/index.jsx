@@ -12,7 +12,8 @@ export default function CommitteeDashboard() {
     currentlyInside, setCurrentlyInside,
     queueCount,
     totalPendingEntries,
-    showToast
+    showToast,
+    fetchData
   } = useOutletContext();
 
   // Local states for editing
@@ -61,12 +62,8 @@ export default function CommitteeDashboard() {
       });
       if (res.ok) {
         showToast('Devotee Darshan Completed!');
-        setQueueList(prev => {
-          const newQueue = prev.filter(q => q.bookingData?._id !== bookingId);
-          return newQueue.map((q, i) => ({ ...q, position: i + 1 }));
-        });
-        setCurrentlyInside(prev => Math.max(0, prev - (selectedDevotee?.persons || 1)));
         setSelectedDevotee(null);
+        if (typeof fetchData === 'function') fetchData();
       } else {
         const err = await res.json();
         showToast(err.error || 'Failed to complete Darshan');
@@ -79,31 +76,47 @@ export default function CommitteeDashboard() {
   };
 
 
-  const handlePushNext = (vipItem) => {
-    setVipPool(prev => prev.filter(item => item.id !== vipItem.id));
-    const promotedDevotee = {
-      id: vipItem.id,
-      name: vipItem.name,
-      type: 'VIP Member',
-      checkIn: vipItem.checkIn,
-      wait: '0m',
-      isVip: true,
-      persons: parseInt(vipItem.members) || 1
-    };
-    setQueueList(prev => {
-      const newQueue = [promotedDevotee, ...prev];
-      return newQueue.map((q, i) => ({ ...q, position: i + 1 }));
-    });
-    showToast(`Pushed ${vipItem.name} (${vipItem.id}) to top of Live Queue!`);
+  const handlePushNext = async (vipItem) => {
+    try {
+      if (vipItem._id) {
+        // Find if it has a queue entry already, otherwise create one
+        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            tokenNumber: vipItem.id,
+            isVip: true
+          })
+        });
+        // Update VIP Request status
+        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip/${vipItem._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'Waiting in Queue' })
+        });
+        showToast(`Pushed ${vipItem.name} (${vipItem.id}) to top of Live Queue!`);
+        if (typeof fetchData === 'function') fetchData();
+      }
+    } catch (e) {
+      showToast('Error pushing to queue');
+    }
   };
 
-  const handleDelete = (tokenId) => {
-    setQueueList(prev => {
-      const newQueue = prev.filter(item => item.id !== tokenId);
-      return newQueue.map((q, i) => ({ ...q, position: i + 1 }));
-    });
-    setVipPool(prev => prev.filter(item => item.id !== tokenId));
-    showToast(`Removed Token ${tokenId} from waitlist`);
+  const handleDelete = async (tokenId) => {
+    const qItem = queueList.find(item => item.id === tokenId);
+    const vItem = vipPool.find(item => item.id === tokenId);
+    
+    try {
+      if (qItem && qItem.queueId) {
+        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue/${qItem.queueId}`, { method: 'DELETE' });
+      } else if (vItem && vItem._id) {
+        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip/${vItem._id}`, { method: 'DELETE' });
+      }
+      showToast(`Removed Token ${tokenId} from waitlist`);
+      if (typeof fetchData === 'function') fetchData();
+    } catch (e) {
+      showToast('Error removing from waitlist');
+    }
   };
 
   const handleOpenEdit = (devotee) => {
@@ -113,27 +126,32 @@ export default function CommitteeDashboard() {
     setIsEditOpen(true);
   };
 
-  const handleSaveEdit = (e) => {
+  const handleSaveEdit = async (e) => {
     e.preventDefault();
     if (!editingDevotee) return;
-
     const isVip = editCategory === 'VIP Member';
 
-    setQueueList(prev => prev.map(item => 
-      item.id === editingDevotee.id 
-        ? { ...item, name: editName, type: editCategory, isVip } 
-        : item
-    ));
-
-    setVipPool(prev => prev.map(item => 
-      item.id === editingDevotee.id 
-        ? { ...item, name: editName, type: editCategory, members: isVip ? 'VIP Member' : editCategory } 
-        : item
-    ));
-
-    showToast(`Updated details for Token ${editingDevotee.id}`);
-    setIsEditOpen(false);
-    setEditingDevotee(null);
+    try {
+      if (editingDevotee.queueId) {
+        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue/${editingDevotee.queueId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isVip, tokenNumber: editingDevotee.id })
+        });
+      } else if (editingDevotee._id) {
+        await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip/${editingDevotee._id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: editName, category: editCategory, persons: isVip ? 1 : 1 })
+        });
+      }
+      showToast(`Updated details for Token ${editingDevotee.id}`);
+      setIsEditOpen(false);
+      setEditingDevotee(null);
+      if (typeof fetchData === 'function') fetchData();
+    } catch (err) {
+      showToast('Error updating details');
+    }
   };
 
   const filteredQueueList = queueList.filter(item => {

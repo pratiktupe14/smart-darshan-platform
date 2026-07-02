@@ -48,86 +48,87 @@ export default function CommitteeDashboardLayout() {
   const [recentActivities, setRecentActivities] = useState([]);
   const [announcements, setAnnouncements] = useState([]);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const statsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats`);
-        const activitiesRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats/activities`);
-        const queueRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
-        const vipRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip`);
-        const announcementsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/announcements`);
-        
-        if (statsRes.ok) {
-          const stats = await statsRes.json();
-          setTotalToday(stats.visitorsToday);
-          setCurrentlyInside(stats.visitorsInside);
-          setQueueCount(stats.queueCount || 0);
-          setBookingsToday(stats.bookingsToday || 0);
-          setTotalDevoteesInside(stats.totalDevoteesInside || 0);
-          setTotalPendingEntries(stats.totalPendingEntries || 0);
-          setQrScansToday(stats.qrScansToday || 0);
-        }
-        
-        if (activitiesRes.ok) {
-          const acts = await activitiesRes.json();
-          setRecentActivities(acts);
-        }
-
-        if (announcementsRes.ok) {
-          const ann = await announcementsRes.json();
-          setAnnouncements(ann);
-        }
-        
-        if (queueRes.ok) {
-          const queue = await queueRes.json();
-          const waiting = queue.filter(q => q.status === 'waiting');
-          
-          let peopleAheadCounter = 0;
-          setQueueList(waiting.map((q, index) => {
-            const persons = q.bookingId ? q.bookingId.persons : 1;
-            const currentPeopleAhead = peopleAheadCounter;
-            const waitTime = currentPeopleAhead === 0 ? 0 : Math.max(2, currentPeopleAhead * 2);
-            
-            const item = {
-              id: q.tokenNumber,
-              queueId: q._id,
-              bookingData: q.bookingId,
-              name: q.bookingId ? q.bookingId.fullName : 'Guest',
-              persons: persons,
-              type: 'Regular',
-              checkIn: new Date(q.checkInTime || q.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              wait: `${waitTime}m`,
-              isVip: q.isVip || false,
-              position: index + 1,
-              peopleAhead: currentPeopleAhead
-            };
-            
-            peopleAheadCounter += persons;
-            return item;
-          }));
-        }
-        
-        if (vipRes.ok) {
-          const vips = await vipRes.json();
-          const activeVips = vips.filter(v => ['Pass Generated', 'Temple Entry', 'Waiting in Queue'].includes(v.status));
-          setVipPool(activeVips.map(v => ({
-            id: v.tokenNumber || v._id.substring(0, 8),
-            name: v.name,
-            members: `${v.persons || 1} Members`,
-            checkIn: v.expectedArrivalTime ? new Date(v.expectedArrivalTime).toLocaleTimeString() : new Date().toLocaleTimeString(),
-            type: 'VIP Member',
-            isVip: true
-          })));
-        }
-      } catch (err) {
-        console.error(err);
+  const fetchData = React.useCallback(async () => {
+    try {
+      const statsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats`);
+      const activitiesRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats/activities`);
+      const queueRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
+      const vipRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/vip`);
+      const announcementsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/announcements`);
+      
+      if (statsRes.ok) {
+        const stats = await statsRes.json();
+        setTotalToday(stats.visitorsToday);
+        setCurrentlyInside(stats.visitorsInside);
+        setQueueCount(stats.queueCount || 0);
+        setBookingsToday(stats.bookingsToday || 0);
+        setTotalDevoteesInside(stats.totalDevoteesInside || 0);
+        setTotalPendingEntries(stats.totalPendingEntries || 0);
+        setQrScansToday(stats.qrScansToday || 0);
       }
-    };
-    
+      
+      if (activitiesRes.ok) {
+        const acts = await activitiesRes.json();
+        setRecentActivities(acts);
+      }
+
+      if (announcementsRes.ok) {
+        const ann = await announcementsRes.json();
+        setAnnouncements(ann);
+      }
+      
+      if (queueRes.ok) {
+        const queue = await queueRes.json();
+        const waiting = queue.filter(q => q.status === 'waiting');
+        
+        let peopleAheadCounter = 0;
+        setQueueList(waiting.map((q, index) => {
+          const persons = q.bookingId ? q.bookingId.persons : 1;
+          const currentPeopleAhead = peopleAheadCounter;
+          const waitTime = currentPeopleAhead === 0 ? 0 : Math.max(2, currentPeopleAhead * 2);
+          
+          const item = {
+            id: q.tokenNumber,
+            queueId: q._id,
+            bookingData: q.bookingId,
+            name: q.bookingId ? q.bookingId.fullName : 'Guest',
+            persons: persons,
+            type: 'Regular',
+            checkIn: new Date(q.checkInTime || q.createdAt || Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            wait: `${waitTime}m`,
+            isVip: q.isVip || false,
+            position: index + 1,
+            peopleAhead: currentPeopleAhead
+          };
+          
+          peopleAheadCounter += persons;
+          return item;
+        }));
+      }
+      
+      if (vipRes.ok) {
+        const vips = await vipRes.json();
+        const activeVips = vips.filter(v => ['Pass Generated', 'Temple Entry', 'Waiting in Queue'].includes(v.status));
+        setVipPool(activeVips.map(v => ({
+          _id: v._id,
+          id: v.tokenNumber || v._id.substring(0, 8),
+          name: v.name,
+          members: `${v.persons || 1} Members`,
+          checkIn: v.expectedArrivalTime ? new Date(v.expectedArrivalTime).toLocaleTimeString() : new Date().toLocaleTimeString(),
+          type: 'VIP Member',
+          isVip: true
+        })));
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }, []);
+
+  React.useEffect(() => {
     fetchData();
     const timer = setInterval(fetchData, 10000);
     return () => clearInterval(timer);
-  }, []);
+  }, [fetchData]);
 
   // Modal States
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
@@ -392,7 +393,8 @@ export default function CommitteeDashboardLayout() {
           qrScansToday,
           recentActivities,
           announcements, setAnnouncements,
-          showToast
+          showToast,
+          fetchData
         }} />
       </main>
 
