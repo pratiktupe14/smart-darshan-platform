@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import Chart from 'chart.js/auto';
 
 export default function ExportModal({ isOpen, onClose }) {
@@ -319,7 +319,7 @@ export default function ExportModal({ isOpen, onClose }) {
           ['Pending Queue', (data.summary.queueStatus?.pending || 0).toString()],
         ];
         
-        doc.autoTable({
+        autoTable(doc, {
           startY: 65,
           head: [['Metric', 'Value']],
           body: summaryBody,
@@ -401,7 +401,7 @@ export default function ExportModal({ isOpen, onClose }) {
           b.status
         ]);
         
-        doc.autoTable({
+        autoTable(doc, {
           startY: 25,
           head: [['Name', 'Persons', 'Date', 'Status']],
           body: bookingBody,
@@ -422,7 +422,7 @@ export default function ExportModal({ isOpen, onClose }) {
           v.status
         ]);
         
-        doc.autoTable({
+        autoTable(doc, {
           startY: startY > 250 ? 25 : startY + 5,
           head: [['Token', 'Name', 'Category', 'Status']],
           body: vipBody,
