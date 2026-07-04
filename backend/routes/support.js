@@ -53,8 +53,12 @@ router.post('/', auth, async (req, res) => {
   try {
     const { fullName, mobileNumber, email, subject, message } = req.body;
     
+    // Generate a unique ticket ID
+    const ticketId = 'TKT-' + Math.random().toString(36).substr(2, 8).toUpperCase();
+    
     const supportReq = new SupportRequest({
       user: req.user ? req.user.id : undefined,
+      ticketId,
       fullName,
       mobileNumber,
       email,

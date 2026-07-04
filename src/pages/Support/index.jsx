@@ -27,6 +27,12 @@ export default function Support() {
         email: user.email || ''
       }));
       fetchRequests();
+      
+      const intervalId = setInterval(() => {
+        fetchRequests();
+      }, 5000);
+      
+      return () => clearInterval(intervalId);
     }
   }, [user]);
 
@@ -87,7 +93,8 @@ export default function Support() {
       });
 
       if (res.ok) {
-        setSuccessMsg('Your support request has been submitted successfully.');
+        const data = await res.json();
+        setSuccessMsg(`Your support request has been submitted successfully. Ticket ID: ${data.ticketId}`);
         setFormData({
           fullName: user?.fullName || '',
           mobileNumber: user?.mobileNumber || '',
@@ -114,6 +121,8 @@ export default function Support() {
         return <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold border border-blue-200">In Progress</span>;
       case 'Resolved':
         return <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold border border-green-200">Resolved</span>;
+      case 'Closed':
+        return <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold border border-gray-300">Closed</span>;
       default:
         return <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold border border-gray-200">{status}</span>;
     }
@@ -282,7 +291,12 @@ export default function Support() {
                     <div key={req._id} className="border border-outline-variant rounded-lg p-5 hover:bg-surface-container-lowest transition-colors">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
                         <div>
-                          <h3 className="font-semibold text-on-surface text-lg">{req.subject}</h3>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-bold font-mono">
+                              {req.ticketId}
+                            </span>
+                            <h3 className="font-semibold text-on-surface text-lg">{req.subject}</h3>
+                          </div>
                           <p className="text-xs text-on-surface-variant">Submitted on {new Date(req.createdAt).toLocaleDateString()}</p>
                         </div>
                         <div>

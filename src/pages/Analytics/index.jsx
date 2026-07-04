@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import ExportModal from '../../components/ExportModal';
 
 export default function Analytics() {
   const { t } = useLanguage();
   const [isEmergencyActive, setIsEmergencyActive] = useState(false);
   const [visitorLimit, setVisitorLimit] = useState(5000);
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   const handleEmergencyClosure = () => {
     if (!isEmergencyActive) {
@@ -32,7 +34,10 @@ export default function Analytics() {
             <span className="material-symbols-outlined text-[18px]">calendar_today</span>
             {t('last24Hours')}
           </button>
-          <button className="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg font-label-md text-label-md hover:opacity-90 transition-colors">
+          <button 
+            onClick={() => setIsExportModalOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg font-label-md text-label-md hover:opacity-90 transition-colors"
+          >
             <span className="material-symbols-outlined text-[18px]">download</span>
             {t('exportReport')}
           </button>
@@ -316,6 +321,11 @@ export default function Analytics() {
           </div>
         </div>
       </div>
+
+      <ExportModal 
+        isOpen={isExportModalOpen} 
+        onClose={() => setIsExportModalOpen(false)} 
+      />
     </>
   );
 }

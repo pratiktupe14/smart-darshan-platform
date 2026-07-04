@@ -6,6 +6,11 @@ const supportRequestSchema = new mongoose.Schema({
     ref: 'User',
     required: false
   },
+  ticketId: {
+    type: String,
+    required: true,
+    unique: true
+  },
   fullName: {
     type: String,
     required: true,
@@ -32,7 +37,7 @@ const supportRequestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['Open', 'In Progress', 'Resolved'],
+    enum: ['Open', 'In Progress', 'Resolved', 'Closed'],
     default: 'Open'
   },
   adminReply: {

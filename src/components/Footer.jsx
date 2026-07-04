@@ -48,11 +48,11 @@ export default function Footer() {
             <ul className="space-y-md text-surface-variant/80 text-sm">
               <li className="flex gap-2">
                 <span className="material-symbols-outlined text-primary-fixed text-sm">mail</span>
-                admin@templeflow.com
+                <a href="mailto:pratiktupe58@gmail.com" className="hover:text-primary-fixed hover:underline transition-colors">pratiktupe58@gmail.com</a>
               </li>
               <li className="flex gap-2">
                 <span className="material-symbols-outlined text-primary-fixed text-sm">call</span>
-                +91 800-TEMPLE-FL
+                <a href="tel:+918788562103" className="hover:text-primary-fixed hover:underline transition-colors">+91 8788562103</a>
               </li>
               <li className="flex gap-2">
                 <span className="material-symbols-outlined text-primary-fixed text-sm">location_on</span>

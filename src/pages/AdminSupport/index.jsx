@@ -9,11 +9,18 @@ export default function AdminSupport() {
   const [replyText, setReplyText] = useState('');
   const [status, setStatus] = useState('');
   const [filter, setFilter] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     fetchRequests();
+    
+    const intervalId = setInterval(() => {
+      fetchRequests();
+    }, 5000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const fetchRequests = async () => {
@@ -74,12 +81,24 @@ export default function AdminSupport() {
         return <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold border border-blue-200">In Progress</span>;
       case 'Resolved':
         return <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold border border-green-200">Resolved</span>;
+      case 'Closed':
+        return <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold border border-gray-300">Closed</span>;
       default:
         return <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">{s}</span>;
     }
   };
 
-  const filteredRequests = filter === 'All' ? requests : requests.filter(r => r.status === filter);
+  const filteredRequests = requests.filter(r => {
+    const matchesFilter = filter === 'All' || r.status === filter;
+    const searchLower = searchQuery.toLowerCase();
+    const matchesSearch = !searchQuery || 
+      (r.ticketId && r.ticketId.toLowerCase().includes(searchLower)) ||
+      (r.fullName && r.fullName.toLowerCase().includes(searchLower)) ||
+      (r.mobileNumber && r.mobileNumber.toLowerCase().includes(searchLower)) ||
+      (r.subject && r.subject.toLowerCase().includes(searchLower));
+    
+    return matchesFilter && matchesSearch;
+  });
 
   if (loading) {
     return <div className="p-8 text-center">Loading support requests...</div>;
@@ -93,16 +112,28 @@ export default function AdminSupport() {
           <p className="text-on-surface-variant">Manage and respond to user support inquiries.</p>
         </div>
         
-        <div className="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant">
-          {['All', 'Open', 'In Progress', 'Resolved'].map(f => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${filter === f ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
-            >
-              {f}
-            </button>
-          ))}
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+            <input 
+              type="text" 
+              placeholder="Search ID, Name, Subject..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-4 py-2 border border-outline-variant rounded-lg w-full sm:w-64 focus:border-primary outline-none text-sm"
+            />
+          </div>
+          <div className="flex bg-surface-container-low rounded-lg p-1 border border-outline-variant">
+            {['All', 'Open', 'In Progress', 'Resolved', 'Closed'].map(f => (
+              <button
+                key={f}
+                onClick={() => setFilter(f)}
+                className={`px-4 py-2 rounded-md text-sm font-semibold transition-colors ${filter === f ? 'bg-primary text-white shadow-sm' : 'text-on-surface-variant hover:text-on-surface'}`}
+              >
+                {f}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -129,7 +160,12 @@ export default function AdminSupport() {
                 filteredRequests.map(req => (
                   <tr key={req._id} className="border-b border-outline-variant/30 hover:bg-surface-container-lowest transition-colors">
                     <td className="py-4 px-6">
-                      <p className="font-semibold text-on-surface">{req.fullName}</p>
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="bg-primary/10 text-primary px-2 py-0.5 rounded text-xs font-bold font-mono">
+                          {req.ticketId}
+                        </span>
+                        <p className="font-semibold text-on-surface">{req.fullName}</p>
+                      </div>
                       <p className="text-xs text-on-surface-variant">{req.email}</p>
                       <p className="text-xs text-on-surface-variant">{req.mobileNumber}</p>
                     </td>
@@ -180,8 +216,9 @@ export default function AdminSupport() {
                   <p className="text-sm text-on-surface-variant">{selectedRequest.email} | {selectedRequest.mobileNumber}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Date</p>
+                  <p className="text-xs text-on-surface-variant uppercase tracking-wider font-semibold">Date & Ticket ID</p>
                   <p className="font-medium text-on-surface">{new Date(selectedRequest.createdAt).toLocaleString()}</p>
+                  <p className="text-sm text-primary font-mono">{selectedRequest.ticketId}</p>
                 </div>
               </div>
 
@@ -208,6 +245,7 @@ export default function AdminSupport() {
                     <option value="Open">Open</option>
                     <option value="In Progress">In Progress</option>
                     <option value="Resolved">Resolved</option>
+                    <option value="Closed">Closed</option>
                   </select>
                 </div>
                 
