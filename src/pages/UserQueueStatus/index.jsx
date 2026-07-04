@@ -9,6 +9,9 @@ export default function UserQueueStatus() {
     currentServingToken: 'None',
     userTokenNumber: 'N/A',
     position: 0,
+    peopleAhead: 0,
+    tokensAhead: 0,
+    userPersons: 0,
     estWait: 0,
     progress: 0,
     currentStage: 1,
@@ -34,10 +37,23 @@ export default function UserQueueStatus() {
           
           let userToken = null;
           let pos = 0;
+          let peopleAhead = 0;
+          let tokensAhead = 0;
+          let userPersons = 0;
+          
           if (active) {
               userToken = queueList.find(q => q.bookingId && q.bookingId._id === active._id);
-              if (userToken && userToken.status === 'waiting') {
-                  pos = waitingQueue.findIndex(q => q._id === userToken._id) + 1;
+              if (userToken) {
+                  const tokenIndex = queueList.findIndex(q => q._id === userToken._id);
+                  if (tokenIndex !== -1) {
+                      tokensAhead = tokenIndex;
+                      pos = tokenIndex + 1;
+                      userPersons = userToken.bookingId.persons || 1;
+                      
+                      for (let i = 0; i < tokenIndex; i++) {
+                          peopleAhead += (queueList[i].bookingId?.persons || 1);
+                      }
+                  }
               }
           }
           
@@ -76,7 +92,10 @@ export default function UserQueueStatus() {
               currentServingToken: currentServing.length > 0 ? currentServing[0].tokenNumber : 'None',
               userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
               position: pos,
-              estWait: pos * 2,
+              peopleAhead: peopleAhead,
+              tokensAhead: tokensAhead,
+              userPersons: userPersons,
+              estWait: peopleAhead * 2,
               progress: progress,
               currentStage: currentStage,
               nextTokens: waitingQueue.slice(0, 5).map(q => q.tokenNumber),
@@ -124,12 +143,34 @@ export default function UserQueueStatus() {
                 </div>
               </div>
               
-              <div className="bg-surface-container border border-primary/10 rounded-xl p-6 text-center min-w-[200px] shadow-sm">
-                <p className="text-3xl font-bold text-primary">{queueInfo.position}</p>
-                <p className="text-on-surface-variant font-medium">People Ahead</p>
-                <div className="mt-4 pt-4 border-t border-primary/10 flex items-center justify-center gap-2 text-primary font-semibold">
-                  <span className="material-symbols-outlined text-sm">trending_down</span>
-                  <span>Moving Fast</span>
+              <div className="bg-surface-container border border-primary/10 rounded-xl p-6 min-w-[250px] shadow-sm">
+                <div className="grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <p className="text-3xl font-bold text-primary">{queueInfo.peopleAhead}</p>
+                    <p className="text-[11px] text-on-surface-variant font-medium mt-1 uppercase tracking-wider">Devotees Ahead</p>
+                  </div>
+                  <div>
+                    <p className="text-3xl font-bold text-primary">{queueInfo.position}</p>
+                    <p className="text-[11px] text-on-surface-variant font-medium mt-1 uppercase tracking-wider">Queue Position</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-on-surface">{queueInfo.tokensAhead}</p>
+                    <p className="text-[11px] text-on-surface-variant font-medium mt-1 uppercase tracking-wider">Tokens Ahead</p>
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold text-on-surface">{queueInfo.userPersons}</p>
+                    <p className="text-[11px] text-on-surface-variant font-medium mt-1 uppercase tracking-wider">Your Group</p>
+                  </div>
+                </div>
+                <div className="mt-5 pt-4 border-t border-primary/10 flex items-center justify-between text-primary font-semibold text-sm px-2">
+                  <div className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-base">schedule</span>
+                    <span>Wait: {queueInfo.estWait}m</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="material-symbols-outlined text-base">trending_down</span>
+                    <span>Moving Fast</span>
+                  </div>
                 </div>
               </div>
             </div>
