@@ -3,18 +3,22 @@ import { useOutletContext, useParams } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useUser } from '../../context/UserContext';
 import jsQR from 'jsqr';
-
 export default function Scanner() {
-  const { t } = useLanguage();
-  const { user } = useUser();
-  const { counterId } = useParams();
+  const {
+    t
+  } = useLanguage();
+  const {
+    user
+  } = useUser();
+  const {
+    counterId
+  } = useParams();
   const context = useOutletContext();
-  const showToast = context && context.showToast ? context.showToast : (msg) => alert(msg);
+  const showToast = context && context.showToast ? context.showToast : msg => alert(msg);
 
   // Dynamic titles/subtitles based on counterId
   let pageTitle = t('qrScannerTitle') || 'QR Scanner & Visitor Verification';
   let pageSubtitle = t('qrScannerSubtitle') || 'Scan devotee QR codes for instant darshan verification and real-time entry tracking.';
-
   if (counterId === '1') {
     pageTitle = 'Counter 1 – Temple Entry';
     pageSubtitle = 'Scan QR Code or Enter Token Number to verify devotee entry into the temple.';
@@ -62,18 +66,19 @@ export default function Scanner() {
       console.error('Failed to fetch recent scans', err);
     }
   };
-
   useEffect(() => {
     fetchRecentScans();
   }, [counterId]);
 
   // Trigger scanner verification route
-  const triggerVerification = async (queryVal) => {
+  const triggerVerification = async queryVal => {
     if (!queryVal || !queryVal.trim()) return;
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/verify-scanner`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           query: queryVal.trim(),
           counterNumber: counterId ? parseInt(counterId) : undefined
@@ -96,14 +101,15 @@ export default function Scanner() {
       showToast('Server Error during verification.');
     }
   };
-
-  const handleCounterAction = async (counterNum) => {
+  const handleCounterAction = async counterNum => {
     if (!scannedDevotee) return;
     try {
       console.log(`[Scanner] Sending counter action ${counterNum} for booking:`, scannedDevotee._id);
       const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/verify-scanner/action`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
           bookingId: scannedDevotee._id,
           counterNumber: counterNum,
@@ -141,20 +147,23 @@ export default function Scanner() {
     if (scanFrameRef.current) {
       cancelAnimationFrame(scanFrameRef.current);
     }
-
     try {
       // Camera access requires HTTPS or localhost in modern browsers
       const constraints = {
-        video: { 
+        video: {
           facingMode: mode,
-          width: { ideal: 1280, max: 1920 },
-          height: { ideal: 1280, max: 1920 }
+          width: {
+            ideal: 1280,
+            max: 1920
+          },
+          height: {
+            ideal: 1280,
+            max: 1920
+          }
         }
       };
-
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       activeStreamRef.current = stream;
-
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         videoRef.current.setAttribute("playsinline", "true"); // required for iOS Safari
@@ -206,7 +215,6 @@ export default function Scanner() {
         scanFrameRef.current = requestAnimationFrame(scanFrame);
         return;
       }
-
       if (videoRef.current.readyState === videoRef.current.HAVE_ENOUGH_DATA) {
         const canvas = canvasRef.current;
         if (canvas) {
@@ -214,13 +222,11 @@ export default function Scanner() {
           canvas.width = videoRef.current.videoWidth;
           canvas.height = videoRef.current.videoHeight;
           ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
-
           try {
             const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             const code = jsQR(imageData.data, imageData.width, imageData.height, {
-              inversionAttempts: "dontInvert",
+              inversionAttempts: "dontInvert"
             });
-
             if (code && code.data) {
               const now = Date.now();
               // Prevent duplicate scanning triggers within a 3-second cooldown window
@@ -243,7 +249,6 @@ export default function Scanner() {
   // Automatically start camera on mount and clean up on unmount
   useEffect(() => {
     startCamera('environment');
-
     return () => {
       if (activeStreamRef.current) {
         activeStreamRef.current.getTracks().forEach(track => track.stop());
@@ -253,8 +258,7 @@ export default function Scanner() {
       }
     };
   }, []);
-
-  const handleManualSearch = (e) => {
+  const handleManualSearch = e => {
     e.preventDefault();
     if (searchToken.trim()) {
       triggerVerification(searchToken.trim().toUpperCase());
@@ -269,16 +273,13 @@ export default function Scanner() {
       showToast('Please enter at least one field to search.');
     }
   };
-
   const handleScanQrSimulated = () => {
     const queryVal = prompt("Simulate QR Code Scan: Please scan / enter the QR Code payload (or Booking ID):");
     if (queryVal && queryVal.trim()) {
       triggerVerification(queryVal);
     }
   };
-
-  return (
-    <div className="flex flex-col gap-8 max-w-7xl mx-auto w-full pb-20">
+  return <div className="flex flex-col gap-8 max-w-7xl mx-auto w-full pb-20">
       {/* Page Header */}
       <section className="flex flex-col gap-1">
         <h2 className="text-2xl md:text-3xl font-bold text-on-surface">{pageTitle}</h2>
@@ -304,149 +305,84 @@ export default function Scanner() {
             <div className="relative overflow-hidden bg-inverse-surface rounded-xl min-h-[50vh] sm:min-h-[400px] flex flex-col items-center justify-center border-4 border-surface-container">
               
               {/* Dynamic Camera Feed / Video Element */}
-              <video 
-                ref={videoRef}
-                className={`absolute inset-0 w-full h-full object-contain z-0 ${isCameraActive ? 'block' : 'hidden'}`}
-                playsInline
-                muted
-              />
+              <video ref={videoRef} className={`absolute inset-0 w-full h-full object-contain z-0 ${isCameraActive ? 'block' : 'hidden'}`} playsInline muted />
 
               {/* Hidden Canvas for QR processing */}
               <canvas ref={canvasRef} className="hidden" />
 
               {/* Scanner Animation Line overlay */}
-              {isCameraActive && (
-                <div 
-                  className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent left-0 z-10"
-                  style={{
-                    animation: 'scan 3s infinite linear',
-                  }}
-                ></div>
-              )}
-              <style dangerouslySetInnerHTML={{__html: `
+              {isCameraActive && <div className="absolute w-full h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent left-0 z-10" style={{
+              animation: 'scan 3s infinite linear'
+            }}></div>}
+              <style dangerouslySetInnerHTML={{
+              __html: `
                 @keyframes scan {
                   0% { top: 0; }
                   50% { top: 100%; }
                   100% { top: 0; }
                 }
-              `}} />
+              `
+            }} />
 
               {/* Spinner/Loading State */}
-              {isLoadingCamera && (
-                <div className="absolute inset-0 flex items-center justify-center bg-inverse-surface/85 text-white z-20">
+              {isLoadingCamera && <div className="absolute inset-0 flex items-center justify-center bg-inverse-surface/85 text-white z-20">
                   <div className="flex flex-col items-center gap-2">
                     <span className="material-symbols-outlined animate-spin text-3xl">sync</span>
-                    <p className="text-sm font-semibold">Starting camera feed...</p>
+                    <p className="text-sm font-semibold">{t("startingCameraFeed")}</p>
                   </div>
-                </div>
-              )}
+                </div>}
 
               {/* Camera Access Error / Inactive States */}
-              {!isCameraActive && !isLoadingCamera && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-inverse-surface/90 text-white p-6 z-20 text-center gap-4">
-                  {cameraError ? (
-                    <>
+              {!isCameraActive && !isLoadingCamera && <div className="absolute inset-0 flex flex-col items-center justify-center bg-inverse-surface/90 text-white p-6 z-20 text-center gap-4">
+                  {cameraError ? <>
                       <span className="material-symbols-outlined text-4xl text-error">videocam_off</span>
                       <p className="text-sm font-semibold max-w-sm text-red-400">{cameraError}</p>
-                    </>
-                  ) : (
-                    <>
+                    </> : <>
                       <span className="material-symbols-outlined text-4xl text-primary/60">photo_camera</span>
-                      <p className="text-sm font-semibold">Camera scanner is stopped.</p>
-                    </>
-                  )}
+                      <p className="text-sm font-semibold">{t("cameraScannerIsStopped")}</p>
+                    </>}
                   
                   <div className="flex flex-col sm:flex-row w-full px-6 gap-3 justify-center">
-                    <button 
-                      onClick={() => startCamera(facingMode)}
-                      className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 bg-primary text-on-primary rounded-full font-bold shadow-md hover:scale-[1.02] transition-all text-xs"
-                    >
-                      Start Camera
-                    </button>
+                    <button onClick={() => startCamera(facingMode)} className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 bg-primary text-on-primary rounded-full font-bold shadow-md hover:scale-[1.02] transition-all text-xs">{t("startCamera")}</button>
                     
-                    <button 
-                      onClick={handleScanQrSimulated}
-                      className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 bg-surface-container-highest text-on-surface font-bold rounded-full shadow-md hover:scale-[1.02] transition-all text-xs"
-                    >
-                      Simulate QR Scan
-                    </button>
+                    <button onClick={handleScanQrSimulated} className="w-full sm:w-auto min-h-[44px] px-6 py-2.5 bg-surface-container-highest text-on-surface font-bold rounded-full shadow-md hover:scale-[1.02] transition-all text-xs">{t("simulateQrScan")}</button>
                   </div>
-                </div>
-              )}
+                </div>}
 
               {/* Video control overlays */}
-              {isCameraActive && (
-                <div className="absolute bottom-4 left-0 right-0 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 z-30 px-4">
-                  <button 
-                    onClick={handleSwitchCamera}
-                    className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow"
-                  >
-                    <span className="material-symbols-outlined text-sm">switch_camera</span>
-                    Switch Camera
-                  </button>
-                  <button 
-                    onClick={stopCamera}
-                    className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow"
-                  >
-                    <span className="material-symbols-outlined text-sm">videocam_off</span>
-                    Stop Camera
-                  </button>
-                  <button 
-                    onClick={handleScanQrSimulated}
-                    className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow"
-                  >
-                    <span className="material-symbols-outlined text-sm">construction</span>
-                    Simulate Scan
-                  </button>
-                </div>
-              )}
+              {isCameraActive && <div className="absolute bottom-4 left-0 right-0 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3 z-30 px-4">
+                  <button onClick={handleSwitchCamera} className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow">
+                    <span className="material-symbols-outlined text-sm">switch_camera</span>{t("switchCamera")}</button>
+                  <button onClick={stopCamera} className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow">
+                    <span className="material-symbols-outlined text-sm">videocam_off</span>{t("stopCamera")}</button>
+                  <button onClick={handleScanQrSimulated} className="w-full sm:w-auto min-h-[44px] justify-center px-4 py-2 bg-black/60 backdrop-blur-md text-white rounded-full text-xs font-bold flex items-center gap-1.5 hover:bg-black/80 transition-colors shadow">
+                    <span className="material-symbols-outlined text-sm">construction</span>{t("simulateScan")}</button>
+                </div>}
             </div>
 
             {/* Manual Search Forms */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-on-surface-variant">{t('tokenNumber')}</label>
-                <input 
-                  className="w-full min-h-[44px] px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" 
-                  placeholder="T-5421" 
-                  type="text" 
-                  value={searchToken}
-                  onChange={(e) => setSearchToken(e.target.value)}
-                />
+                <input className="w-full min-h-[44px] px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" placeholder={t("t5421")} type="text" value={searchToken} onChange={e => setSearchToken(e.target.value)} />
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-semibold text-on-surface-variant">{t('mobileNumber')}</label>
-                <input 
-                  className="w-full min-h-[44px] px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" 
-                  placeholder="+91 987..." 
-                  type="tel" 
-                  value={searchMobile}
-                  onChange={(e) => setSearchMobile(e.target.value)}
-                />
+                <input className="w-full min-h-[44px] px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" placeholder="+91 987..." type="tel" value={searchMobile} onChange={e => setSearchMobile(e.target.value)} />
               </div>
               <div className="flex flex-col gap-2">
-                <label className="text-xs font-semibold text-on-surface-variant">Booking ID</label>
-                <input 
-                  className="w-full min-h-[44px] px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" 
-                  placeholder="64a7b..." 
-                  type="text" 
-                  value={searchBookingId}
-                  onChange={(e) => setSearchBookingId(e.target.value)}
-                />
+                <label className="text-xs font-semibold text-on-surface-variant">{t("bookingId")}</label>
+                <input className="w-full min-h-[44px] px-4 py-2 border border-outline-variant rounded-lg bg-surface focus:border-primary outline-none transition-all" placeholder={t("64a7b")} type="text" value={searchBookingId} onChange={e => setSearchBookingId(e.target.value)} />
               </div>
             </div>
-            <button 
-              onClick={handleManualSearch}
-              className="w-full min-h-[44px] mt-4 py-3 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors"
-            >
+            <button onClick={handleManualSearch} className="w-full min-h-[44px] mt-4 py-3 border border-primary text-primary font-bold rounded-lg hover:bg-primary/5 transition-colors">
               {t('manualSearch')}
             </button>
           </div>
 
           {/* Verification Result Card */}
           {/* Verification Result Card */}
-          {scannedDevotee ? (
-            <div className="bg-white border-t-4 border-t-primary border-x border-b border-outline-variant rounded-xl p-6 shadow-md animate-in slide-in-from-bottom-4 duration-500">
+          {scannedDevotee ? <div className="bg-white border-t-4 border-t-primary border-x border-b border-outline-variant rounded-xl p-6 shadow-md animate-in slide-in-from-bottom-4 duration-500">
               <div className="flex flex-col md:flex-row justify-between gap-4">
                 <div className="flex gap-4">
                   <div className="h-16 w-16 rounded-xl overflow-hidden bg-surface-container shrink-0">
@@ -476,11 +412,11 @@ export default function Scanner() {
                   <p className="font-bold text-on-surface">{scannedDevotee.tokenNumber || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-on-surface-variant">QR Code</p>
+                  <p className="text-xs text-on-surface-variant">{t("qrCode")}</p>
                   <p className="font-bold text-on-surface select-all text-xs break-all">{scannedDevotee.qrCode || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-on-surface-variant">Place / City / Village</p>
+                  <p className="text-xs text-on-surface-variant">{t("placeCityVillage")}</p>
                   <p className="font-bold text-on-surface">{scannedDevotee.placeCity || 'N/A'}</p>
                 </div>
                 <div>
@@ -497,40 +433,24 @@ export default function Scanner() {
                 </div>
                 <div>
                   <p className="text-xs text-on-surface-variant">Current Status</p>
-                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold uppercase mt-1 ${
-                    scannedDevotee.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                    scannedDevotee.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                    scannedDevotee.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                    'bg-yellow-100 text-yellow-800'
-                  }`}>
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold uppercase mt-1 ${scannedDevotee.status === 'confirmed' ? 'bg-green-100 text-green-800' : scannedDevotee.status === 'completed' ? 'bg-blue-100 text-blue-800' : scannedDevotee.status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'}`}>
                     {scannedDevotee.status}
                   </span>
                 </div>
                 <div>
-                  <p className="text-xs text-on-surface-variant">Journey Tracker Status</p>
-                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold uppercase mt-1 ${
-                    scannedDevotee.verificationStatus === 'none' ? 'bg-gray-100 text-gray-800' :
-                    scannedDevotee.verificationStatus === 'verified_entry' ? 'bg-purple-100 text-purple-800' :
-                    scannedDevotee.verificationStatus === 'in_queue' ? 'bg-orange-100 text-orange-800' :
-                    'bg-green-100 text-green-800'
-                  }`}>
+                  <p className="text-xs text-on-surface-variant">{t("journeyTrackerStatus")}</p>
+                  <span className={`inline-block px-2 py-0.5 rounded text-xs font-bold uppercase mt-1 ${scannedDevotee.verificationStatus === 'none' ? 'bg-gray-100 text-gray-800' : scannedDevotee.verificationStatus === 'verified_entry' ? 'bg-purple-100 text-purple-800' : scannedDevotee.verificationStatus === 'in_queue' ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}>
                     {(scannedDevotee.verificationStatus || 'none').replace('_', ' ')}
                   </span>
                 </div>
                 <div className="col-span-2 md:col-span-3">
                   <p className="text-xs text-on-surface-variant">Person Names &amp; Ages</p>
                   <p className="font-semibold text-on-surface text-sm mt-1">
-                    {scannedDevotee.visitors && scannedDevotee.visitors.length > 0 ? (
-                      <span className="flex flex-wrap gap-2">
-                        {scannedDevotee.visitors.map((v, i) => (
-                          <span key={i} className="px-2.5 py-1 bg-surface-container rounded-full text-xs font-medium border border-outline-variant text-on-surface">
+                    {scannedDevotee.visitors && scannedDevotee.visitors.length > 0 ? <span className="flex flex-wrap gap-2">
+                        {scannedDevotee.visitors.map((v, i) => <span key={i} className="px-2.5 py-1 bg-surface-container rounded-full text-xs font-medium border border-outline-variant text-on-surface">
                             {v.name} ({v.age} yrs)
-                          </span>
-                        ))}
-                      </span>
-                    ) : (
-                      'No accompanying visitors (Self Only)'
-                    )}
+                          </span>)}
+                      </span> : 'No accompanying visitors (Self Only)'}
                   </p>
                 </div>
               </div>
@@ -538,13 +458,9 @@ export default function Scanner() {
               {/* Counter Journey History Logs */}
               <div className="mt-6 border-t border-outline-variant pt-6">
                 <h5 className="text-sm font-bold text-on-surface mb-3 flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-base text-primary">history</span>
-                  Journey Tracker History
-                </h5>
-                {scannedDevotee.counterHistory && scannedDevotee.counterHistory.length > 0 ? (
-                  <div className="flex flex-col gap-3">
-                    {scannedDevotee.counterHistory.map((history, idx) => (
-                      <div key={idx} className="flex items-center gap-3 p-3 bg-surface-container-low border border-outline-variant rounded-lg">
+                  <span className="material-symbols-outlined text-base text-primary">history</span>{t("journeyTrackerHistory")}</h5>
+                {scannedDevotee.counterHistory && scannedDevotee.counterHistory.length > 0 ? <div className="flex flex-col gap-3">
+                    {scannedDevotee.counterHistory.map((history, idx) => <div key={idx} className="flex items-center gap-3 p-3 bg-surface-container-low border border-outline-variant rounded-lg">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-bold">
                           {history.counterNumber}
                         </div>
@@ -552,8 +468,7 @@ export default function Scanner() {
                           <p className="text-xs font-bold text-on-surface">
                             Counter {history.counterNumber}: {history.status}
                           </p>
-                          <p className="text-[10px] text-on-surface-variant">
-                            Updated by: <span className="font-semibold">{history.staffName}</span>
+                          <p className="text-[10px] text-on-surface-variant">{t("updatedBy")}<span className="font-semibold">{history.staffName}</span>
                           </p>
                         </div>
                         <div className="text-right shrink-0">
@@ -561,92 +476,39 @@ export default function Scanner() {
                             {new Date(history.timestamp).toLocaleDateString()}
                           </p>
                           <p className="text-xs font-bold text-on-surface">
-                            {new Date(history.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            {new Date(history.timestamp).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit'
+                    })}
                           </p>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="p-4 bg-surface-container-low border border-outline-variant border-dashed rounded-lg text-center text-xs text-on-surface-variant">
-                    No counter history recorded yet. Use the buttons below to log progress.
-                  </div>
-                )}
+                      </div>)}
+                  </div> : <div className="p-4 bg-surface-container-low border border-outline-variant border-dashed rounded-lg text-center text-xs text-on-surface-variant">{t("noCounterHistoryRecordedYetUse")}</div>}
               </div>
 
               <div className="mt-8 flex flex-col gap-4">
-                {(!counterId || counterId === '1') && ['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) && (
-                  <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
-                    Already processed at this counter.
-                  </div>
-                )}
-                {(!counterId || counterId === '2') && ['in_queue', 'completed'].includes(scannedDevotee.verificationStatus) && (
-                  <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
-                    Already processed at this counter.
-                  </div>
-                )}
-                {(!counterId || counterId === '3') && ['completed'].includes(scannedDevotee.verificationStatus) && (
-                  <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
-                    Already processed at this counter.
-                  </div>
-                )}
-                {counterId === '2' && scannedDevotee.verificationStatus === 'none' && (
-                  <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
-                    This booking is not eligible for this counter.
-                  </div>
-                )}
-                {counterId === '3' && ['none', 'verified_entry'].includes(scannedDevotee.verificationStatus) && (
-                  <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">
-                    This booking is not eligible for this counter.
-                  </div>
-                )}
+                {(!counterId || counterId === '1') && ['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) && <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">{t("alreadyProcessedAtThisCounter")}</div>}
+                {(!counterId || counterId === '2') && ['in_queue', 'completed'].includes(scannedDevotee.verificationStatus) && <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">{t("alreadyProcessedAtThisCounter")}</div>}
+                {(!counterId || counterId === '3') && ['completed'].includes(scannedDevotee.verificationStatus) && <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">{t("alreadyProcessedAtThisCounter")}</div>}
+                {counterId === '2' && scannedDevotee.verificationStatus === 'none' && <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">{t("thisBookingIsNotEligibleForThi")}</div>}
+                {counterId === '3' && ['none', 'verified_entry'].includes(scannedDevotee.verificationStatus) && <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">{t("thisBookingIsNotEligibleForThi")}</div>}
 
                 <div className="flex flex-col sm:flex-row gap-4">
-                  {(!counterId || counterId === '1') && (
-                    <button 
-                      disabled={['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus)}
-                      onClick={() => handleCounterAction(1)}
-                      className={`w-full sm:flex-1 min-h-[44px] py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all ${
-                        ['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-                      }`}
-                    >
+                  {(!counterId || counterId === '1') && <button disabled={['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus)} onClick={() => handleCounterAction(1)} className={`w-full sm:flex-1 min-h-[44px] py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all ${['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}>
                       <span className="material-symbols-outlined">verified</span>
                       {t('verifyEntry') || 'Verify Entry'}
-                    </button>
-                  )}
-                  {(!counterId || counterId === '2') && (
-                    <button 
-                      disabled={scannedDevotee.verificationStatus !== 'verified_entry'}
-                      onClick={() => handleCounterAction(2)}
-                      className={`w-full sm:flex-1 min-h-[44px] py-3 border-2 border-secondary text-secondary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all ${
-                        scannedDevotee.verificationStatus !== 'verified_entry' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-                      }`}
-                    >
+                    </button>}
+                  {(!counterId || counterId === '2') && <button disabled={['in_queue', 'completed'].includes(scannedDevotee.verificationStatus)} onClick={() => handleCounterAction(2)} className={`w-full sm:flex-1 min-h-[44px] py-3 border-2 border-secondary text-secondary font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-secondary/5 active:scale-95 transition-all ${['in_queue', 'completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}>
                       <span className="material-symbols-outlined">hourglass_top</span>
                       {t('markInQueue') || 'Mark In Queue'}
-                    </button>
-                  )}
-                  {(!counterId || counterId === '3') && (
-                    <button 
-                      disabled={scannedDevotee.verificationStatus !== 'in_queue'}
-                      onClick={() => handleCounterAction(3)}
-                      className={`w-full sm:flex-1 min-h-[44px] py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-highest active:scale-95 transition-all ${
-                        scannedDevotee.verificationStatus !== 'in_queue' ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''
-                      }`}
-                    >
-                      <span className="material-symbols-outlined">check_circle</span>
-                      Mark Darshan Completed
-                    </button>
-                  )}
+                    </button>}
+                  {(!counterId || counterId === '3') && <button disabled={['completed'].includes(scannedDevotee.verificationStatus)} onClick={() => handleCounterAction(3)} className={`w-full sm:flex-1 min-h-[44px] py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-highest active:scale-95 transition-all ${['completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}>
+                      <span className="material-symbols-outlined">check_circle</span>{t("markDarshanCompleted")}</button>}
                 </div>
               </div>
-            </div>
-          ) : (
-            <div className="bg-white border border-outline-variant rounded-xl p-8 text-center text-on-surface-variant font-medium">
-              <span className="material-symbols-outlined text-5xl text-primary/40 mb-3 block">qr_code_scanner</span>
-              Please scan a devotee's QR code or search by Token/Mobile/Vehicle to verify entry status.
-            </div>
-          )}
+            </div> : <div className="bg-white border border-outline-variant rounded-xl p-8 text-center text-on-surface-variant font-medium">
+              <span className="material-symbols-outlined text-5xl text-primary/40 mb-3 block">qr_code_scanner</span>{t("pleaseScanADevoteesQrCodeOrSea")}</div>}
         </div>
 
         {/* Right Column: Stats & Recent History */}
@@ -662,8 +524,7 @@ export default function Scanner() {
             </div>
             <div className="flex-1 overflow-y-auto max-h-[500px]">
               <div className="divide-y divide-outline-variant">
-                {recentScansList.map((scan, idx) => (
-                  <div key={idx} className="p-4 flex items-center justify-between hover:bg-surface-container-low transition-colors group">
+                {recentScansList.map((scan, idx) => <div key={idx} className="p-4 flex items-center justify-between hover:bg-surface-container-low transition-colors group">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-secondary-container/30 flex items-center justify-center text-secondary">
                         <span className="material-symbols-outlined">person</span>
@@ -675,22 +536,16 @@ export default function Scanner() {
                     </div>
                     <div className="text-right">
                       <p className="text-xs font-bold text-on-surface mb-1">{scan.time}</p>
-                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${
-                        scan.status === 'Verified' ? 'bg-primary-container/20 text-on-primary-container' :
-                        scan.status === 'In Queue' || scan.status === 'Waiting' ? 'bg-surface-variant text-on-surface-variant' :
-                        'bg-tertiary-container/20 text-on-tertiary-container'
-                      }`}>
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold uppercase ${scan.status === 'Verified' ? 'bg-primary-container/20 text-on-primary-container' : scan.status === 'In Queue' || scan.status === 'Waiting' ? 'bg-surface-variant text-on-surface-variant' : 'bg-tertiary-container/20 text-on-tertiary-container'}`}>
                         {scan.status}
                       </span>
                     </div>
-                  </div>
-                ))}
+                  </div>)}
               </div>
             </div>
           </div>
 
         </div>
       </div>
-    </div>
-  );
+    </div>;
 }
