@@ -57,6 +57,7 @@ export default function OfflineVerification() {
   // Form input states
   const [formName, setFormName] = useState('');
   const [formMobile, setFormMobile] = useState('');
+  const [formAadhaar, setFormAadhaar] = useState('');
   const [formVillage, setFormVillage] = useState('');
   const [formPersons, setFormPersons] = useState(1);
   const [formVehicleType, setFormVehicleType] = useState('None / Walk-in');
@@ -122,8 +123,8 @@ export default function OfflineVerification() {
   };
   const handleCreateToken = async e => {
     e.preventDefault();
-    if (!formName.trim() || !formMobile.trim()) {
-      showToast('Please fill in Name and Mobile Number');
+    if (!formName.trim() || !formMobile.trim() || !formAadhaar.trim() || formAadhaar.length !== 12) {
+      showToast('Please fill in Name, Mobile Number, and valid 12-digit Aadhaar');
       return;
     }
 
@@ -171,6 +172,7 @@ export default function OfflineVerification() {
         body: JSON.stringify({
           fullName: formName,
           mobile: formMobile,
+          aadhaarNumber: formAadhaar.replace(/\\s/g, ''),
           placeCity: formVillage || 'N/A',
           persons: parseInt(formPersons) || 1,
           visitors: formVisitors,

@@ -2,11 +2,20 @@ const express = require('express');
 const router = express.Router();
 const Booking = require('../models/Booking');
 
+const maskAadhaar = (aadhaar) => {
+  if (!aadhaar || aadhaar.length !== 12) return aadhaar;
+  return 'XXXX XXXX ' + aadhaar.substring(8);
+};
+
 // Create a booking
 router.post('/', async (req, res) => {
   try {
-    const { fullName, mobile, placeCity, persons, visitors, vehicleType, vehicleNumber, darshanDate, userId } = req.body;
+    const { fullName, mobile, aadhaarNumber, placeCity, persons, visitors, vehicleType, vehicleNumber, darshanDate, userId } = req.body;
     
+    if (!aadhaarNumber || !/^\d{12}$/.test(aadhaarNumber)) {
+      return res.status(400).json({ error: 'Valid 12-digit Aadhaar number is required.' });
+    }
+
     // Validate booking day (Sunday, Monday, Tuesday only)
     if (!darshanDate) {
       return res.status(400).json({ error: 'Darshan date is required.' });
@@ -74,7 +83,12 @@ router.post('/', async (req, res) => {
 router.get('/', async (req, res) => {
   try {
     const bookings = await Booking.find().sort({ createdAt: -1 });
-    res.json(bookings);
+    const maskedBookings = bookings.map(b => {
+      const obj = b.toObject ? b.toObject() : b;
+      if (obj.aadhaarNumber) obj.aadhaarNumber = maskAadhaar(obj.aadhaarNumber);
+      return obj;
+    });
+    res.json(maskedBookings);
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server Error');
@@ -117,7 +131,12 @@ router.get('/user/:identifier', async (req, res) => {
     }).sort({ createdAt: -1 });
     
     console.log(`[GET /bookings/user/${identifier}] Successfully found bookings count: ${bookings.length}`);
-    res.json(bookings);
+    const maskedBookings = bookings.map(b => {
+      const obj = b.toObject ? b.toObject() : b;
+      if (obj.aadhaarNumber) obj.aadhaarNumber = maskAadhaar(obj.aadhaarNumber);
+      return obj;
+    });
+    res.json(maskedBookings);
   } catch (err) {
     console.error(`[GET /bookings/user/${identifier}] Error:`, err.message);
     res.status(500).send('Server Error');
@@ -200,6 +219,7 @@ router.post('/verify-scanner', async (req, res) => {
       message: 'Devotee verified successfully!',
       booking: {
         ...booking.toObject(),
+        aadhaarNumber: booking.aadhaarNumber ? maskAadhaar(booking.aadhaarNumber) : undefined,
         tokenNumber
       }
     });
@@ -321,6 +341,7 @@ router.post('/verify-scanner/action', async (req, res) => {
       message: `Successfully updated status to: ${statusLabel}!`,
       booking: {
         ...booking.toObject(),
+        aadhaarNumber: booking.aadhaarNumber ? maskAadhaar(booking.aadhaarNumber) : undefined,
         tokenNumber
       }
     });

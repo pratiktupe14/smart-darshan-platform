@@ -97,6 +97,7 @@ export default function BookDarshan() {
       const payload = {
         fullName: e.target.full_name.value,
         mobile: e.target.mobile.value,
+        aadhaarNumber: e.target.aadhaar_number.value.replace(/\\s/g, ''),
         placeCity: e.target.place_city.value,
         persons: persons,
         visitors: visitors,

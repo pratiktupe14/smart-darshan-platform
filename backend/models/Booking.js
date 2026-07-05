@@ -9,6 +9,10 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  aadhaarNumber: {
+    type: String,
+    required: true,
+  },
   placeCity: {
     type: String,
     required: true,
