@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import ExportModal from '../../components/ExportModal';
-
 export default function Analytics() {
-  const { t } = useLanguage();
+  const {
+    t
+  } = useLanguage();
   const [isEmergencyActive, setIsEmergencyActive] = useState(false);
   const [visitorLimit, setVisitorLimit] = useState(5000);
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-
   const handleEmergencyClosure = () => {
     if (!isEmergencyActive) {
       if (window.confirm('CRITICAL: Are you sure you want to trigger an Emergency Closure? This will halt all entry and notify all onsite personnel.')) {
@@ -16,13 +16,10 @@ export default function Analytics() {
       }
     }
   };
-
-  const updateLimit = (change) => {
+  const updateLimit = change => {
     setVisitorLimit(prev => Math.max(100, prev + change));
   };
-
-  return (
-    <>
+  return <>
       {/* Header Section */}
       <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
@@ -34,10 +31,7 @@ export default function Analytics() {
             <span className="material-symbols-outlined text-[18px]">calendar_today</span>
             {t('last24Hours')}
           </button>
-          <button 
-            onClick={() => setIsExportModalOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg font-label-md text-label-md hover:opacity-90 transition-colors"
-          >
+          <button onClick={() => setIsExportModalOpen(true)} className="flex items-center gap-2 px-4 py-2 bg-secondary text-white rounded-lg font-label-md text-label-md hover:opacity-90 transition-colors">
             <span className="material-symbols-outlined text-[18px]">download</span>
             {t('exportReport')}
           </button>
@@ -71,27 +65,19 @@ export default function Analytics() {
               <div className="border-b border-outline h-full"></div>
             </div>
             {/* Chart Bars */}
-            {[40, 55, 85, 65, 45, 95, 70, 50, 40, 80, 60, 30].map((height, index) => (
-              <div 
-                key={index}
-                className={`flex-1 rounded-t transition-transform hover:-translate-y-1 cursor-pointer group relative ${height > 75 ? 'bg-primary hover:bg-primary-container' : 'bg-primary-fixed-dim hover:bg-primary'}`} 
-                style={{ height: `${height}%` }}
-              >
-                {height === 85 && (
-                  <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                    4.2k
-                  </span>
-                )}
-              </div>
-            ))}
+            {[40, 55, 85, 65, 45, 95, 70, 50, 40, 80, 60, 30].map((height, index) => <div key={index} className={`flex-1 rounded-t transition-transform hover:-translate-y-1 cursor-pointer group relative ${height > 75 ? 'bg-primary hover:bg-primary-container' : 'bg-primary-fixed-dim hover:bg-primary'}`} style={{
+            height: `${height}%`
+          }}>
+                {height === 85 && <span className="absolute -top-8 left-1/2 -translate-x-1/2 bg-on-surface text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">{t("42k")}</span>}
+              </div>)}
           </div>
           <div className="flex justify-between mt-4 text-[10px] text-on-surface-variant font-label-md font-bold">
-            <span>06:00 AM</span>
-            <span>09:00 AM</span>
-            <span>12:00 PM</span>
-            <span>03:00 PM</span>
-            <span>06:00 PM</span>
-            <span>09:00 PM</span>
+            <span>{t("0600Am")}</span>
+            <span>{t("0900Am")}</span>
+            <span>{t("1200Pm")}</span>
+            <span>{t("0300Pm")}</span>
+            <span>{t("0600Pm")}</span>
+            <span>{t("0900Pm")}</span>
           </div>
         </div>
 
@@ -174,7 +160,7 @@ export default function Analytics() {
           </div>
           <div className="mt-4 pt-4 border-t border-outline-variant flex justify-between items-center">
             <span className="text-xs text-on-surface-variant font-medium">{t('avgDwellTime')}</span>
-            <span className="font-label-md text-label-md font-extrabold text-primary">45 mins</span>
+            <span className="font-label-md text-label-md font-extrabold text-primary">{t("45Mins")}</span>
           </div>
         </div>
 
@@ -192,10 +178,7 @@ export default function Analytics() {
                   <button onClick={() => updateLimit(100)} className="w-8 h-8 rounded bg-white/20 hover:bg-white/30 flex items-center justify-center font-bold text-lg transition-colors">+</button>
                 </div>
               </div>
-              <button 
-                onClick={handleEmergencyClosure}
-                className={`w-full py-4 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-lg ${isEmergencyActive ? 'bg-on-surface scale-95 opacity-90 cursor-not-allowed' : 'bg-error hover:bg-opacity-90 active:scale-95'}`}
-              >
+              <button onClick={handleEmergencyClosure} className={`w-full py-4 text-white rounded-lg font-bold flex items-center justify-center gap-2 transition-all shadow-lg ${isEmergencyActive ? 'bg-on-surface scale-95 opacity-90 cursor-not-allowed' : 'bg-error hover:bg-opacity-90 active:scale-95'}`}>
                 <span className="material-symbols-outlined text-[20px]">{isEmergencyActive ? 'lock' : 'report'}</span>
                 {isEmergencyActive ? t('closureActive') : t('emergencyClosureTitle')}
               </button>
@@ -203,7 +186,9 @@ export default function Analytics() {
           </div>
           {/* Decorative element */}
           <div className="absolute -right-10 -bottom-10 opacity-10 pointer-events-none">
-            <span className="material-symbols-outlined text-[160px]" style={{ fontVariationSettings: "'FILL' 1" }}>shield</span>
+            <span className="material-symbols-outlined text-[160px]" style={{
+            fontVariationSettings: "'FILL' 1"
+          }}>shield</span>
           </div>
         </div>
       </div>
@@ -222,36 +207,36 @@ export default function Analytics() {
             <div className="flex gap-3 items-start pb-4 border-b border-outline-variant last:border-0">
               <div className="w-2 h-2 rounded-full bg-secondary mt-2 flex-shrink-0"></div>
               <div>
-                <p className="text-sm font-bold text-on-surface">Slot limit updated to 5,000</p>
-                <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">By Admin_Sanjay • 10:24 AM</p>
+                <p className="text-sm font-bold text-on-surface">{t("slotLimitUpdatedTo5000")}</p>
+                <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">{t("byAdminsanjay1024Am")}</p>
               </div>
             </div>
             <div className="flex gap-3 items-start pb-4 border-b border-outline-variant last:border-0">
               <div className="w-2 h-2 rounded-full bg-error mt-2 flex-shrink-0"></div>
               <div>
-                <p className="text-sm font-bold text-on-surface">Manual Gate Closure - North</p>
-                <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">By System_Trigger • 09:45 AM</p>
+                <p className="text-sm font-bold text-on-surface">{t("manualGateClosureNorth")}</p>
+                <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">{t("bySystemtrigger0945Am")}</p>
               </div>
             </div>
             <div className="flex gap-3 items-start pb-4 border-b border-outline-variant last:border-0">
               <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0"></div>
               <div>
-                <p className="text-sm font-bold text-on-surface">Weekly Analytics Report Generated</p>
-                <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">Auto-scheduler • 08:00 AM</p>
+                <p className="text-sm font-bold text-on-surface">{t("weeklyAnalyticsReportGenerated")}</p>
+                <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">{t("autoscheduler0800Am")}</p>
               </div>
             </div>
             <div className="flex gap-3 items-start pb-4 border-b border-outline-variant last:border-0">
               <div className="w-2 h-2 rounded-full bg-secondary mt-2 flex-shrink-0"></div>
               <div>
-                <p className="text-sm font-bold text-on-surface">Updated Holiday Pooja Timings</p>
-                <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">By Admin_Neha • Yesterday</p>
+                <p className="text-sm font-bold text-on-surface">{t("updatedHolidayPoojaTimings")}</p>
+                <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">{t("byAdminnehaYesterday")}</p>
               </div>
             </div>
             <div className="flex gap-3 items-start pb-4 border-b border-outline-variant last:border-0">
               <div className="w-2 h-2 rounded-full bg-outline-variant mt-2 flex-shrink-0"></div>
               <div>
-                <p className="text-sm font-bold text-on-surface">Login session established from IP 192.168.1.1</p>
-                <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">By Admin_Sanjay • Yesterday</p>
+                <p className="text-sm font-bold text-on-surface">{t("loginSessionEstablishedFromIp1")}</p>
+                <p className="text-[10px] text-on-surface-variant font-medium mt-0.5">{t("byAdminsanjayYesterday")}</p>
               </div>
             </div>
           </div>
@@ -285,36 +270,36 @@ export default function Analytics() {
                   <td className="px-6 py-4 font-bold whitespace-nowrap">09:00 - 10:00</td>
                   <td className="px-6 py-4 font-medium">1,240</td>
                   <td className="px-6 py-4 font-medium">156</td>
-                  <td className="px-6 py-4"><span className="px-2.5 py-1 rounded-md bg-[#FFF4E5] text-[#FF9933] text-[10px] font-bold uppercase tracking-wider">High</span></td>
-                  <td className="px-6 py-4 font-medium">25m</td>
+                  <td className="px-6 py-4"><span className="px-2.5 py-1 rounded-md bg-[#FFF4E5] text-[#FF9933] text-[10px] font-bold uppercase tracking-wider">{t("high")}</span></td>
+                  <td className="px-6 py-4 font-medium">{t("25m")}</td>
                 </tr>
                 <tr className="hover:bg-surface-container-low transition-colors">
                   <td className="px-6 py-4 font-bold whitespace-nowrap">10:00 - 11:00</td>
                   <td className="px-6 py-4 font-medium">2,105</td>
                   <td className="px-6 py-4 font-medium">248</td>
-                  <td className="px-6 py-4"><span className="px-2.5 py-1 rounded-md bg-[#F0F7ED] text-[#2D5A27] text-[10px] font-bold uppercase tracking-wider">Peak</span></td>
-                  <td className="px-6 py-4 font-medium">42m</td>
+                  <td className="px-6 py-4"><span className="px-2.5 py-1 rounded-md bg-[#F0F7ED] text-[#2D5A27] text-[10px] font-bold uppercase tracking-wider">{t("peak")}</span></td>
+                  <td className="px-6 py-4 font-medium">{t("42m")}</td>
                 </tr>
                 <tr className="hover:bg-surface-container-low transition-colors">
                   <td className="px-6 py-4 font-bold whitespace-nowrap">11:00 - 12:00</td>
                   <td className="px-6 py-4 font-medium">1,890</td>
                   <td className="px-6 py-4 font-medium">192</td>
-                  <td className="px-6 py-4"><span className="px-2.5 py-1 rounded-md bg-[#FFF4E5] text-[#FF9933] text-[10px] font-bold uppercase tracking-wider">High</span></td>
-                  <td className="px-6 py-4 font-medium">30m</td>
+                  <td className="px-6 py-4"><span className="px-2.5 py-1 rounded-md bg-[#FFF4E5] text-[#FF9933] text-[10px] font-bold uppercase tracking-wider">{t("high")}</span></td>
+                  <td className="px-6 py-4 font-medium">{t("30m")}</td>
                 </tr>
                 <tr className="hover:bg-surface-container-low transition-colors">
                   <td className="px-6 py-4 font-bold whitespace-nowrap">12:00 - 13:00</td>
                   <td className="px-6 py-4 font-medium">950</td>
                   <td className="px-6 py-4 font-medium">88</td>
-                  <td className="px-6 py-4"><span className="px-2.5 py-1 rounded-md bg-[#F2F2F2] text-[#666666] text-[10px] font-bold uppercase tracking-wider">Normal</span></td>
-                  <td className="px-6 py-4 font-medium">10m</td>
+                  <td className="px-6 py-4"><span className="px-2.5 py-1 rounded-md bg-[#F2F2F2] text-[#666666] text-[10px] font-bold uppercase tracking-wider">{t("normal")}</span></td>
+                  <td className="px-6 py-4 font-medium">{t("10m")}</td>
                 </tr>
                 <tr className="hover:bg-surface-container-low transition-colors">
                   <td className="px-6 py-4 font-bold whitespace-nowrap">13:00 - 14:00</td>
                   <td className="px-6 py-4 font-medium">420</td>
                   <td className="px-6 py-4 font-medium">34</td>
-                  <td className="px-6 py-4"><span className="px-2.5 py-1 rounded-md bg-[#F2F2F2] text-[#666666] text-[10px] font-bold uppercase tracking-wider">Quiet</span></td>
-                  <td className="px-6 py-4 font-medium">0m</td>
+                  <td className="px-6 py-4"><span className="px-2.5 py-1 rounded-md bg-[#F2F2F2] text-[#666666] text-[10px] font-bold uppercase tracking-wider">{t("quiet")}</span></td>
+                  <td className="px-6 py-4 font-medium">{t("0m")}</td>
                 </tr>
               </tbody>
             </table>
@@ -322,10 +307,6 @@ export default function Analytics() {
         </div>
       </div>
 
-      <ExportModal 
-        isOpen={isExportModalOpen} 
-        onClose={() => setIsExportModalOpen(false)} 
-      />
-    </>
-  );
+      <ExportModal isOpen={isExportModalOpen} onClose={() => setIsExportModalOpen(false)} />
+    </>;
 }

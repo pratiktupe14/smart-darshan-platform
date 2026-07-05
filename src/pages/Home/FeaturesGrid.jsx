@@ -1,11 +1,10 @@
 import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-
 export default function FeaturesGrid() {
-  const { t } = useLanguage();
-
-  return (
-    <section className="py-xxl bg-surface-container-low px-margin-mobile md:px-margin-desktop">
+  const {
+    t
+  } = useLanguage();
+  return <section className="py-xxl bg-surface-container-low px-margin-mobile md:px-margin-desktop">
       <div className="max-w-[80rem] mx-auto">
         <div className="text-center mb-xxl">
           <h2 className="font-section-title text-section-title text-on-surface mb-md">{t('featuresTitle')}</h2>
@@ -55,14 +54,12 @@ export default function FeaturesGrid() {
           {/* Card 6 */}
           <div className="bg-surface p-lg rounded-xl shadow-sm border border-on-surface/5 hover:shadow-md transition-shadow group">
             <div className="w-12 h-12 bg-secondary-fixed rounded-lg flex items-center justify-center mb-xl group-hover:bg-secondary group-hover:text-on-secondary transition-all">
-              <span className="material-symbols-outlined">notifications_active</span>
+              <span className="material-symbols-outlined">{t("notificationsactive")}</span>
             </div>
             <h3 className="font-card-title text-card-title text-on-surface mb-sm">{t('realTimeUpdates')}</h3>
             <p className="text-on-surface-variant font-body text-sm">{t('realTimeUpdatesDesc')}</p>
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 }
-

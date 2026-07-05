@@ -1,12 +1,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
-
 export default function Announcements() {
-  const { t } = useLanguage();
-
-  return (
-    <section className="py-xxl px-margin-mobile md:px-margin-desktop bg-surface-container-high relative overflow-hidden">
+  const {
+    t
+  } = useLanguage();
+  return <section className="py-xxl px-margin-mobile md:px-margin-desktop bg-surface-container-high relative overflow-hidden">
       <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
       <div className="max-w-[80rem] mx-auto relative z-10">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-xxl">
@@ -24,7 +23,7 @@ export default function Announcements() {
           <div className="bg-surface-container-lowest p-lg rounded-xl shadow-sm hover:-translate-y-1 transition-transform border border-outline-variant/10">
             <div className="flex justify-between items-start mb-md">
               <span className="px-3 py-1 bg-tertiary-container text-on-tertiary-container text-[10px] font-bold rounded-full uppercase tracking-widest">{t('newTag')}</span>
-              <span className="text-on-surface-variant font-caption text-caption">Oct 12, 2024</span>
+              <span className="text-on-surface-variant font-caption text-caption">{t("oct122024")}</span>
             </div>
             <h4 className="font-card-title text-on-surface mb-md">{t('notice1Title')}</h4>
             <p className="text-on-surface-variant font-body text-sm mb-lg">{t('notice1Desc')}</p>
@@ -36,7 +35,7 @@ export default function Announcements() {
           <div className="bg-surface-container-lowest p-lg rounded-xl shadow-sm hover:-translate-y-1 transition-transform border border-outline-variant/10">
             <div className="flex justify-between items-start mb-md">
               <span className="px-3 py-1 bg-secondary-container text-on-secondary-container text-[10px] font-bold rounded-full uppercase tracking-widest">{t('updateTag')}</span>
-              <span className="text-on-surface-variant font-caption text-caption">Oct 10, 2024</span>
+              <span className="text-on-surface-variant font-caption text-caption">{t("oct102024")}</span>
             </div>
             <h4 className="font-card-title text-on-surface mb-md">{t('notice2Title')}</h4>
             <p className="text-on-surface-variant font-body text-sm mb-lg">{t('notice2Desc')}</p>
@@ -48,7 +47,7 @@ export default function Announcements() {
           <div className="bg-surface-container-lowest p-lg rounded-xl shadow-sm hover:-translate-y-1 transition-transform border border-outline-variant/10">
             <div className="flex justify-between items-start mb-md">
               <span className="px-3 py-1 bg-outline-variant text-on-surface-variant text-[10px] font-bold rounded-full uppercase tracking-widest">{t('adminTag')}</span>
-              <span className="text-on-surface-variant font-caption text-caption">Oct 05, 2024</span>
+              <span className="text-on-surface-variant font-caption text-caption">{t("oct052024")}</span>
             </div>
             <h4 className="font-card-title text-on-surface mb-md">{t('notice3Title')}</h4>
             <p className="text-on-surface-variant font-body text-sm mb-lg">{t('notice3Desc')}</p>
@@ -58,7 +57,5 @@ export default function Announcements() {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 }
-

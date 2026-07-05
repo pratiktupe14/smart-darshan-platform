@@ -3,30 +3,40 @@ import QRCode from 'react-qr-code';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useUser } from '../../context/UserContext';
-
 export default function BookDarshan() {
-  const { t, currentLanguage, setLanguage } = useLanguage();
-  const { user } = useUser();
-
+  const {
+    t,
+    currentLanguage,
+    setLanguage
+  } = useLanguage();
+  const {
+    user
+  } = useUser();
   const [persons, setPersons] = useState(1);
-  const [visitors, setVisitors] = useState([{ name: '', age: '' }]);
+  const [visitors, setVisitors] = useState([{
+    name: '',
+    age: ''
+  }]);
   const [vehicleType, setVehicleType] = useState('none');
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [minDate, setMinDate] = useState('');
   const [otpSent, setOtpSent] = useState(false);
-
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     setMinDate(today);
   }, []);
-
-  const updatePersons = (change) => {
-    setPersons((prev) => {
+  const updatePersons = change => {
+    setPersons(prev => {
       const nextVal = Math.max(1, Math.min(10, prev + change));
-      setVisitors((prevVisitors) => {
+      setVisitors(prevVisitors => {
         if (prevVisitors.length < nextVal) {
-          return [...prevVisitors, ...Array.from({ length: nextVal - prevVisitors.length }, () => ({ name: '', age: '' }))];
+          return [...prevVisitors, ...Array.from({
+            length: nextVal - prevVisitors.length
+          }, () => ({
+            name: '',
+            age: ''
+          }))];
         } else if (prevVisitors.length > nextVal) {
           return prevVisitors.slice(0, nextVal);
         }
@@ -35,16 +45,17 @@ export default function BookDarshan() {
       return nextVal;
     });
   };
-
   const handleVisitorChange = (index, field, value) => {
-    setVisitors((prev) => {
+    setVisitors(prev => {
       const next = [...prev];
-      next[index] = { ...next[index], [field]: value };
+      next[index] = {
+        ...next[index],
+        [field]: value
+      };
       return next;
     });
   };
-
-  const handleDateChange = (e) => {
+  const handleDateChange = e => {
     const val = e.target.value;
     if (!val) return;
     const parts = val.split('-');
@@ -57,7 +68,6 @@ export default function BookDarshan() {
       }
     }
   };
-
   const handleSendOTP = () => {
     const mobile = document.getElementById('mobile')?.value;
     if (mobile && mobile.length === 10) {
@@ -67,11 +77,9 @@ export default function BookDarshan() {
       alert('Error: Please enter a valid 10-digit mobile number first.');
     }
   };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setIsSubmitting(true);
-    
     const dateVal = e.target.darshan_date.value;
     if (dateVal) {
       const parts = dateVal.split('-');
@@ -85,7 +93,6 @@ export default function BookDarshan() {
         }
       }
     }
-
     try {
       const payload = {
         fullName: e.target.full_name.value,
@@ -96,20 +103,17 @@ export default function BookDarshan() {
         vehicleType: vehicleType,
         vehicleNumber: vehicleType !== 'none' ? e.target.vehicle_number.value : '',
         darshanDate: e.target.darshan_date.value,
-        userId: user?._id || user?.id || undefined,
+        userId: user?._id || user?.id || undefined
       };
       console.log('Sending booking request with payload:', payload);
-
       const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
-
       console.log('Received response with status:', response.status);
-
       if (response.ok) {
         setShowSuccess(true);
         if (!user) {
@@ -122,7 +126,6 @@ export default function BookDarshan() {
         if (errorData?.details) {
           errorMsg += `\nDetails: ${errorData.details}`;
         }
-        
         if (response.status === 400) {
           alert(`Validation Error: ${errorMsg}`);
         } else if (response.status === 401 || response.status === 403) {
@@ -138,9 +141,7 @@ export default function BookDarshan() {
       setIsSubmitting(false);
     }
   };
-
-  return (
-    <div className="font-body-md text-on-background bg-[#FFF9F2] selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
+  return <div className="font-body-md text-on-background bg-[#FFF9F2] selection:bg-primary-container selection:text-on-primary-container min-h-screen flex flex-col">
       {/* TopNavBar */}
       <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-4 md:px-10 h-16 bg-surface dark:bg-background border-b border-outline-variant dark:border-outline">
         <div className="flex items-center gap-4">
@@ -153,16 +154,11 @@ export default function BookDarshan() {
           <a className="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors" href="#">{t('bookings')}</a>
         </nav>
         <div className="flex items-center gap-4">
-          <select 
-            value={currentLanguage} 
-            onChange={(e) => setLanguage(e.target.value)}
-            className="font-label-sm text-label-sm bg-transparent border border-outline-variant rounded-xl px-2 py-1 text-on-surface hover:border-primary focus:outline-none transition-all cursor-pointer mr-1"
-            aria-label="Language Selector"
-          >
-            <option value="en">EN</option>
-            <option value="hi">HI</option>
-            <option value="mr">MR</option>
-            <option value="gu">GU</option>
+          <select value={currentLanguage} onChange={e => setLanguage(e.target.value)} className="font-label-sm text-label-sm bg-transparent border border-outline-variant rounded-xl px-2 py-1 text-on-surface hover:border-primary focus:outline-none transition-all cursor-pointer mr-1" aria-label="Language Selector">
+            <option value="en">{t("en")}</option>
+            <option value="hi">{t("hi")}</option>
+            <option value="mr">{t("mr")}</option>
+            <option value="gu">{t("gu")}</option>
           </select>
           <button className="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-high rounded-full transition-all">notifications</button>
           <button className="material-symbols-outlined text-on-surface-variant p-2 hover:bg-surface-container-high rounded-full transition-all">account_circle</button>
@@ -174,18 +170,12 @@ export default function BookDarshan() {
           {/* Welcome Column */}
           <div className="lg:col-span-5 space-y-8">
             <div className="space-y-4">
-              <span className="inline-block bg-primary-container/10 text-primary font-label-md text-label-md px-3 py-1 rounded-full">Secure Your Slot</span>
-              <h1 className="font-display text-[48px] font-extrabold leading-tight text-on-surface tracking-tight">
-                Experience a <span className="text-primary">Soulful</span> Journey.
-              </h1>
+              <span className="inline-block bg-primary-container/10 text-primary font-label-md text-label-md px-3 py-1 rounded-full">{t("secureYourSlot")}</span>
+              <h1 className="font-display text-[48px] font-extrabold leading-tight text-on-surface tracking-tight">{t("experienceA")}<span className="text-primary">{t("soulful")}</span>{t("journey")}</h1>
             </div>
             
             <div className="relative rounded-xl overflow-hidden shadow-lg w-full flex items-center justify-center bg-black/5">
-              <img 
-                className="w-full h-auto object-contain" 
-                alt="Darshan Preview" 
-                src="/guru-image.jpg"
-              />
+              <img className="w-full h-auto object-contain" alt="Darshan Preview" src="/guru-image.jpg" />
             </div>
           </div>
 
@@ -202,8 +192,8 @@ export default function BookDarshan() {
               
               <form className="space-y-6" id="darshanBookingForm" onSubmit={handleSubmit}>
                 <div className="border-b border-outline-variant pb-4 mb-6 relative z-10">
-                  <h2 className="font-headline-md text-[24px] font-bold text-on-surface">Darshan Registration</h2>
-                  <p className="font-label-md text-label-md text-on-surface-variant">Fill in the details to generate your digital pass.</p>
+                  <h2 className="font-headline-md text-[24px] font-bold text-on-surface">{t("darshanRegistration")}</h2>
+                  <p className="font-label-md text-label-md text-on-surface-variant">{t("fillInTheDetailsToGenerateYour")}</p>
                 </div>
                 
                 {/* Personal Info */}
@@ -212,75 +202,41 @@ export default function BookDarshan() {
                     <label className="font-label-md text-label-md text-on-surface-variant flex items-center gap-2" htmlFor="full_name">
                       <span className="material-symbols-outlined text-[18px]">person</span> {t('nameLabel')}
                     </label>
-                    <input 
-                      key={user?.fullName || 'name'}
-                      className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" 
-                      id="full_name" name="full_name" placeholder="E.g. Rajesh Kumar" required type="text"
-                      defaultValue={user?.fullName || ''}
-                    />
+                    <input key={user?.fullName || 'name'} className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" id="full_name" name="full_name" placeholder={t("egRajeshKumar")} required type="text" defaultValue={user?.fullName || ''} />
                   </div>
                   <div className="space-y-2 relative z-10">
                     <label className="font-label-md text-label-md text-on-surface-variant flex items-center gap-2" htmlFor="mobile">
                       <span className="material-symbols-outlined text-[18px]">smartphone</span> {t('mobile')}
                     </label>
                     <div className="flex gap-2">
-                      <input 
-                        key={user?.mobileNumber || user?.mobile || 'mobile'}
-                        className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" 
-                        id="mobile" name="mobile" pattern="[0-9]{10}" placeholder="9876543210" required type="tel"
-                        defaultValue={user?.mobileNumber || user?.mobile || ''}
-                      />
-                      <button 
-                        className="bg-secondary-container text-on-secondary-container font-label-md text-label-md px-4 py-3 rounded-lg hover:bg-secondary-fixed-dim transition-all active:scale-95 whitespace-nowrap shrink-0" 
-                        onClick={handleSendOTP} type="button"
-                      >
-                        Send OTP
-                      </button>
+                      <input key={user?.mobileNumber || user?.mobile || 'mobile'} className="flex-1 min-w-0 bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" id="mobile" name="mobile" pattern="[0-9]{10}" placeholder="9876543210" required type="tel" defaultValue={user?.mobileNumber || user?.mobile || ''} />
+                      <button className="bg-secondary-container text-on-secondary-container font-label-md text-label-md px-4 py-3 rounded-lg hover:bg-secondary-fixed-dim transition-all active:scale-95 whitespace-nowrap shrink-0" onClick={handleSendOTP} type="button">{t("sendOtp")}</button>
                     </div>
                   </div>
                 </div>
 
                 {/* OTP Verification Block */}
-                {otpSent && (
-                  <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 relative z-10 w-full mt-6">
+                {otpSent && <div className="bg-primary/5 border border-primary/20 rounded-xl p-6 relative z-10 w-full mt-6">
                     <div className="space-y-4 w-full mx-auto text-center flex flex-col items-center">
                       <label className="font-label-md text-label-md text-on-surface-variant flex flex-col items-center gap-2 w-full" htmlFor="otp">
                         <span className="material-symbols-outlined text-primary text-[24px]">lock_open</span> 
-                        <span className="font-bold text-on-surface text-lg">Enter Verification Code</span>
-                        <span className="text-sm font-normal">We've sent a 6-digit code to your mobile</span>
+                        <span className="font-bold text-on-surface text-lg">{t("enterVerificationCode")}</span>
+                        <span className="text-sm font-normal">{t("weveSentA6digitCodeToYourMobil")}</span>
                       </label>
-                      <input 
-                        className="w-full max-w-[200px] text-center tracking-[0.5em] font-bold text-2xl bg-white border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow mx-auto block" 
-                        id="otp" name="otp" pattern="[0-9]{6}" placeholder="------" maxLength="6" required type="text"
-                      />
-                      <button 
-                        type="button" 
-                        className="w-full mt-4 bg-primary text-on-primary font-bold py-3 rounded-lg hover:bg-primary/90 transition-all active:scale-95 shadow-md"
-                        onClick={() => alert('OTP Verified Successfully!')}
-                      >
-                        Verify OTP
-                      </button>
+                      <input className="w-full max-w-[200px] text-center tracking-[0.5em] font-bold text-2xl bg-white border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow mx-auto block" id="otp" name="otp" pattern="[0-9]{6}" placeholder="------" maxLength="6" required type="text" />
+                      <button type="button" className="w-full mt-4 bg-primary text-on-primary font-bold py-3 rounded-lg hover:bg-primary/90 transition-all active:scale-95 shadow-md" onClick={() => alert('OTP Verified Successfully!')}>{t("verifyOtp")}</button>
                       <div className="pt-2">
-                        <button type="button" className="text-primary text-sm font-bold hover:underline">
-                          Resend OTP
-                        </button>
+                        <button type="button" className="text-primary text-sm font-bold hover:underline">{t("resendOtp")}</button>
                       </div>
                     </div>
-                  </div>
-                )}
+                  </div>}
 
                 {/* Location and Quantity */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
                   <div className="space-y-2">
                     <label className="font-label-md text-label-md text-on-surface-variant flex items-center gap-2" htmlFor="place_city">
-                      <span className="material-symbols-outlined text-[18px]">location_city</span> Place/City
-                    </label>
-                    <input 
-                      key={user?.placeCityVillage || 'place'}
-                      className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" 
-                      id="place_city" name="place_city" placeholder="E.g. Mumbai" required type="text"
-                      defaultValue={user?.placeCityVillage || ''}
-                    />
+                      <span className="material-symbols-outlined text-[18px]">location_city</span>{t("placecity")}</label>
+                    <input key={user?.placeCityVillage || 'place'} className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" id="place_city" name="place_city" placeholder={t("egMumbai")} required type="text" defaultValue={user?.placeCityVillage || ''} />
                   </div>
                   <div className="space-y-2">
                     <label className="font-label-md text-label-md text-on-surface-variant flex items-center gap-2" htmlFor="persons">
@@ -290,10 +246,7 @@ export default function BookDarshan() {
                       <button className="p-3 hover:bg-surface-container-high transition-colors" onClick={() => updatePersons(-1)} type="button">
                         <span className="material-symbols-outlined">remove</span>
                       </button>
-                      <input 
-                        className="w-full bg-transparent border-none text-center outline-none focus:ring-0 font-body-md font-bold" 
-                        id="persons" max="10" min="1" name="persons" readOnly type="number" value={persons}
-                      />
+                      <input className="w-full bg-transparent border-none text-center outline-none focus:ring-0 font-body-md font-bold" id="persons" max="10" min="1" name="persons" readOnly type="number" value={persons} />
                       <button className="p-3 hover:bg-surface-container-high transition-colors" onClick={() => updatePersons(1)} type="button">
                         <span className="material-symbols-outlined">add</span>
                       </button>
@@ -303,49 +256,25 @@ export default function BookDarshan() {
 
                 {/* Visitor Details Section */}
                 <div className="space-y-4 pt-2 relative z-10">
-                  <h3 className="font-bold text-on-surface text-base border-b border-outline-variant pb-2">Visitor Details</h3>
-                  {Array.from({ length: persons }).map((_, index) => (
-                    <div key={index} className="p-4 bg-surface-container-low border border-outline-variant rounded-lg space-y-4">
+                  <h3 className="font-bold text-on-surface text-base border-b border-outline-variant pb-2">{t("visitorDetails")}</h3>
+                  {Array.from({
+                  length: persons
+                }).map((_, index) => <div key={index} className="p-4 bg-surface-container-low border border-outline-variant rounded-lg space-y-4">
                       <div className="flex items-center gap-2">
                         <span className="material-symbols-outlined text-primary text-[18px]">person</span>
                         <h4 className="font-bold text-sm text-primary">Visitor {index + 1}</h4>
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <label className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" htmlFor={`visitor_name_${index}`}>
-                            Full Name
-                          </label>
-                          <input 
-                            className="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 outline-none focus:border-primary transition-all soft-glow font-body-md" 
-                            id={`visitor_name_${index}`}
-                            name={`visitor_name_${index}`}
-                            placeholder="Full Name"
-                            required
-                            type="text"
-                            value={visitors[index]?.name || ''}
-                            onChange={(e) => handleVisitorChange(index, 'name', e.target.value)}
-                          />
+                          <label className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" htmlFor={`visitor_name_${index}`}>{t("fullName")}</label>
+                          <input className="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 outline-none focus:border-primary transition-all soft-glow font-body-md" id={`visitor_name_${index}`} name={`visitor_name_${index}`} placeholder={t("fullName")} required type="text" value={visitors[index]?.name || ''} onChange={e => handleVisitorChange(index, 'name', e.target.value)} />
                         </div>
                         <div className="space-y-2">
-                          <label className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" htmlFor={`visitor_age_${index}`}>
-                            Age
-                          </label>
-                          <input 
-                            className="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 outline-none focus:border-primary transition-all soft-glow font-body-md" 
-                            id={`visitor_age_${index}`}
-                            name={`visitor_age_${index}`}
-                            placeholder="Age"
-                            required
-                            type="number"
-                            min="1"
-                            max="120"
-                            value={visitors[index]?.age || ''}
-                            onChange={(e) => handleVisitorChange(index, 'age', e.target.value)}
-                          />
+                          <label className="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-2" htmlFor={`visitor_age_${index}`}>{t("age")}</label>
+                          <input className="w-full bg-white border border-outline-variant rounded-lg px-4 py-2 outline-none focus:border-primary transition-all soft-glow font-body-md" id={`visitor_age_${index}`} name={`visitor_age_${index}`} placeholder={t("age")} required type="number" min="1" max="120" value={visitors[index]?.age || ''} onChange={e => handleVisitorChange(index, 'age', e.target.value)} />
                         </div>
                       </div>
-                    </div>
-                  ))}
+                    </div>)}
                 </div>
 
                 {/* Vehicle Details */}
@@ -354,112 +283,80 @@ export default function BookDarshan() {
                     <label className="font-label-md text-label-md text-on-surface-variant flex items-center gap-2" htmlFor="vehicle_type">
                       <span className="material-symbols-outlined text-[18px]">commute</span> Vehicle Type
                     </label>
-                    <select 
-                      className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md appearance-none" 
-                      id="vehicle_type" name="vehicle_type"
-                      value={vehicleType}
-                      onChange={(e) => setVehicleType(e.target.value)}
-                    >
-                      <option value="none">No Vehicle</option>
+                    <select className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md appearance-none" id="vehicle_type" name="vehicle_type" value={vehicleType} onChange={e => setVehicleType(e.target.value)}>
+                      <option value="none">{t("noVehicle")}</option>
                       <option value="two_wheeler">Two Wheeler</option>
-                      <option value="four_wheeler">Four Wheeler / SUV</option>
-                      <option value="bus">Bus / Large Vehicle</option>
+                      <option value="four_wheeler">{t("fourWheelerSuv")}</option>
+                      <option value="bus">{t("busLargeVehicle")}</option>
                     </select>
                   </div>
                   <div className={`space-y-2 transition-all duration-300 ${vehicleType === 'none' ? 'opacity-50 pointer-events-none' : ''}`}>
                     <label className="font-label-md text-label-md text-on-surface-variant flex items-center gap-2" htmlFor="vehicle_number">
                       <span className="material-symbols-outlined text-[18px]">badge</span> Vehicle Number
                     </label>
-                    <input 
-                      className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md uppercase" 
-                      id="vehicle_number" name="vehicle_number" placeholder="MH 01 AB 1234" type="text"
-                      required={vehicleType !== 'none'}
-                    />
+                    <input className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md uppercase" id="vehicle_number" name="vehicle_number" placeholder={t("mh01Ab1234")} type="text" required={vehicleType !== 'none'} />
                   </div>
                 </div>
 
                 {/* Date Selection */}
                 <div className="space-y-2 pt-2 relative z-10">
                   <label className="font-label-md text-label-md text-on-surface-variant flex items-center gap-2" htmlFor="darshan_date">
-                    <span className="material-symbols-outlined text-[18px]">calendar_month</span> Preferred Darshan Date
-                  </label>
+                    <span className="material-symbols-outlined text-[18px]">calendar_month</span>{t("preferredDarshanDate")}</label>
                   <div className="relative">
-                    <input 
-                      className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" 
-                      id="darshan_date" name="darshan_date" required type="date" min={minDate}
-                      onChange={handleDateChange}
-                      onKeyDown={(e) => e.preventDefault()}
-                    />
+                    <input className="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-3 outline-none focus:border-primary transition-all soft-glow font-body-md" id="darshan_date" name="darshan_date" required type="date" min={minDate} onChange={handleDateChange} onKeyDown={e => e.preventDefault()} />
                   </div>
                   <p className="font-label-sm text-label-sm text-primary flex items-center gap-1">
-                    <span className="material-symbols-outlined text-[14px]">info</span> Bookings are only allowed on Sundays, Mondays, and Tuesdays.
-                  </p>
+                    <span className="material-symbols-outlined text-[14px]">info</span>{t("bookingsAreOnlyAllowedOnSunday")}</p>
                 </div>
 
                 {/* Submit Button */}
                 <div className="pt-6 relative z-10">
-                  <button 
-                    className="w-full bg-primary-container text-on-primary-container font-headline-md text-headline-md py-4 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-2px] active:scale-[0.98] transition-all flex items-center justify-center gap-3 font-bold disabled:opacity-70 disabled:hover:translate-y-0" 
-                    type="submit"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <span className="material-symbols-outlined animate-spin">sync</span> Processing...
-                      </>
-                    ) : (
-                      <>
+                  <button className="w-full bg-primary-container text-on-primary-container font-headline-md text-headline-md py-4 rounded-xl shadow-lg hover:shadow-xl hover:translate-y-[-2px] active:scale-[0.98] transition-all flex items-center justify-center gap-3 font-bold disabled:opacity-70 disabled:hover:translate-y-0" type="submit" disabled={isSubmitting}>
+                    {isSubmitting ? <>
+                        <span className="material-symbols-outlined animate-spin">sync</span>{t("processing")}</> : <>
                         {t('bookDarshan')}
                         <span className="material-symbols-outlined">arrow_forward</span>
-                      </>
-                    )}
+                      </>}
                   </button>
                 </div>
               </form>
 
               {/* Success State Overlay */}
-              {showSuccess && (
-                <div className="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center text-center p-8">
+              {showSuccess && <div className="absolute inset-0 bg-white z-20 flex flex-col items-center justify-center text-center p-8">
                   <div className="w-24 h-24 bg-primary-container/20 rounded-full flex items-center justify-center mb-6">
                     <span className="material-symbols-outlined text-primary text-5xl">check_circle</span>
                   </div>
-                  <h3 className="font-headline-lg text-[32px] font-bold text-on-surface mb-2">Booking Confirmed!</h3>
+                  <h3 className="font-headline-lg text-[32px] font-bold text-on-surface mb-2">{t("bookingConfirmed")}</h3>
                   <div className="text-on-surface-variant font-body-md text-[16px] mb-8 max-w-[600px] w-full px-4 space-y-4">
-                    <p>Your darshan booking has been successfully confirmed.</p>
-                    <p>A digital pass with your QR code and booking details has been generated and sent to your registered mobile number.</p>
-                    <p>Please carry your QR pass during your temple visit.</p>
+                    <p>{t("yourDarshanBookingHasBeenSucce")}</p>
+                    <p>{t("aDigitalPassWithYourQrCodeAndB")}</p>
+                    <p>{t("pleaseCarryYourQrPassDuringYou")}</p>
                   </div>
                   <div className="p-4 border-2 border-dashed border-outline-variant rounded-xl mb-8 bg-white">
                     <div className="w-48 h-48 bg-surface-container-high flex items-center justify-center relative p-4 rounded-xl shadow-inner">
-                      <QRCode 
-                        value="TOKEN-SUCCESS-A001" 
-                        size={160} 
-                        style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                      />
-                      <div className="absolute -top-3 -right-3 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-[12px] font-bold shadow-md">
-                        SCAN FOR ENTRY
-                      </div>
+                      <QRCode value="TOKEN-SUCCESS-A001" size={160} style={{
+                    height: "auto",
+                    maxWidth: "100%",
+                    width: "100%"
+                  }} />
+                      <div className="absolute -top-3 -right-3 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-label-sm text-[12px] font-bold shadow-md">{t("scanForEntry")}</div>
                     </div>
                   </div>
-                  <button 
-                    className="font-label-md text-[14px] font-bold text-primary border-2 border-primary px-8 py-3 rounded-lg hover:bg-primary/5 transition-all" 
-                    onClick={() => {
-                      setShowSuccess(false);
-                      setPersons(1);
-                      setVisitors([{ name: '', age: '' }]);
-                      setVehicleType('none');
-                    }}
-                  >
-                    Book Another Visit
-                  </button>
-                </div>
-              )}
+                  <button className="font-label-md text-[14px] font-bold text-primary border-2 border-primary px-8 py-3 rounded-lg hover:bg-primary/5 transition-all" onClick={() => {
+                setShowSuccess(false);
+                setPersons(1);
+                setVisitors([{
+                  name: '',
+                  age: ''
+                }]);
+                setVehicleType('none');
+              }}>{t("bookAnotherVisit")}</button>
+                </div>}
             </div>
           </div>
         </div>
       </main>
 
 
-    </div>
-  );
+    </div>;
 }

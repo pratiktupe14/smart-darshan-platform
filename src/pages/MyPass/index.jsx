@@ -5,24 +5,24 @@ import QRCodeBrowser from 'qrcode';
 import { useLanguage } from '../../context/LanguageContext';
 import { useUser } from '../../context/UserContext';
 import { Link } from 'react-router-dom';
-
 export default function MyPass() {
-  const { t } = useLanguage();
-  const { user } = useUser();
+  const {
+    t
+  } = useLanguage();
+  const {
+    user
+  } = useUser();
   const [activeBookings, setActiveBookings] = useState([]);
   const [passHistory, setPassHistory] = useState([]);
   const [queueInfos, setQueueInfos] = useState({
     globalServingToken: 'None',
     map: {}
   });
-
   useEffect(() => {
     const fetchData = async () => {
       const guestMobile = localStorage.getItem('guestMobile');
-      const identifier = user ? (user._id || user.id || user.mobileNumber || user.mobile) : guestMobile;
-      
-      console.log('Authenticated User ID:', user ? (user._id || user.id) : 'Guest/None');
-      
+      const identifier = user ? user._id || user.id || user.mobileNumber || user.mobile : guestMobile;
+      console.log('Authenticated User ID:', user ? user._id || user.id : 'Guest/None');
       if (!identifier) {
         console.log('[MyPass] No valid user identifier found yet. Auth Session:', user);
         return;
@@ -32,10 +32,8 @@ export default function MyPass() {
         if (res.ok) {
           const bookings = await res.json();
           console.log('Booking Query Result:', bookings);
-          
           const active = bookings.filter(b => b.status !== 'completed' && b.status !== 'cancelled' && b.verificationStatus !== 'completed');
           const history = bookings.filter(b => b.status === 'completed' || b.status === 'cancelled' || b.verificationStatus === 'completed');
-          
           setActiveBookings(active);
           setPassHistory(history);
 
@@ -44,25 +42,21 @@ export default function MyPass() {
             const qRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/queue`);
             if (!qRes.ok) throw new Error('Queue fetch failed');
             const queueList = await qRes.json();
-            
             const currentServing = queueList.filter(q => q.status === 'serving');
             const globalServingToken = currentServing.length > 0 ? currentServing[0].tokenNumber : 'None';
             const waitingQueue = queueList.filter(q => q.status === 'waiting');
-            
             const newMap = {};
-            
             active.forEach(activeBooking => {
               let userToken = queueList.find(q => q.bookingId && (q.bookingId._id === activeBooking._id || q.bookingId === activeBooking._id));
               let pos = 0;
               let peopleAhead = 0;
               if (userToken && userToken.status === 'waiting') {
-                  const qIndex = waitingQueue.findIndex(q => q._id === userToken._id);
-                  pos = qIndex + 1;
-                  for (let i = 0; i < qIndex; i++) {
-                      peopleAhead += waitingQueue[i].bookingId ? (waitingQueue[i].bookingId.persons || 1) : 1;
-                  }
+                const qIndex = waitingQueue.findIndex(q => q._id === userToken._id);
+                pos = qIndex + 1;
+                for (let i = 0; i < qIndex; i++) {
+                  peopleAhead += waitingQueue[i].bookingId ? waitingQueue[i].bookingId.persons || 1 : 1;
+                }
               }
-              
               let currentStage = 1;
               let progress = 25;
               const status = activeBooking.verificationStatus || 'none';
@@ -81,23 +75,20 @@ export default function MyPass() {
                 currentStage = 4;
                 progress = 100;
               }
-              
               const waitTime = peopleAhead === 0 ? 0 : Math.max(2, peopleAhead * 2);
-
               newMap[activeBooking._id] = {
-                  userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
-                  position: pos,
-                  estWait: waitTime,
-                  progress: progress,
-                  currentStage: currentStage
+                userTokenNumber: userToken ? userToken.tokenNumber : 'N/A',
+                position: pos,
+                estWait: waitTime,
+                progress: progress,
+                currentStage: currentStage
               };
             });
-
             setQueueInfos({
-                globalServingToken,
-                map: newMap
+              globalServingToken,
+              map: newMap
             });
-          } catch(err) {
+          } catch (err) {
             console.error('Queue Fetch Error:', err);
           }
         } else {
@@ -107,18 +98,15 @@ export default function MyPass() {
         console.error('Database Errors / Network Error:', err);
       }
     };
-
     fetchData();
     const timer = setInterval(fetchData, 3000);
-
     return () => clearInterval(timer);
   }, [user]);
-
-  const cancelBooking = async (bookingId) => {
+  const cancelBooking = async bookingId => {
     if (window.confirm("Are you sure you want to cancel this Darshan booking? This action cannot be undone.")) {
       try {
         const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/${bookingId}/cancel`, {
-          method: 'PUT',
+          method: 'PUT'
         });
         if (res.ok) {
           // Instantly hide it from active bookings, next interval will push it to history
@@ -133,78 +121,78 @@ export default function MyPass() {
       }
     }
   };
-
   const downloadPDF = async (activeBooking, qInfo) => {
     if (!activeBooking) return;
     try {
-      const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
       doc.setFontSize(24);
       doc.setTextColor(0, 0, 0);
-      doc.text("शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)", 105, 25, { align: "center" });
-      
+      doc.text("शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)", 105, 25, {
+        align: "center"
+      });
       doc.setFontSize(16);
       doc.setTextColor(100, 100, 100);
-      doc.text("Darshan Digital Pass", 105, 35, { align: "center" });
-      
-      const qrData = JSON.stringify({ 
-        token: qInfo?.userTokenNumber || 'N/A', 
-        bookingId: activeBooking._id, 
-        name: user?.fullName || activeBooking.fullName, 
-        mobile: user?.mobileNumber || user?.mobile || activeBooking.mobile 
+      doc.text("Darshan Digital Pass", 105, 35, {
+        align: "center"
       });
-      const qrImageURL = await QRCodeBrowser.toDataURL(qrData, { width: 200, margin: 1 });
-      
+      const qrData = JSON.stringify({
+        token: qInfo?.userTokenNumber || 'N/A',
+        bookingId: activeBooking._id,
+        name: user?.fullName || activeBooking.fullName,
+        mobile: user?.mobileNumber || user?.mobile || activeBooking.mobile
+      });
+      const qrImageURL = await QRCodeBrowser.toDataURL(qrData, {
+        width: 200,
+        margin: 1
+      });
       doc.addImage(qrImageURL, 'PNG', 75, 45, 60, 60);
       doc.setFontSize(16);
       doc.setTextColor(0, 0, 0);
-      doc.text(`Token Number: #${qInfo?.userTokenNumber || 'N/A'}`, 105, 115, { align: "center" });
-      
+      doc.text(`Token Number: #${qInfo?.userTokenNumber || 'N/A'}`, 105, 115, {
+        align: "center"
+      });
       doc.setLineWidth(0.5);
       doc.line(20, 125, 190, 125);
-      
       doc.setFontSize(12);
       const startY = 140;
       const lineHeight = 10;
-      
       doc.setFont(undefined, 'bold');
       doc.text("Devotee Name:", 20, startY);
       doc.setFont(undefined, 'normal');
       doc.text(`${user?.fullName || activeBooking.fullName || 'N/A'}`, 60, startY);
-      
       doc.setFont(undefined, 'bold');
       doc.text("Mobile Number:", 20, startY + lineHeight * 1);
       doc.setFont(undefined, 'normal');
       doc.text(`${user?.mobileNumber || user?.mobile || activeBooking.mobile || 'N/A'}`, 60, startY + lineHeight * 1);
-      
       doc.setFont(undefined, 'bold');
       doc.text("Vehicle No:", 20, startY + lineHeight * 2);
       doc.setFont(undefined, 'normal');
       doc.text(`${activeBooking.vehicleNumber || 'None'}`, 60, startY + lineHeight * 2);
-      
       doc.setFont(undefined, 'bold');
       doc.text("Vehicle Type:", 20, startY + lineHeight * 3);
       doc.setFont(undefined, 'normal');
       doc.text(`${activeBooking.vehicleType || 'None'}`, 60, startY + lineHeight * 3);
-      
       doc.setFont(undefined, 'bold');
       doc.text("Persons:", 20, startY + lineHeight * 4);
       doc.setFont(undefined, 'normal');
       doc.text(`${activeBooking.persons || 1}`, 60, startY + lineHeight * 4);
-      
       doc.setFont(undefined, 'bold');
       doc.text("Date & Time:", 20, startY + lineHeight * 5);
       doc.setFont(undefined, 'normal');
       doc.text(`${new Date(activeBooking.darshanDate).toLocaleString()}`, 60, startY + lineHeight * 5);
-      
       doc.setFont(undefined, 'bold');
       doc.text("Darshan Status:", 20, startY + lineHeight * 6);
       doc.setFont(undefined, 'normal');
       doc.text(`${(activeBooking.status || 'Active').toUpperCase()}`, 60, startY + lineHeight * 6);
-      
       doc.setFontSize(10);
       doc.setTextColor(150, 150, 150);
-      doc.text("Please present this QR code at the temple entry gate.", 105, 280, { align: "center" });
-      
+      doc.text("Please present this QR code at the temple entry gate.", 105, 280, {
+        align: "center"
+      });
       doc.save(`Darshan_Pass_${activeBooking._id}.pdf`);
       alert("Success: Digital pass downloaded successfully!");
     } catch (error) {
@@ -212,42 +200,42 @@ export default function MyPass() {
       alert("Error: Failed to generate PDF. Please try again.");
     }
   };
-
-  return (
-    <main className="max-w-7xl mx-auto px-4 md:px-10 py-8 md:py-12 w-full">
+  return <main className="max-w-7xl mx-auto px-4 md:px-10 py-8 md:py-12 w-full">
       <div className="mb-12">
         <h1 className="text-3xl md:text-5xl font-bold text-on-surface mb-2">{t('digitalPass')}</h1>
-        <p className="text-on-surface-variant text-base">View and manage your active and previous darshan passes.</p>
+        <p className="text-on-surface-variant text-base">{t("viewAndManageYourActiveAndPrev")}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
         {/* Active Passes Column */}
         <div className="lg:col-span-8 space-y-12">
-          {activeBookings.length > 0 ? (
-            activeBookings.map(activeBooking => {
-              const qInfo = queueInfos.map[activeBooking._id] || { progress: 0, currentStage: 1, userTokenNumber: 'N/A' };
-              return (
-                <div key={activeBooking._id} className="space-y-6">
+          {activeBookings.length > 0 ? activeBookings.map(activeBooking => {
+          const qInfo = queueInfos.map[activeBooking._id] || {
+            progress: 0,
+            currentStage: 1,
+            userTokenNumber: 'N/A'
+          };
+          return <div key={activeBooking._id} className="space-y-6">
                   <div className="bg-surface-container-lowest rounded-xl premium-ticket-glow overflow-hidden border border-outline/10">
                     <div className="p-6 md:p-8 flex flex-col md:flex-row gap-8">
                       {/* QR Code Section */}
                       <div className="flex flex-col items-center justify-center space-y-4 shrink-0">
                         <div className="bg-white p-4 rounded-xl border border-outline-variant shadow-sm w-48 h-48 flex items-center justify-center">
-                          <QRCode 
-                            value={JSON.stringify({ 
-                              token: qInfo.userTokenNumber !== 'N/A' ? qInfo.userTokenNumber : activeBooking.qrCode, 
-                              bookingId: activeBooking._id, 
-                              name: user?.fullName || activeBooking.fullName, 
-                              mobile: user?.mobileNumber || user?.mobile || activeBooking.mobile 
-                            })} 
-                            size={160} 
-                            style={{ height: "auto", maxWidth: "100%", width: "100%" }}
-                          />
+                          <QRCode value={JSON.stringify({
+                      token: qInfo.userTokenNumber !== 'N/A' ? qInfo.userTokenNumber : activeBooking.qrCode,
+                      bookingId: activeBooking._id,
+                      name: user?.fullName || activeBooking.fullName,
+                      mobile: user?.mobileNumber || user?.mobile || activeBooking.mobile
+                    })} size={160} style={{
+                      height: "auto",
+                      maxWidth: "100%",
+                      width: "100%"
+                    }} />
                         </div>
-                        <span className="bg-primary-container text-on-primary-container px-4 py-1 rounded-full text-xs font-bold">Active Pass</span>
+                        <span className="bg-primary-container text-on-primary-container px-4 py-1 rounded-full text-xs font-bold">{t("activePass")}</span>
                         <div className="text-center">
                           <p className="text-sm text-on-surface-variant font-medium">{t('tokenId')}</p>
-                          <p className="text-3xl text-primary font-bold">#{qInfo.userTokenNumber !== 'N/A' ? qInfo.userTokenNumber : (activeBooking.qrCode ? (activeBooking.qrCode.includes('-') ? activeBooking.qrCode.split('-')[1] : activeBooking.qrCode) : 'N/A')}</p>
+                          <p className="text-3xl text-primary font-bold">#{qInfo.userTokenNumber !== 'N/A' ? qInfo.userTokenNumber : activeBooking.qrCode ? activeBooking.qrCode.includes('-') ? activeBooking.qrCode.split('-')[1] : activeBooking.qrCode : 'N/A'}</p>
                         </div>
                       </div>
                       
@@ -256,12 +244,15 @@ export default function MyPass() {
                         <div className="flex justify-between items-start">
                           <div>
                             <h2 className="text-xl font-bold text-on-surface">शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</h2>
-                            <p className="text-primary font-medium">Main Sanctum Darshan</p>
+                            <p className="text-primary font-medium">{t("mainSanctumDarshan")}</p>
                           </div>
                           <div className="text-right">
-                            <p className="text-sm text-on-surface-variant font-medium">Date & Time</p>
+                            <p className="text-sm text-on-surface-variant font-medium">{t("dateTime")}</p>
                             <p className="text-base font-bold">{new Date(activeBooking.darshanDate).toLocaleDateString()}</p>
-                            <p className="text-base text-primary font-bold">{new Date(activeBooking.darshanDate).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</p>
+                            <p className="text-base text-primary font-bold">{new Date(activeBooking.darshanDate).toLocaleTimeString([], {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}</p>
                           </div>
                         </div>
 
@@ -271,11 +262,11 @@ export default function MyPass() {
                             <p className="text-base font-semibold">{user?.fullName || activeBooking.fullName}</p>
                           </div>
                           <div>
-                            <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Email / Contact</p>
+                            <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t("emailContact")}</p>
                             <p className="text-base font-semibold">{user?.mobileNumber || user?.mobile || activeBooking.mobile}</p>
                           </div>
                           <div>
-                            <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">Vehicle No</p>
+                            <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t("vehicleNo1")}</p>
                             <p className="text-base font-semibold">{activeBooking.vehicleNumber || 'None'}</p>
                           </div>
                           <div>
@@ -283,37 +274,21 @@ export default function MyPass() {
                             <p className="text-base font-semibold">{activeBooking.persons} Persons</p>
                           </div>
                           <div>
-                            <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">City</p>
+                            <p className="text-[10px] text-on-surface-variant uppercase tracking-wider font-medium">{t("city")}</p>
                             <p className="text-base font-semibold">{activeBooking.placeCity || 'N/A'}</p>
                           </div>
                         </div>
 
                         <div className="dash-line pt-6 border-t border-dashed border-outline-variant">
                           <div className="flex flex-wrap gap-2">
-                            <button 
-                              onClick={() => downloadPDF(activeBooking, qInfo)}
-                              className="flex items-center gap-1 bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md cursor-pointer"
-                            >
-                              <span className="material-symbols-outlined text-[18px]">download</span>
-                              Download PDF
-                            </button>
+                            <button onClick={() => downloadPDF(activeBooking, qInfo)} className="flex items-center gap-1 bg-primary text-on-primary px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md cursor-pointer">
+                              <span className="material-symbols-outlined text-[18px]">download</span>{t("downloadPdf")}</button>
                             <button className="flex items-center gap-1 border-2 border-primary text-primary px-4 py-2 rounded-lg text-sm font-semibold hover:bg-primary/5 transition-all cursor-pointer">
-                              <span className="material-symbols-outlined text-[18px]">share</span>
-                              Share
-                            </button>
+                              <span className="material-symbols-outlined text-[18px]">share</span>{t("share1")}</button>
                             <button className="flex items-center gap-1 bg-black text-white px-4 py-2 rounded-lg text-sm font-semibold hover:opacity-90 transition-all shadow-md cursor-pointer">
-                              <span className="material-symbols-outlined text-[18px]">wallet</span>
-                              Add to Wallet
-                            </button>
-                            {activeBooking.status === 'confirmed' && (!activeBooking.verificationStatus || activeBooking.verificationStatus === 'none') && (
-                              <button 
-                                onClick={() => cancelBooking(activeBooking._id)}
-                                className="flex items-center gap-1 border-2 border-error text-error px-4 py-2 rounded-lg text-sm font-semibold hover:bg-error/5 transition-all cursor-pointer ml-auto"
-                              >
-                                <span className="material-symbols-outlined text-[18px]">cancel</span>
-                                Cancel Pass
-                              </button>
-                            )}
+                              <span className="material-symbols-outlined text-[18px]">wallet</span>{t("addToWallet")}</button>
+                            {activeBooking.status === 'confirmed' && (!activeBooking.verificationStatus || activeBooking.verificationStatus === 'none') && <button onClick={() => cancelBooking(activeBooking._id)} className="flex items-center gap-1 border-2 border-error text-error px-4 py-2 rounded-lg text-sm font-semibold hover:bg-error/5 transition-all cursor-pointer ml-auto">
+                                <span className="material-symbols-outlined text-[18px]">cancel</span>{t("cancelPass")}</button>}
                           </div>
                         </div>
                       </div>
@@ -323,106 +298,102 @@ export default function MyPass() {
                   {/* Live Journey Tracker */}
                   <div className="bg-surface-container-lowest border border-outline/10 rounded-xl p-8 shadow-sm space-y-10 transition-all duration-300">
                     <div className="flex justify-between items-center">
-                      <h4 className="text-xl font-semibold text-on-surface">Live Journey Tracker</h4>
+                      <h4 className="text-xl font-semibold text-on-surface">{t("liveJourneyTracker")}</h4>
                       <span className="text-primary font-bold">{Math.floor(qInfo.progress)}% Progress</span>
                     </div>
                     
                     <div className="relative px-2">
                       <div className="absolute top-1/2 left-0 w-full h-1.5 bg-surface-container-high -translate-y-1/2 rounded-full overflow-hidden">
-                        <div className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" style={{ width: `${qInfo.progress}%` }}></div>
+                        <div className="h-full bg-primary rounded-full transition-all duration-1000 ease-out" style={{
+                    width: `${qInfo.progress}%`
+                  }}></div>
                       </div>
                       
                       <div className="relative flex justify-between">
-                        {[
-                          { id: 1, label: "Booking Confirmed", icon: "confirmation_number", pendingText: "1" },
-                          { id: 2, label: "Temple Entry", icon: "login", pendingText: "2" },
-                          { id: 3, label: "Waiting in Queue", icon: "hourglass_top", pendingText: "3" },
-                          { id: 4, label: "Darshan Completed", icon: "temple_hindu", pendingText: "temple_hindu" }
-                        ].map((step) => {
-                          const isCompleted = qInfo.currentStage > step.id;
-                          const isActive = qInfo.currentStage === step.id;
-                          
-                          if (isCompleted) {
-                            return (
-                              <div key={step.id} className="flex flex-col items-center gap-3 w-24">
+                        {[{
+                    id: 1,
+                    label: "Booking Confirmed",
+                    icon: "confirmation_number",
+                    pendingText: "1"
+                  }, {
+                    id: 2,
+                    label: "Temple Entry",
+                    icon: "login",
+                    pendingText: "2"
+                  }, {
+                    id: 3,
+                    label: "Waiting in Queue",
+                    icon: "hourglass_top",
+                    pendingText: "3"
+                  }, {
+                    id: 4,
+                    label: "Darshan Completed",
+                    icon: "temple_hindu",
+                    pendingText: "temple_hindu"
+                  }].map(step => {
+                    const isCompleted = qInfo.currentStage > step.id;
+                    const isActive = qInfo.currentStage === step.id;
+                    if (isCompleted) {
+                      return <div key={step.id} className="flex flex-col items-center gap-3 w-24">
                                 <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center shadow-md z-10">
                                   <span className="material-symbols-outlined text-sm font-bold">check</span>
                                 </div>
                                 <span className="text-xs font-bold text-on-surface text-center">{step.label}</span>
-                              </div>
-                            );
-                          } else if (isActive) {
-                            return (
-                              <div key={step.id} className="flex flex-col items-center gap-3 w-24">
+                              </div>;
+                    } else if (isActive) {
+                      return <div key={step.id} className="flex flex-col items-center gap-3 w-24">
                                 <div className="w-10 h-10 -mt-1 rounded-full bg-white border-4 border-primary text-primary flex items-center justify-center shadow-lg z-10 animate-pulse">
-                                  {step.id === 4 ? (
-                                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>{step.icon}</span>
-                                  ) : (
-                                    <span className="material-symbols-outlined text-sm" style={{ fontVariationSettings: "'FILL' 1" }}>hourglass_top</span>
-                                  )}
+                                  {step.id === 4 ? <span className="material-symbols-outlined text-sm" style={{
+                            fontVariationSettings: "'FILL' 1"
+                          }}>{step.icon}</span> : <span className="material-symbols-outlined text-sm" style={{
+                            fontVariationSettings: "'FILL' 1"
+                          }}>hourglass_top</span>}
                                 </div>
                                 <span className="text-sm font-black text-primary text-center">{step.label}</span>
-                              </div>
-                            );
-                          } else {
-                            return (
-                              <div key={step.id} className="flex flex-col items-center gap-3 w-24">
+                              </div>;
+                    } else {
+                      return <div key={step.id} className="flex flex-col items-center gap-3 w-24">
                                 <div className="w-8 h-8 rounded-full bg-surface-container-high text-on-surface-variant flex items-center justify-center z-10">
-                                  {step.pendingText === "temple_hindu" ? (
-                                    <span className="material-symbols-outlined text-sm">temple_hindu</span>
-                                  ) : (
-                                    <span className="text-xs font-bold">{step.pendingText}</span>
-                                  )}
+                                  {step.pendingText === "temple_hindu" ? <span className="material-symbols-outlined text-sm">temple_hindu</span> : <span className="text-xs font-bold">{step.pendingText}</span>}
                                 </div>
                                 <span className="text-xs font-medium text-on-surface-variant text-center">{step.label}</span>
-                              </div>
-                            );
-                          }
-                        })}
+                              </div>;
+                    }
+                  })}
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })
-          ) : (
-            <div className="bg-surface-container-lowest rounded-xl border border-outline/10 p-12 flex flex-col items-center justify-center text-center shadow-sm w-full">
+                </div>;
+        }) : <div className="bg-surface-container-lowest rounded-xl border border-outline/10 p-12 flex flex-col items-center justify-center text-center shadow-sm w-full">
               <span className="material-symbols-outlined text-6xl text-outline-variant mb-4">confirmation_number</span>
-              <h2 className="text-2xl font-bold text-on-surface mb-4">No Active Pass</h2>
+              <h2 className="text-2xl font-bold text-on-surface mb-4">{t("noActivePass")}</h2>
               <div className="text-on-surface-variant mb-8 w-full max-w-[450px] space-y-2">
-                <p>You do not have any active Darshan pass.</p>
+                <p>{t("youDoNotHaveAnyActiveDarshanPa")}</p>
               </div>
-              <Link to="/dashboard/book" className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-md">
-                Book New Darshan
-              </Link>
-            </div>
-          )}
+              <Link to="/dashboard/book" className="bg-primary text-on-primary px-6 py-3 rounded-xl font-bold hover:opacity-90 transition-all shadow-md">{t("bookNewDarshan")}</Link>
+            </div>}
 
           {/* Pass History */}
           <section className="space-y-4">
-            <h3 className="text-xl font-semibold text-on-surface">Pass History</h3>
+            <h3 className="text-xl font-semibold text-on-surface">{t("passHistory")}</h3>
             <div className="bg-surface-container-lowest rounded-xl border border-outline/10 shadow-sm overflow-hidden">
               <table className="w-full text-left border-collapse">
                 <thead className="bg-surface-container-low border-b border-outline/10">
                   <tr>
-                    <th className="px-6 py-4 text-sm font-medium text-on-surface-variant">Date</th>
-                    <th className="px-6 py-4 text-sm font-medium text-on-surface-variant">Temple</th>
-                    <th className="px-6 py-4 text-sm font-medium text-on-surface-variant text-right">Status</th>
+                    <th className="px-6 py-4 text-sm font-medium text-on-surface-variant">{t("date")}</th>
+                    <th className="px-6 py-4 text-sm font-medium text-on-surface-variant">{t("temple")}</th>
+                    <th className="px-6 py-4 text-sm font-medium text-on-surface-variant text-right">{t("status")}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-outline/5">
-                  {passHistory.map(pass => (
-                    <tr key={pass._id} className="hover:bg-surface-bright transition-colors cursor-pointer group">
+                  {passHistory.map(pass => <tr key={pass._id} className="hover:bg-surface-bright transition-colors cursor-pointer group">
                       <td className="px-6 py-4 text-on-surface-variant">{new Date(pass.darshanDate).toLocaleDateString()}</td>
                       <td className="px-6 py-4 text-on-surface">शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)</td>
                       <td className="px-6 py-4 text-right">
                         <span className="bg-on-tertiary-container text-tertiary px-4 py-1 rounded-full text-xs font-bold inline-block capitalize">{pass.status}</span>
                       </td>
-                    </tr>
-                  ))}
-                  {passHistory.length === 0 && (
-                    <tr><td colSpan="3" className="px-6 py-4 text-center text-on-surface-variant">No previous passes found.</td></tr>
-                  )}
+                    </tr>)}
+                  {passHistory.length === 0 && <tr><td colSpan="3" className="px-6 py-4 text-center text-on-surface-variant">{t("noPreviousPassesFound")}</td></tr>}
                 </tbody>
               </table>
             </div>
@@ -446,7 +417,7 @@ export default function MyPass() {
               
               <div className="bg-primary-fixed text-on-primary-fixed-variant p-4 rounded-lg flex gap-4 items-start">
                 <span className="material-symbols-outlined">info</span>
-                <p className="text-xs leading-relaxed font-medium">Please check your active passes for your individual token numbers and estimated wait times.</p>
+                <p className="text-xs leading-relaxed font-medium">{t("pleaseCheckYourActivePassesFor")}</p>
               </div>
             </div>
           </div>
@@ -455,26 +426,21 @@ export default function MyPass() {
           <div className="bg-surface-container-lowest p-6 md:p-8 rounded-xl border border-outline/10 shadow-sm">
             <div className="flex items-center gap-2 mb-6">
               <span className="material-symbols-outlined text-primary">location_on</span>
-              <h3 className="text-xl font-semibold text-on-surface">Temple Location</h3>
+              <h3 className="text-xl font-semibold text-on-surface">{t("templeLocation")}</h3>
             </div>
             
             <div className="space-y-4">
               <a href="https://www.google.com/maps/place/ardhanareshwari+nag+jotirling/@20.6836728,73.7838213,17z/data=!3m1!4b1!4m6!3m5!1s0x3bde3de27d6c9e1d:0x42fcd5a79fa923be!8m2!3d20.6836728!4d73.7864016!16s%2Fg%2F11b7jjr46p?hl=en-IN&entry=ttu&g_ep=EgoyMDI2MDYyMy4wIKXMDSoASAFQAw%3D%3D" target="_blank" rel="noreferrer" className="block rounded-xl overflow-hidden h-40 relative group cursor-pointer hover:opacity-90 transition-opacity">
-                <img 
-                  className="w-full h-full object-cover" 
-                  alt="Map" 
-                  src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5n-uotQottW_pWYMQVIMb0Binv8SC8W3L8bw4otbKMzWFAzGHvKqgflFNMHkVxE5sBzvyAVW8bjg-YilLHmn-_XBWcSeh1rFuMaOGGBvL-GEnRFod1bT5ggMT-k8ZdoxC2ZCREcbenkIbHi1D9TpKa1J-uEIH0KgX3QQUeOdvnjGynMsU8B_idF3eSzisjsw7HXtgRx93u2tufAKC8fXzQ7h3nVPazUDOhrlEiL73Kam6AFUX0urFZheYgLinSjdhbGoOyNnkGOY"
-                />
+                <img className="w-full h-full object-cover" alt="Map" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC5n-uotQottW_pWYMQVIMb0Binv8SC8W3L8bw4otbKMzWFAzGHvKqgflFNMHkVxE5sBzvyAVW8bjg-YilLHmn-_XBWcSeh1rFuMaOGGBvL-GEnRFod1bT5ggMT-k8ZdoxC2ZCREcbenkIbHi1D9TpKa1J-uEIH0KgX3QQUeOdvnjGynMsU8B_idF3eSzisjsw7HXtgRx93u2tufAKC8fXzQ7h3nVPazUDOhrlEiL73Kam6AFUX0urFZheYgLinSjdhbGoOyNnkGOY" />
               </a>
               
               <div>
-                <p className="text-base font-semibold text-on-surface">Ardhanareshwari Nag Jotirling</p>
-                <p className="text-xs text-on-surface-variant leading-relaxed font-medium">Click the map above to open in Google Maps and get directions to the temple.</p>
+                <p className="text-base font-semibold text-on-surface">{t("ardhanareshwariNagJotirling")}</p>
+                <p className="text-xs text-on-surface-variant leading-relaxed font-medium">{t("clickTheMapAboveToOpenInGoogle")}</p>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </main>
-  );
+    </main>;
 }

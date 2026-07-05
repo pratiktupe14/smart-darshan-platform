@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-
 export default function CapacityManagement() {
-  const { t } = useLanguage();
+  const {
+    t
+  } = useLanguage();
   const [visitorLimit, setVisitorLimit] = useState(50000);
   const [vehicleLimit, setVehicleLimit] = useState(1200);
   const [maxPersons, setMaxPersons] = useState('10');
-  
+
   // Real-time slot state
   const [availableSlots, setAvailableSlots] = useState(15710);
   const [refreshCountdown, setRefreshCountdown] = useState(14);
@@ -25,20 +26,17 @@ export default function CapacityManagement() {
     }, 1000);
     return () => clearInterval(timer);
   }, []);
-
   useEffect(() => {
     const fetchData = async () => {
       try {
         const statsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/stats`);
         const settingsRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/settings`);
-        
         if (statsRes.ok) {
           const stats = await statsRes.json();
           setBookingsToday(stats.bookingsToday);
           setOnlineBookings(Math.floor(stats.bookingsToday * 0.8));
           setWalkIns(stats.bookingsToday - Math.floor(stats.bookingsToday * 0.8));
         }
-
         if (settingsRes.ok) {
           const settings = await settingsRes.json();
           setVisitorLimit(settings.visitorLimit || 50000);
@@ -49,7 +47,6 @@ export default function CapacityManagement() {
     };
     fetchData();
   }, []);
-
   const handleReset = () => {
     if (window.confirm(t('resetConfirmText') || 'Reset capacity configurations to default settings?')) {
       setVisitorLimit(50000);
@@ -57,20 +54,22 @@ export default function CapacityManagement() {
       setMaxPersons('10');
     }
   };
-
   const handleSave = async () => {
     try {
       await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/settings`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ visitorLimit })
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          visitorLimit
+        })
       });
       alert(`${t('configSavedSuccess') || 'Configuration saved successfully!'}\n- ${t('maxVisitors') || 'Max Visitors'}: ${visitorLimit.toLocaleString()}\n- ${t('maxVehicles') || 'Max Vehicles'}: ${vehicleLimit}\n- ${t('maxPersonsPerBooking') || 'Max Persons/Booking'}: ${maxPersons}`);
     } catch (e) {
       console.error(e);
     }
   };
-
   const handleUpdateCapacity = async () => {
     const newLimit = prompt(t('enterNewMaxVisitors') || 'Enter new Max Visitors Per Day:', visitorLimit);
     if (newLimit !== null) {
@@ -79,19 +78,23 @@ export default function CapacityManagement() {
         setVisitorLimit(parsed);
         try {
           await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/settings`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ visitorLimit: parsed })
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              visitorLimit: parsed
+            })
           });
-        } catch (e) { console.error(e); }
+        } catch (e) {
+          console.error(e);
+        }
       } else {
         alert(t('enterValidNumber') || 'Please enter a valid positive number.');
       }
     }
   };
-
-  return (
-    <div className="px-4 md:px-10 py-8 max-w-[1600px] mx-auto w-full space-y-8">
+  return <div className="px-4 md:px-10 py-8 max-w-[1600px] mx-auto w-full space-y-8">
       {/* Page Title & Header */}
       <section className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-outline-variant/30 pb-6">
         <div>
@@ -105,10 +108,7 @@ export default function CapacityManagement() {
             <span className="material-symbols-outlined text-sm">download</span>
             {t('exportReport')}
           </button>
-          <button 
-            onClick={handleUpdateCapacity}
-            className="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all flex items-center gap-2 active:scale-95"
-          >
+          <button onClick={handleUpdateCapacity} className="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all flex items-center gap-2 active:scale-95">
             <span className="material-symbols-outlined text-sm">add</span>
             {t('limitOverridden')}
           </button>
@@ -121,7 +121,7 @@ export default function CapacityManagement() {
         <div className="bg-surface-container-lowest p-6 rounded-xl border border-outline-variant shadow-soft flex flex-col justify-between hover:shadow-md transition-shadow">
           <div className="flex justify-between items-start mb-4">
             <div className="p-2 bg-primary/5 rounded-lg">
-              <span className="material-symbols-outlined text-primary">diversity_3</span>
+              <span className="material-symbols-outlined text-primary">{t("diversity3")}</span>
             </div>
             <span className="bg-surface-variant text-on-surface-variant px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">{t('maxLimit') || 'Max Limit'}</span>
           </div>
@@ -151,7 +151,9 @@ export default function CapacityManagement() {
           </div>
           <div className="mt-4 pt-4 border-t border-outline-variant/30">
             <div className="w-full bg-outline-variant/20 h-1.5 rounded-full overflow-hidden">
-              <div className="bg-primary h-full rounded-full transition-all duration-500" style={{ width: `${(bookingsToday / visitorLimit) * 100}%` }}></div>
+              <div className="bg-primary h-full rounded-full transition-all duration-500" style={{
+              width: `${bookingsToday / visitorLimit * 100}%`
+            }}></div>
             </div>
           </div>
         </div>
@@ -178,20 +180,10 @@ export default function CapacityManagement() {
           <div className="relative w-28 h-28 flex items-center justify-center">
             <svg className="w-full h-full transform -rotate-90">
               <circle className="text-outline-variant opacity-20" cx="56" cy="56" fill="transparent" r="48" stroke="currentColor" strokeWidth="8"></circle>
-              <circle 
-                className="text-primary transition-all duration-500" 
-                cx="56" 
-                cy="56" 
-                fill="transparent" 
-                r="48" 
-                stroke="currentColor" 
-                strokeDasharray="301.59" 
-                strokeDashoffset={301.59 - (301.59 * Math.min(bookingsToday, visitorLimit)) / visitorLimit} 
-                strokeWidth="8"
-              ></circle>
+              <circle className="text-primary transition-all duration-500" cx="56" cy="56" fill="transparent" r="48" stroke="currentColor" strokeDasharray="301.59" strokeDashoffset={301.59 - 301.59 * Math.min(bookingsToday, visitorLimit) / visitorLimit} strokeWidth="8"></circle>
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-xl font-extrabold text-primary">{((bookingsToday / visitorLimit) * 100).toFixed(1)}%</span>
+              <span className="text-xl font-extrabold text-primary">{(bookingsToday / visitorLimit * 100).toFixed(1)}%</span>
               <span className="text-[9px] text-on-surface-variant font-bold uppercase">{t('utilized')}</span>
             </div>
           </div>
@@ -223,10 +215,14 @@ export default function CapacityManagement() {
 
             <div className="flex flex-col gap-4">
               <div className="relative h-12 w-full bg-outline-variant/20 rounded-xl overflow-hidden shadow-inner flex">
-                <div className="h-full bg-primary transition-all duration-700 ease-out flex items-center px-4" style={{ width: `${(onlineBookings / visitorLimit) * 100}%` }}>
+                <div className="h-full bg-primary transition-all duration-700 ease-out flex items-center px-4" style={{
+                width: `${onlineBookings / visitorLimit * 100}%`
+              }}>
                   <span className="text-on-primary text-[11px] font-bold truncate">{t('online')} ({(onlineBookings / 1000).toFixed(1)}k)</span>
                 </div>
-                <div className="h-full bg-primary-container opacity-60 transition-all duration-700 ease-out flex items-center px-4" style={{ width: `${(walkIns / visitorLimit) * 100}%` }}>
+                <div className="h-full bg-primary-container opacity-60 transition-all duration-700 ease-out flex items-center px-4" style={{
+                width: `${walkIns / visitorLimit * 100}%`
+              }}>
                   <span className="text-on-primary-container text-[11px] font-bold truncate">{t('walkins')} ({(walkIns / 1000).toFixed(1)}k)</span>
                 </div>
               </div>
@@ -255,7 +251,7 @@ export default function CapacityManagement() {
           {/* Configuration Card */}
           <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-soft">
             <div className="flex items-center gap-3 mb-6">
-              <span className="material-symbols-outlined text-primary">settings_applications</span>
+              <span className="material-symbols-outlined text-primary">{t("settingsapplications")}</span>
               <h3 className="text-lg font-bold">{t('capacityConfiguration')}</h3>
             </div>
             
@@ -265,12 +261,7 @@ export default function CapacityManagement() {
                   <label className="block text-sm font-bold text-on-surface mb-2">{t('maxVisitorsPerDay')}</label>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-60">person</span>
-                    <input 
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm font-bold" 
-                      type="number" 
-                      value={visitorLimit}
-                      onChange={(e) => setVisitorLimit(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                    />
+                    <input className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm font-bold" type="number" value={visitorLimit} onChange={e => setVisitorLimit(Math.max(0, parseInt(e.target.value, 10) || 0))} />
                   </div>
                   <p className="text-[11px] text-on-surface-variant mt-2 italic">{t('standardLimitDesc') || 'Standard limit based on temple floor space analysis.'}</p>
                 </div>
@@ -278,12 +269,7 @@ export default function CapacityManagement() {
                   <label className="block text-sm font-bold text-on-surface mb-2">{t('maxVehiclesPerDay')}</label>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-60">directions_car</span>
-                    <input 
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm font-bold" 
-                      type="number" 
-                      value={vehicleLimit}
-                      onChange={(e) => setVehicleLimit(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                    />
+                    <input className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-outline-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all text-sm font-bold" type="number" value={vehicleLimit} onChange={e => setVehicleLimit(Math.max(0, parseInt(e.target.value, 10) || 0))} />
                   </div>
                 </div>
               </div>
@@ -293,11 +279,7 @@ export default function CapacityManagement() {
                   <label className="block text-sm font-bold text-on-surface mb-2">{t('maxPersonsPerBooking')}</label>
                   <div className="relative">
                     <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant opacity-60">group_add</span>
-                    <select 
-                      className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-outline-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none transition-all text-sm font-bold"
-                      value={maxPersons}
-                      onChange={(e) => setMaxPersons(e.target.value)}
-                    >
+                    <select className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-outline-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary appearance-none transition-all text-sm font-bold" value={maxPersons} onChange={e => setMaxPersons(e.target.value)}>
                       <option value="5">5 {t('persons')}</option>
                       <option value="10">10 {t('persons')}</option>
                       <option value="15">15 {t('persons')}</option>
@@ -307,16 +289,10 @@ export default function CapacityManagement() {
                   </div>
                 </div>
                 <div className="pt-4 flex items-center justify-end gap-3">
-                  <button 
-                    onClick={handleReset}
-                    className="px-5 py-2.5 rounded-xl text-on-surface-variant font-bold text-sm hover:bg-surface-variant transition-colors"
-                  >
+                  <button onClick={handleReset} className="px-5 py-2.5 rounded-xl text-on-surface-variant font-bold text-sm hover:bg-surface-variant transition-colors">
                     {t('resetToDefaults')}
                   </button>
-                  <button 
-                    onClick={handleSave}
-                    className="px-6 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all active:scale-95"
-                  >
+                  <button onClick={handleSave} className="px-6 py-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all active:scale-95">
                     {t('saveChanges')}
                   </button>
                 </div>
@@ -332,7 +308,9 @@ export default function CapacityManagement() {
             <div className="flex flex-col items-center text-center gap-2">
               <div className="w-20 h-20 rounded-full bg-tertiary/10 flex items-center justify-center mb-2">
                 <div className="w-12 h-12 rounded-full bg-tertiary/20 flex items-center justify-center pulse-indicator flex-shrink-0">
-                  <span className="material-symbols-outlined text-tertiary text-3xl" style={{ fontVariationSettings: "'FILL' 1" }}>
+                  <span className="material-symbols-outlined text-tertiary text-3xl" style={{
+                  fontVariationSettings: "'FILL' 1"
+                }}>
                     {isBookingOpen ? 'check_circle' : 'block'}
                   </span>
                 </div>
@@ -354,37 +332,18 @@ export default function CapacityManagement() {
             </div>
 
             <div className="flex flex-col gap-3 pt-2">
-              <button 
-                onClick={handleUpdateCapacity}
-                className="w-full py-3.5 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3"
-              >
+              <button onClick={handleUpdateCapacity} className="w-full py-3.5 rounded-xl bg-primary text-on-primary font-bold shadow-lg shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all flex items-center justify-center gap-3">
                 <span className="material-symbols-outlined">update</span>
                 {t('updateCapacity') || 'Update Capacity'}
               </button>
               
               <div className="grid grid-cols-2 gap-3">
-                <button 
-                  onClick={() => setIsBookingOpen(false)}
-                  disabled={!isBookingOpen}
-                  className={`py-2.5 px-2 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all ${
-                    !isBookingOpen 
-                      ? 'border-outline-variant/40 text-on-surface-variant/40 cursor-not-allowed bg-surface-container' 
-                      : 'border-outline text-on-surface-variant hover:bg-error/5 hover:text-error hover:border-error active:scale-95'
-                  }`}
-                >
+                <button onClick={() => setIsBookingOpen(false)} disabled={!isBookingOpen} className={`py-2.5 px-2 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-all ${!isBookingOpen ? 'border-outline-variant/40 text-on-surface-variant/40 cursor-not-allowed bg-surface-container' : 'border-outline text-on-surface-variant hover:bg-error/5 hover:text-error hover:border-error active:scale-95'}`}>
                   <span className="material-symbols-outlined text-sm">block</span>
                   {t('stop')}
                 </button>
                 
-                <button 
-                  onClick={() => setIsBookingOpen(true)}
-                  disabled={isBookingOpen}
-                  className={`py-2.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
-                    isBookingOpen 
-                      ? 'bg-surface-container-highest text-on-surface-variant opacity-40 cursor-not-allowed' 
-                      : 'bg-primary text-on-primary hover:bg-primary/95 active:scale-95'
-                  }`}
-                >
+                <button onClick={() => setIsBookingOpen(true)} disabled={isBookingOpen} className={`py-2.5 px-2 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${isBookingOpen ? 'bg-surface-container-highest text-on-surface-variant opacity-40 cursor-not-allowed' : 'bg-primary text-on-primary hover:bg-primary/95 active:scale-95'}`}>
                   <span className="material-symbols-outlined text-sm">play_arrow</span>
                   {t('resume')}
                 </button>
@@ -395,7 +354,7 @@ export default function CapacityManagement() {
           {/* System Alerts */}
           <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant shadow-soft flex flex-col gap-4">
             <h4 className="text-sm font-bold flex items-center gap-2 text-on-surface">
-              <span className="material-symbols-outlined text-primary text-lg">notification_important</span>
+              <span className="material-symbols-outlined text-primary text-lg">{t("notificationimportant")}</span>
               {t('systemAlerts')}
             </h4>
             <div className="space-y-4 max-h-[250px] overflow-y-auto custom-scrollbar pr-2">
@@ -439,6 +398,5 @@ export default function CapacityManagement() {
         </div>
 
       </section>
-    </div>
-  );
+    </div>;
 }

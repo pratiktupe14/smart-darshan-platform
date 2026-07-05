@@ -1,8 +1,13 @@
+import { useLanguage } from "../../context/LanguageContext";
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../../context/UserContext';
-
 export default function Support() {
-  const { user } = useUser();
+  const {
+    t
+  } = useLanguage();
+  const {
+    user
+  } = useUser();
   const [formData, setFormData] = useState({
     fullName: '',
     mobileNumber: '',
@@ -15,9 +20,7 @@ export default function Support() {
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [templeName, setTempleName] = useState('शिव अर्धः नारेश्वरी नाग ज्योतिर्लिंग श्री क्षेत्र बिलमाळ (तुलसिगड)');
-
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
-
   useEffect(() => {
     if (user) {
       setFormData(prev => ({
@@ -27,15 +30,12 @@ export default function Support() {
         email: user.email || ''
       }));
       fetchRequests();
-      
       const intervalId = setInterval(() => {
         fetchRequests();
       }, 5000);
-      
       return () => clearInterval(intervalId);
     }
   }, [user]);
-
   useEffect(() => {
     const fetchSettings = async () => {
       try {
@@ -52,13 +52,14 @@ export default function Support() {
     };
     fetchSettings();
   }, [API_URL]);
-
   const fetchRequests = async () => {
     try {
       const token = localStorage.getItem('token');
       if (!token) return;
       const res = await fetch(`${API_URL}/support/user`, {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       });
       if (res.ok) {
         const data = await res.json();
@@ -68,30 +69,28 @@ export default function Support() {
       console.error('Failed to fetch requests', err);
     }
   };
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = e => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
-
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setLoading(true);
     setSuccessMsg('');
     setErrorMsg('');
-
     try {
       const token = localStorage.getItem('token');
       const headers = {
         'Content-Type': 'application/json'
       };
       if (token) headers['Authorization'] = `Bearer ${token}`;
-
       const res = await fetch(`${API_URL}/support`, {
         method: 'POST',
         headers,
         body: JSON.stringify(formData)
       });
-
       if (res.ok) {
         const data = await res.json();
         setSuccessMsg(`Your support request has been submitted successfully. Ticket ID: ${data.ticketId}`);
@@ -112,27 +111,24 @@ export default function Support() {
       setLoading(false);
     }
   };
-
-  const getStatusBadge = (status) => {
+  const getStatusBadge = status => {
     switch (status) {
       case 'Open':
-        return <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold border border-orange-200">Open</span>;
+        return <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-xs font-semibold border border-orange-200">{t("open")}</span>;
       case 'In Progress':
-        return <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold border border-blue-200">In Progress</span>;
+        return <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold border border-blue-200">{t("inProgress")}</span>;
       case 'Resolved':
-        return <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold border border-green-200">Resolved</span>;
+        return <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold border border-green-200">{t("resolved")}</span>;
       case 'Closed':
-        return <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold border border-gray-300">Closed</span>;
+        return <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold border border-gray-300">{t("closed")}</span>;
       default:
         return <span className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold border border-gray-200">{status}</span>;
     }
   };
-
-  return (
-    <main className="pt-8 pb-12 px-4 md:px-10 max-w-[1280px] mx-auto w-full">
+  return <main className="pt-8 pb-12 px-4 md:px-10 max-w-[1280px] mx-auto w-full">
       <div className="mb-12">
-        <h1 className="text-3xl md:text-5xl font-bold text-primary mb-2">Support & Contact</h1>
-        <p className="text-base text-on-surface-variant">Get help and contact the temple administration.</p>
+        <h1 className="text-3xl md:text-5xl font-bold text-primary mb-2">{t("supportContact")}</h1>
+        <p className="text-base text-on-surface-variant">{t("getHelpAndContactTheTempleAdmi")}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -140,43 +136,39 @@ export default function Support() {
         <div className="lg:col-span-5 space-y-8">
           <section className="bg-white rounded-xl p-8 shadow-[0_4px_20px_rgba(152,67,0,0.08)] border border-[rgba(86,67,57,0.05)]">
             <h2 className="text-xl font-semibold mb-6 flex items-center gap-2 text-primary">
-              <span className="material-symbols-outlined">info</span>
-              Temple Information
-            </h2>
+              <span className="material-symbols-outlined">info</span>{t("templeInformation")}</h2>
             <div className="space-y-4">
               <div className="flex items-start gap-4">
                 <span className="material-symbols-outlined text-on-surface-variant mt-1">account_balance</span>
                 <div>
                   <p className="font-semibold text-on-surface break-words whitespace-normal">{templeName}</p>
-                  <p className="text-sm text-on-surface-variant">Pandharpur, Maharashtra 413304</p>
+                  <p className="text-sm text-on-surface-variant">{t("pandharpurMaharashtra413304")}</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <span className="material-symbols-outlined text-on-surface-variant mt-1">call</span>
                 <div>
-                  <p className="font-semibold text-on-surface">Support Phone</p>
+                  <p className="font-semibold text-on-surface">{t("supportPhone")}</p>
                   <p className="text-sm text-on-surface-variant">+91 12345 67890</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <span className="material-symbols-outlined text-on-surface-variant mt-1">mail</span>
                 <div>
-                  <p className="font-semibold text-on-surface">Email Address</p>
-                  <p className="text-sm text-on-surface-variant">support@smartdarshan.com</p>
+                  <p className="font-semibold text-on-surface">{t("emailAddress")}</p>
+                  <p className="text-sm text-on-surface-variant">{t("supportsmartdarshancom")}</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <span className="material-symbols-outlined text-on-surface-variant mt-1">schedule</span>
                 <div>
-                  <p className="font-semibold text-on-surface">Office Hours</p>
-                  <p className="text-sm text-on-surface-variant">Mon - Sun: 6:00 AM - 9:00 PM</p>
+                  <p className="font-semibold text-on-surface">{t("officeHours")}</p>
+                  <p className="text-sm text-on-surface-variant">{t("monSun600Am900Pm")}</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
                 <span className="material-symbols-outlined text-on-surface-variant mt-1">map</span>
-                <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="text-primary hover:underline text-sm font-semibold mt-1">
-                  View on Google Maps
-                </a>
+                <a href="https://maps.google.com" target="_blank" rel="noreferrer" className="text-primary hover:underline text-sm font-semibold mt-1">{t("viewOnGoogleMaps")}</a>
               </div>
             </div>
           </section>
@@ -186,109 +178,56 @@ export default function Support() {
         <div className="lg:col-span-7 space-y-8">
           <section className="bg-white rounded-xl p-8 shadow-[0_4px_20px_rgba(152,67,0,0.08)] border border-[rgba(86,67,57,0.05)]">
             <h2 className="text-xl font-semibold mb-6 flex items-center gap-2 text-primary">
-              <span className="material-symbols-outlined">support_agent</span>
-              Submit a Request
-            </h2>
+              <span className="material-symbols-outlined">support_agent</span>{t("submitARequest")}</h2>
             
-            {successMsg && (
-              <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-6 flex items-start gap-3 border border-green-200">
+            {successMsg && <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-6 flex items-start gap-3 border border-green-200">
                 <span className="material-symbols-outlined text-green-500">check_circle</span>
                 <p className="text-sm font-medium">{successMsg}</p>
-              </div>
-            )}
+              </div>}
             
-            {errorMsg && (
-              <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 flex items-start gap-3 border border-red-200">
+            {errorMsg && <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 flex items-start gap-3 border border-red-200">
                 <span className="material-symbols-outlined text-red-500">error</span>
                 <p className="text-sm font-medium">{errorMsg}</p>
-              </div>
-            )}
+              </div>}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-on-surface-variant">Full Name *</label>
-                  <input 
-                    required
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white rounded-lg border border-outline-variant text-on-surface outline-none focus:border-primary"
-                    placeholder="Enter your name"
-                  />
+                  <input required name="fullName" value={formData.fullName} onChange={handleChange} className="w-full px-4 py-3 bg-white rounded-lg border border-outline-variant text-on-surface outline-none focus:border-primary" placeholder={t("enterYourName")} />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-on-surface-variant">Mobile Number</label>
-                  <input 
-                    name="mobileNumber"
-                    value={formData.mobileNumber}
-                    onChange={handleChange}
-                    className="w-full px-4 py-3 bg-white rounded-lg border border-outline-variant text-on-surface outline-none focus:border-primary"
-                    placeholder="Enter mobile number"
-                  />
+                  <input name="mobileNumber" value={formData.mobileNumber} onChange={handleChange} className="w-full px-4 py-3 bg-white rounded-lg border border-outline-variant text-on-surface outline-none focus:border-primary" placeholder={t("enterMobileNumber")} />
                 </div>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-on-surface-variant">Email Address *</label>
-                <input 
-                  required
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white rounded-lg border border-outline-variant text-on-surface outline-none focus:border-primary"
-                  placeholder="Enter your email"
-                />
+                <label className="text-sm font-semibold text-on-surface-variant">{t("emailAddress1")}</label>
+                <input required type="email" name="email" value={formData.email} onChange={handleChange} className="w-full px-4 py-3 bg-white rounded-lg border border-outline-variant text-on-surface outline-none focus:border-primary" placeholder={t("enterYourEmail")} />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-on-surface-variant">Subject *</label>
-                <input 
-                  required
-                  name="subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  className="w-full px-4 py-3 bg-white rounded-lg border border-outline-variant text-on-surface outline-none focus:border-primary"
-                  placeholder="Brief subject of your request"
-                />
+                <label className="text-sm font-semibold text-on-surface-variant">{t("subject1")}</label>
+                <input required name="subject" value={formData.subject} onChange={handleChange} className="w-full px-4 py-3 bg-white rounded-lg border border-outline-variant text-on-surface outline-none focus:border-primary" placeholder={t("briefSubjectOfYourRequest")} />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-on-surface-variant">Message *</label>
-                <textarea 
-                  required
-                  name="message"
-                  value={formData.message}
-                  onChange={handleChange}
-                  rows={4}
-                  className="w-full px-4 py-3 bg-white rounded-lg border border-outline-variant text-on-surface outline-none focus:border-primary resize-none"
-                  placeholder="Describe your issue or question in detail..."
-                />
+                <label className="text-sm font-semibold text-on-surface-variant">{t("message1")}</label>
+                <textarea required name="message" value={formData.message} onChange={handleChange} rows={4} className="w-full px-4 py-3 bg-white rounded-lg border border-outline-variant text-on-surface outline-none focus:border-primary resize-none" placeholder={t("describeYourIssueOrQuestionInD")} />
               </div>
-              <button 
-                type="submit"
-                disabled={loading}
-                className="w-full md:w-auto px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-container transition-colors shadow-sm active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed"
-              >
+              <button type="submit" disabled={loading} className="w-full md:w-auto px-8 py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-container transition-colors shadow-sm active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed">
                 {loading ? 'Submitting...' : 'Submit Request'}
               </button>
             </form>
           </section>
 
-          {user && (
-            <section className="bg-white rounded-xl p-8 shadow-[0_4px_20px_rgba(152,67,0,0.08)] border border-[rgba(86,67,57,0.05)]">
+          {user && <section className="bg-white rounded-xl p-8 shadow-[0_4px_20px_rgba(152,67,0,0.08)] border border-[rgba(86,67,57,0.05)]">
               <h2 className="text-xl font-semibold mb-6 flex items-center gap-2 text-primary">
-                <span className="material-symbols-outlined">history</span>
-                Your Support Requests
-              </h2>
+                <span className="material-symbols-outlined">history</span>{t("yourSupportRequests")}</h2>
               
-              {requests.length === 0 ? (
-                <div className="text-center py-8 text-on-surface-variant">
+              {requests.length === 0 ? <div className="text-center py-8 text-on-surface-variant">
                   <span className="material-symbols-outlined text-4xl mb-2 opacity-50">inbox</span>
-                  <p>You haven't submitted any support requests yet.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {requests.map(req => (
-                    <div key={req._id} className="border border-outline-variant rounded-lg p-5 hover:bg-surface-container-lowest transition-colors">
+                  <p>{t("youHaventSubmittedAnySupportRe")}</p>
+                </div> : <div className="space-y-4">
+                  {requests.map(req => <div key={req._id} className="border border-outline-variant rounded-lg p-5 hover:bg-surface-container-lowest transition-colors">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
                         <div>
                           <div className="flex items-center gap-2 mb-1">
@@ -306,25 +245,17 @@ export default function Support() {
                       <div className="text-sm text-on-surface mb-3 whitespace-pre-wrap bg-surface-container-low p-3 rounded-md">
                         {req.message}
                       </div>
-                      {req.adminReply && (
-                        <div className="mt-4 border-t border-outline-variant pt-4">
+                      {req.adminReply && <div className="mt-4 border-t border-outline-variant pt-4">
                           <p className="text-xs font-bold text-primary mb-1 uppercase tracking-wider flex items-center gap-1">
-                            <span className="material-symbols-outlined text-[14px]">admin_panel_settings</span>
-                            Admin Reply
-                          </p>
+                            <span className="material-symbols-outlined text-[14px]">{t("adminpanelsettings")}</span>{t("adminReply")}</p>
                           <div className="text-sm text-on-surface bg-primary/5 p-3 rounded-md border-l-4 border-primary">
                             {req.adminReply}
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          )}
+                        </div>}
+                    </div>)}
+                </div>}
+            </section>}
         </div>
       </div>
-    </main>
-  );
+    </main>;
 }

@@ -2,59 +2,68 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
 import { useUser } from '../../context/UserContext';
-
 export default function Profile() {
   const navigate = useNavigate();
-  const { t, currentLanguage, setLanguage } = useLanguage();
-  const { user, updateUser, logoutUser } = useUser();
+  const {
+    t,
+    currentLanguage,
+    setLanguage
+  } = useLanguage();
+  const {
+    user,
+    updateUser,
+    logoutUser
+  } = useUser();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     mobileNumber: '',
-    placeCityVillage: '',
+    placeCityVillage: ''
   });
-
   useEffect(() => {
     if (user) {
       setFormData({
         fullName: user.fullName || '',
         mobileNumber: user.mobileNumber || '',
-        placeCityVillage: user.placeCityVillage || '',
+        placeCityVillage: user.placeCityVillage || ''
       });
       if (user.preferredLanguage && user.preferredLanguage !== currentLanguage) {
         setLanguage(user.preferredLanguage);
       }
     }
   }, [user]);
-
   const handleLogout = async () => {
     if (window.confirm(t('confirmLogout'))) {
       logoutUser();
       navigate('/login');
     }
   };
-
-  const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleInputChange = e => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
   };
-
   const handleSave = async () => {
     try {
-      await updateUser({ ...formData, preferredLanguage: currentLanguage });
+      await updateUser({
+        ...formData,
+        preferredLanguage: currentLanguage
+      });
       setIsEditing(false);
     } catch (err) {
       alert('Failed to update profile');
     }
   };
-
-  const memberSince = user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Recently';
-
-  return (
-    <main className="pt-8 pb-12 px-4 md:px-10 max-w-[1280px] mx-auto w-full">
+  const memberSince = user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', {
+    month: 'short',
+    year: 'numeric'
+  }) : 'Recently';
+  return <main className="pt-8 pb-12 px-4 md:px-10 max-w-[1280px] mx-auto w-full">
       {/* Hero Section */}
       <div className="mb-12">
-        <h1 className="text-3xl md:text-5xl font-bold text-primary mb-2">My Profile</h1>
-        <p className="text-base text-on-surface-variant">Manage your account, bookings, and preferences.</p>
+        <h1 className="text-3xl md:text-5xl font-bold text-primary mb-2">{t("myProfile")}</h1>
+        <p className="text-base text-on-surface-variant">{t("manageYourAccountBookingsAndPr")}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -64,11 +73,7 @@ export default function Profile() {
           <section className="bg-white rounded-xl p-8 shadow-[0_4px_20px_rgba(152,67,0,0.08)] border border-[rgba(86,67,57,0.05)]">
             <div className="flex flex-col items-center text-center">
               <div className="relative group mb-6">
-                <img 
-                  className="w-32 h-32 rounded-full border-4 border-primary-fixed shadow-md object-cover" 
-                  alt="Profile" 
-                  src={user?.profilePhoto || "https://lh3.googleusercontent.com/aida-public/AB6AXuCQ8B_WS1S_AMXodk0VLAB4geE2PZA-lEYEUVBWpW-AW4i04SQPFkeXEYLdJ-1e7_kfdw8GELH-5Q7JDI_yf2qa85jKC-J-RJQZMVjLNupT8SNQu_T4QwSO3AdMqcnd44bQo636Z4mKTxVdm0YzCkv1AdR9Nvnvx5kn2dD5ibBRBqZRKz_p3cMZJdTr_bCNe1_ue5lghQRhBY38E_friMSu-sd3YuQ1XClNWf2CqNTqjvRW3zf_YLZ6AJb0rF3UawOEOL7MXkT4Ci4"}
-                />
+                <img className="w-32 h-32 rounded-full border-4 border-primary-fixed shadow-md object-cover" alt="Profile" src={user?.profilePhoto || "https://lh3.googleusercontent.com/aida-public/AB6AXuCQ8B_WS1S_AMXodk0VLAB4geE2PZA-lEYEUVBWpW-AW4i04SQPFkeXEYLdJ-1e7_kfdw8GELH-5Q7JDI_yf2qa85jKC-J-RJQZMVjLNupT8SNQu_T4QwSO3AdMqcnd44bQo636Z4mKTxVdm0YzCkv1AdR9Nvnvx5kn2dD5ibBRBqZRKz_p3cMZJdTr_bCNe1_ue5lghQRhBY38E_friMSu-sd3YuQ1XClNWf2CqNTqjvRW3zf_YLZ6AJb0rF3UawOEOL7MXkT4Ci4"} />
                 <button className="absolute bottom-1 right-1 bg-primary text-white p-2 rounded-full shadow-lg hover:bg-primary-container transition-colors">
                   <span className="material-symbols-outlined text-sm">edit</span>
                 </button>
@@ -78,34 +83,13 @@ export default function Profile() {
               <p className="text-xs text-on-surface-variant mb-6">Member since {memberSince}</p>
               
               <div className="flex flex-col w-full gap-3">
-                {!isEditing ? (
-                  <button 
-                    onClick={() => setIsEditing(true)}
-                    className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-container transition-colors shadow-sm active:scale-95"
-                  >
-                    Edit Profile
-                  </button>
-                ) : (
-                  <button 
-                    onClick={handleSave}
-                    className="w-full py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-sm active:scale-95"
-                  >
+                {!isEditing ? <button onClick={() => setIsEditing(true)} className="w-full py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-container transition-colors shadow-sm active:scale-95">{t("editProfile")}</button> : <button onClick={handleSave} className="w-full py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-sm active:scale-95">
                     Save Changes
-                  </button>
-                )}
-                {isEditing && (
-                  <button 
-                    onClick={() => setIsEditing(false)}
-                    className="w-full py-3 border-2 border-outline-variant text-on-surface rounded-xl font-semibold hover:bg-surface-container transition-colors active:scale-95"
-                  >
+                  </button>}
+                {isEditing && <button onClick={() => setIsEditing(false)} className="w-full py-3 border-2 border-outline-variant text-on-surface rounded-xl font-semibold hover:bg-surface-container transition-colors active:scale-95">
                     Cancel
-                  </button>
-                )}
-                {!isEditing && (
-                  <button className="w-full py-3 border-2 border-primary text-primary rounded-xl font-semibold hover:bg-surface-container transition-colors active:scale-95">
-                    Change Photo
-                  </button>
-                )}
+                  </button>}
+                {!isEditing && <button className="w-full py-3 border-2 border-primary text-primary rounded-xl font-semibold hover:bg-surface-container transition-colors active:scale-95">{t("changePhoto")}</button>}
               </div>
             </div>
           </section>
@@ -114,7 +98,7 @@ export default function Profile() {
           <section className="grid grid-cols-2 gap-4">
             <div className="bg-white p-4 rounded-xl shadow-[0_4px_12px_rgba(152,67,0,0.05)] border border-[rgba(86,67,57,0.05)] flex flex-col items-center">
               <span className="text-primary font-bold text-2xl">12</span>
-              <span className="text-xs font-medium text-on-surface-variant">Total Bookings</span>
+              <span className="text-xs font-medium text-on-surface-variant">{t("totalBookings")}</span>
             </div>
             <div className="bg-white p-4 rounded-xl shadow-[0_4px_12px_rgba(152,67,0,0.05)] border border-[rgba(86,67,57,0.05)] flex flex-col items-center">
               <span className="text-tertiary font-bold text-2xl">10</span>
@@ -122,7 +106,7 @@ export default function Profile() {
             </div>
             <div className="bg-white p-4 rounded-xl shadow-[0_4px_12px_rgba(152,67,0,0.05)] border border-[rgba(86,67,57,0.05)] flex flex-col items-center">
               <span className="text-secondary font-bold text-2xl">1</span>
-              <span className="text-xs font-medium text-on-surface-variant">Upcoming</span>
+              <span className="text-xs font-medium text-on-surface-variant">{t("upcoming")}</span>
             </div>
             <div className="bg-white p-4 rounded-xl shadow-[0_4px_12px_rgba(152,67,0,0.05)] border border-[rgba(86,67,57,0.05)] flex flex-col items-center">
               <span className="text-error font-bold text-2xl">1</span>
@@ -132,30 +116,27 @@ export default function Profile() {
 
           {/* Support Section */}
           <section className="bg-white rounded-xl p-6 shadow-[0_4px_20px_rgba(152,67,0,0.05)] border border-[rgba(86,67,57,0.05)]">
-            <h3 className="text-sm font-semibold mb-4 text-primary">Support & Resources</h3>
+            <h3 className="text-sm font-semibold mb-4 text-primary">{t("supportResources")}</h3>
             <div className="space-y-4">
               <a className="flex items-center gap-3 text-on-surface-variant hover:text-primary transition-colors group" href="#">
                 <span className="material-symbols-outlined text-xl">help_center</span>
-                <span className="text-sm font-medium">Help Center</span>
+                <span className="text-sm font-medium">{t("helpCenter")}</span>
                 <span className="material-symbols-outlined ml-auto text-sm opacity-0 group-hover:opacity-100">chevron_right</span>
               </a>
               <a className="flex items-center gap-3 text-on-surface-variant hover:text-primary transition-colors group" href="#">
                 <span className="material-symbols-outlined text-xl">contact_support</span>
-                <span className="text-sm font-medium">Contact Support</span>
+                <span className="text-sm font-medium">{t("contactSupport")}</span>
                 <span className="material-symbols-outlined ml-auto text-sm opacity-0 group-hover:opacity-100">chevron_right</span>
               </a>
               <a className="flex items-center gap-3 text-on-surface-variant hover:text-primary transition-colors group" href="#">
                 <span className="material-symbols-outlined text-xl">quiz</span>
-                <span className="text-sm font-medium">Frequently Asked Questions</span>
+                <span className="text-sm font-medium">{t("frequentlyAskedQuestions")}</span>
                 <span className="material-symbols-outlined ml-auto text-sm opacity-0 group-hover:opacity-100">chevron_right</span>
               </a>
             </div>
           </section>
 
-          <button 
-            onClick={handleLogout}
-            className="w-full py-4 bg-error-container text-on-error-container rounded-xl font-semibold hover:bg-error hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer"
-          >
+          <button onClick={handleLogout} className="w-full py-4 bg-error-container text-on-error-container rounded-xl font-semibold hover:bg-error hover:text-white transition-all flex items-center justify-center gap-2 active:scale-95 cursor-pointer">
             <span className="material-symbols-outlined">logout</span>
             {t('logout')}
           </button>
@@ -166,51 +147,22 @@ export default function Profile() {
           {/* Personal Info Grid */}
           <section className="bg-white rounded-xl p-8 shadow-[0_4px_20px_rgba(152,67,0,0.08)] border border-[rgba(86,67,57,0.05)]">
             <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">person_outline</span>
-              Personal Information
-            </h3>
+              <span className="material-symbols-outlined text-primary">person_outline</span>{t("personalInformation")}</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-on-surface-variant">Full Name</label>
-                {isEditing ? (
-                  <input 
-                    name="fullName"
-                    value={formData.fullName}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white rounded-lg border border-primary text-on-surface outline-none"
-                  />
-                ) : (
-                  <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">{user?.fullName || '-'}</div>
-                )}
+                <label className="text-sm font-semibold text-on-surface-variant">{t("fullName")}</label>
+                {isEditing ? <input name="fullName" value={formData.fullName} onChange={handleInputChange} className="w-full px-4 py-3 bg-white rounded-lg border border-primary text-on-surface outline-none" /> : <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">{user?.fullName || '-'}</div>}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-on-surface-variant">Mobile Number</label>
-                {isEditing ? (
-                  <input 
-                    name="mobileNumber"
-                    value={formData.mobileNumber}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white rounded-lg border border-primary text-on-surface outline-none"
-                  />
-                ) : (
-                  <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">{user?.mobileNumber || '-'}</div>
-                )}
+                {isEditing ? <input name="mobileNumber" value={formData.mobileNumber} onChange={handleInputChange} className="w-full px-4 py-3 bg-white rounded-lg border border-primary text-on-surface outline-none" /> : <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">{user?.mobileNumber || '-'}</div>}
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-on-surface-variant">Current City/Place</label>
-                {isEditing ? (
-                  <input 
-                    name="placeCityVillage"
-                    value={formData.placeCityVillage}
-                    onChange={handleInputChange}
-                    className="w-full px-4 py-3 bg-white rounded-lg border border-primary text-on-surface outline-none"
-                  />
-                ) : (
-                  <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">{user?.placeCityVillage || '-'}</div>
-                )}
+                <label className="text-sm font-semibold text-on-surface-variant">{t("currentCityplace")}</label>
+                {isEditing ? <input name="placeCityVillage" value={formData.placeCityVillage} onChange={handleInputChange} className="w-full px-4 py-3 bg-white rounded-lg border border-primary text-on-surface outline-none" /> : <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">{user?.placeCityVillage || '-'}</div>}
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-on-surface-variant">Communication Language</label>
+                <label className="text-sm font-semibold text-on-surface-variant">{t("communicationLanguage")}</label>
                 <div className="px-4 py-3 bg-surface-container-low rounded-lg border border-outline-variant text-on-surface">
                   {currentLanguage === 'en' ? 'English' : currentLanguage === 'hi' ? 'Hindi' : 'Marathi'}
                 </div>
@@ -222,9 +174,7 @@ export default function Profile() {
           <section className="bg-white rounded-xl p-8 shadow-[0_4px_20px_rgba(152,67,0,0.08)] border border-[rgba(86,67,57,0.05)]">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-semibold flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">history</span>
-                Recent Booking Tokens
-              </h3>
+                <span className="material-symbols-outlined text-primary">history</span>{t("recentBookingTokens")}</h3>
               <button className="text-primary font-semibold text-sm hover:underline">View All</button>
             </div>
             <div className="overflow-x-auto">
@@ -232,25 +182,25 @@ export default function Profile() {
                 <thead>
                   <tr className="border-b border-outline-variant">
                     <th className="py-4 text-sm font-semibold text-on-surface-variant">Token ID</th>
-                    <th className="py-4 text-sm font-semibold text-on-surface-variant">Date</th>
-                    <th className="py-4 text-sm font-semibold text-on-surface-variant">Status</th>
-                    <th className="py-4 text-sm font-semibold text-on-surface-variant text-right">Action</th>
+                    <th className="py-4 text-sm font-semibold text-on-surface-variant">{t("date")}</th>
+                    <th className="py-4 text-sm font-semibold text-on-surface-variant">{t("status")}</th>
+                    <th className="py-4 text-sm font-semibold text-on-surface-variant text-right">{t("action")}</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr className="border-b border-outline-variant/30 hover:bg-surface-container-lowest transition-colors">
-                    <td className="py-5 font-semibold">#A080</td>
-                    <td className="py-5 text-sm text-on-surface-variant">Nov 15, 2023</td>
+                    <td className="py-5 font-semibold">{t("a080")}</td>
+                    <td className="py-5 text-sm text-on-surface-variant">{t("nov152023")}</td>
                     <td className="py-5">
-                      <span className="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-semibold">Upcoming</span>
+                      <span className="bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-semibold">{t("upcoming")}</span>
                     </td>
                     <td className="py-5 text-right">
                       <button className="text-primary hover:bg-primary/10 px-4 py-2 rounded-lg transition-colors font-semibold text-sm">View Pass</button>
                     </td>
                   </tr>
                   <tr className="border-b border-outline-variant/30 hover:bg-surface-container-lowest transition-colors">
-                    <td className="py-5 font-semibold">#B882</td>
-                    <td className="py-5 text-sm text-on-surface-variant">Oct 28, 2023</td>
+                    <td className="py-5 font-semibold">{t("b882")}</td>
+                    <td className="py-5 text-sm text-on-surface-variant">{t("oct282023")}</td>
                     <td className="py-5">
                       <span className="bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full text-xs font-semibold">Completed</span>
                     </td>
@@ -259,8 +209,8 @@ export default function Profile() {
                     </td>
                   </tr>
                   <tr className="border-b border-outline-variant/30 hover:bg-surface-container-lowest transition-colors">
-                    <td className="py-5 font-semibold">#C991</td>
-                    <td className="py-5 text-sm text-on-surface-variant">Oct 12, 2023</td>
+                    <td className="py-5 font-semibold">{t("c991")}</td>
+                    <td className="py-5 text-sm text-on-surface-variant">{t("oct122023")}</td>
                     <td className="py-5">
                       <span className="bg-tertiary-fixed text-on-tertiary-fixed px-3 py-1 rounded-full text-xs font-semibold">Completed</span>
                     </td>
@@ -276,9 +226,7 @@ export default function Profile() {
           {/* Preferences */}
           <section className="bg-white rounded-xl p-8 shadow-[0_4px_20px_rgba(152,67,0,0.08)] border border-[rgba(86,67,57,0.05)]">
             <h3 className="text-xl font-semibold mb-8 flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">settings_suggest</span>
-              Notification Preferences
-            </h3>
+              <span className="material-symbols-outlined text-primary">settings_suggest</span>{t("notificationPreferences")}</h3>
             
             <div className="space-y-6">
               <div className="flex items-center justify-between group hover:bg-primary/5 p-2 rounded-lg transition-colors">
@@ -287,8 +235,8 @@ export default function Profile() {
                     <span className="material-symbols-outlined">chat</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-on-surface">WhatsApp Updates</p>
-                    <p className="text-xs text-on-surface-variant">Receive tokens and schedules on WhatsApp</p>
+                    <p className="font-semibold text-on-surface">{t("whatsappUpdates")}</p>
+                    <p className="text-xs text-on-surface-variant">{t("receiveTokensAndSchedulesOnWha")}</p>
                   </div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -303,8 +251,8 @@ export default function Profile() {
                     <span className="material-symbols-outlined">sms</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-on-surface">SMS Alerts</p>
-                    <p className="text-xs text-on-surface-variant">Critical booking changes and reminders</p>
+                    <p className="font-semibold text-on-surface">{t("smsAlerts")}</p>
+                    <p className="text-xs text-on-surface-variant">{t("criticalBookingChangesAndRemin")}</p>
                   </div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -316,11 +264,11 @@ export default function Profile() {
               <div className="flex items-center justify-between group hover:bg-primary/5 p-2 rounded-lg transition-colors">
                 <div className="flex items-center gap-4">
                   <div className="w-10 h-10 rounded-full bg-primary-fixed flex items-center justify-center text-primary">
-                    <span className="material-symbols-outlined">notifications_active</span>
+                    <span className="material-symbols-outlined">{t("notificationsactive")}</span>
                   </div>
                   <div>
-                    <p className="font-semibold text-on-surface">Push Notifications</p>
-                    <p className="text-xs text-on-surface-variant">App alerts for queue status and seva timings</p>
+                    <p className="font-semibold text-on-surface">{t("pushNotifications")}</p>
+                    <p className="text-xs text-on-surface-variant">{t("appAlertsForQueueStatusAndSeva")}</p>
                   </div>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
@@ -331,22 +279,20 @@ export default function Profile() {
             </div>
 
             <div className="mt-10 pt-10 border-t border-outline-variant">
-              <label className="text-sm font-semibold text-on-surface-variant block mb-3">Preferred App Language</label>
+              <label className="text-sm font-semibold text-on-surface-variant block mb-3">{t("preferredAppLanguage")}</label>
               <div className="relative max-w-xs">
-                <select 
-                  value={currentLanguage}
-                  onChange={(e) => {
-                    setLanguage(e.target.value);
-                    if (user) {
-                      updateUser({ preferredLanguage: e.target.value });
-                    }
-                  }}
-                  className="w-full appearance-none bg-surface-container-low border border-outline-variant rounded-xl px-4 py-3 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer font-medium"
-                >
-                  <option value="en">English (US)</option>
-                  <option value="hi">Hindi (हिन्दी)</option>
-                  <option value="mr">Marathi (मराठी)</option>
-                  <option value="gu">Gujarati (ગુજરાતી)</option>
+                <select value={currentLanguage} onChange={e => {
+                setLanguage(e.target.value);
+                if (user) {
+                  updateUser({
+                    preferredLanguage: e.target.value
+                  });
+                }
+              }} className="w-full appearance-none bg-surface-container-low border border-outline-variant rounded-xl px-4 py-3 text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none cursor-pointer font-medium">
+                  <option value="en">{t("englishUs")}</option>
+                  <option value="hi">{t("hindi1")}</option>
+                  <option value="mr">{t("marathi1")}</option>
+                  <option value="gu">{t("gujarati1")}</option>
                 </select>
                 <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-on-surface-variant">keyboard_arrow_down</span>
               </div>
@@ -355,6 +301,5 @@ export default function Profile() {
 
         </div>
       </div>
-    </main>
-  );
+    </main>;
 }
