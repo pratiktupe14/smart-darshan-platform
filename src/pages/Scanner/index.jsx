@@ -34,6 +34,7 @@ export default function Scanner() {
 
   // Scanned devotee details state
   const [scannedDevotee, setScannedDevotee] = useState(null);
+  const [validationError, setValidationError] = useState(null);
 
   // Camera state management
   const [isCameraActive, setIsCameraActive] = useState(false);
@@ -84,17 +85,24 @@ export default function Scanner() {
       const data = await res.json();
       if (res.ok) {
         setScannedDevotee(data.booking);
+        setValidationError(null);
         showToast(data.message);
 
         // Refresh recent scans
         fetchRecentScans();
       } else {
-        setScannedDevotee(null); // Clear previous visitor data if search/validation fails
+        if (data.booking) {
+          setScannedDevotee(data.booking);
+        } else {
+          setScannedDevotee(null);
+        }
+        setValidationError(data.error || 'Verification failed.');
         showToast(data.error || 'Verification failed.');
       }
     } catch (err) {
       console.error(err);
       setScannedDevotee(null);
+      setValidationError('Server Error during verification.');
       showToast('Server Error during verification.');
     }
   };
@@ -379,7 +387,27 @@ export default function Scanner() {
 
           {/* Verification Result Card */}
           {/* Verification Result Card */}
-          {scannedDevotee ? <div className="bg-white border-t-4 border-t-primary border-x border-b border-outline-variant rounded-xl p-6 shadow-md animate-in slide-in-from-bottom-4 duration-500">
+          {scannedDevotee ? <div className={`bg-white border-t-4 border-x border-b border-outline-variant rounded-xl p-6 shadow-md animate-in slide-in-from-bottom-4 duration-500 ${validationError ? 'border-t-error' : 'border-t-primary'}`}>
+              
+              {/* Validation Status Banner */}
+              {validationError ? (
+                <div className="mb-6 bg-error/10 border border-error/20 p-4 rounded-lg flex items-start gap-3">
+                  <span className="material-symbols-outlined text-error mt-0.5">cancel</span>
+                  <div>
+                    <h5 className="font-bold text-error">Invalid Booking</h5>
+                    <p className="text-sm text-error/90 font-medium">{validationError}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="mb-6 bg-green-50 border border-green-200 p-4 rounded-lg flex items-start gap-3">
+                  <span className="material-symbols-outlined text-green-600 mt-0.5">check_circle</span>
+                  <div>
+                    <h5 className="font-bold text-green-700">Valid Booking</h5>
+                    <p className="text-sm text-green-600 font-medium">This pass is valid for entry today.</p>
+                  </div>
+                </div>
+              )}
+
               <div className="flex flex-col md:flex-row justify-between gap-4">
                 <div className="flex gap-4">
                   <div className="h-16 w-16 rounded-xl overflow-hidden bg-surface-container shrink-0">
@@ -399,7 +427,7 @@ export default function Scanner() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-6 p-4 bg-surface-container-low rounded-lg">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6 p-4 bg-surface-container-low rounded-lg">
                 <div>
                   <p className="text-xs text-on-surface-variant">{t('phone') || 'Mobile Number'}</p>
                   <p className="font-bold text-on-surface">{scannedDevotee.mobile}</p>
@@ -409,8 +437,12 @@ export default function Scanner() {
                   <p className="font-bold text-on-surface">{scannedDevotee.tokenNumber || 'N/A'}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-on-surface-variant">{t("qrCode")}</p>
-                  <p className="font-bold text-on-surface select-all text-xs break-all">{scannedDevotee.qrCode || 'N/A'}</p>
+                  <p className="text-xs text-on-surface-variant">Queue ID</p>
+                  <p className="font-bold text-on-surface">{scannedDevotee.queueId || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-on-surface-variant">Current Scan Date</p>
+                  <p className="font-bold text-on-surface">{new Date().toLocaleDateString()}</p>
                 </div>
                 <div>
                   <p className="text-xs text-on-surface-variant">{t("placeCityVillage")}</p>

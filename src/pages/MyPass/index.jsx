@@ -140,10 +140,12 @@ export default function MyPass() {
         align: "center"
       });
       const qrData = JSON.stringify({
-        token: qInfo?.userTokenNumber || 'N/A',
         bookingId: activeBooking._id,
-        name: user?.fullName || activeBooking.fullName,
-        mobile: user?.mobileNumber || user?.mobile || activeBooking.mobile
+        userId: activeBooking.userId || 'guest',
+        bookingDate: activeBooking.darshanDate,
+        tokenNumber: activeBooking.tokenNumber,
+        queueId: activeBooking.queueId,
+        passStatus: activeBooking.status
       });
       const qrImageURL = await QRCodeBrowser.toDataURL(qrData, {
         width: 200,
@@ -222,10 +224,12 @@ export default function MyPass() {
                       <div className="flex flex-col items-center justify-center space-y-4 shrink-0">
                         <div className="bg-white p-4 rounded-xl border border-outline-variant shadow-sm w-48 h-48 flex items-center justify-center">
                           <QRCode value={JSON.stringify({
-                      token: qInfo.userTokenNumber !== 'N/A' ? qInfo.userTokenNumber : activeBooking.qrCode,
                       bookingId: activeBooking._id,
-                      name: user?.fullName || activeBooking.fullName,
-                      mobile: user?.mobileNumber || user?.mobile || activeBooking.mobile
+                      userId: activeBooking.userId || 'guest',
+                      bookingDate: activeBooking.darshanDate,
+                      tokenNumber: activeBooking.tokenNumber,
+                      queueId: activeBooking.queueId,
+                      passStatus: activeBooking.status
                     })} size={160} style={{
                       height: "auto",
                       maxWidth: "100%",

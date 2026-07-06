@@ -31,6 +31,23 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: 'Invalid date format.' });
     }
 
+    // Calculate token number for the specific darshanDate
+    const parsedDate = new Date(darshanDate);
+    const startOfDay = new Date(parsedDate);
+    startOfDay.setHours(0, 0, 0, 0);
+    const endOfDay = new Date(parsedDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const highestBooking = await Booking.findOne({
+      darshanDate: { $gte: startOfDay, $lte: endOfDay }
+    }).sort({ tokenNumber: -1 });
+
+    const newTokenNumber = highestBooking && highestBooking.tokenNumber ? highestBooking.tokenNumber + 1 : 1;
+    
+    // Generate globally unique Queue ID: QYYYYMMDD-XXXXXX
+    const dateStr = startOfDay.toISOString().split('T')[0].replace(/-/g, '');
+    const newQueueId = `Q${dateStr}-${String(newTokenNumber).padStart(6, '0')}`;
+
     console.log(`[POST /bookings] Creating new booking. userId: ${userId || 'none'}, mobile: ${mobile}, name: ${fullName}`);
     const newBooking = new Booking({
       fullName,
@@ -41,6 +58,8 @@ router.post('/', async (req, res) => {
       vehicleType,
       vehicleNumber,
       darshanDate,
+      tokenNumber: newTokenNumber,
+      queueId: newQueueId,
       qrCode: `QR-${Math.random().toString(36).substring(2, 10).toUpperCase()}`
     });
     if (userId && userId !== 'none') {
@@ -156,12 +175,14 @@ router.post('/verify-scanner', async (req, res) => {
     let searchTokenNumber = null;
     let searchQrCode = null;
     let searchMobile = null;
+    let searchQueueId = null;
 
     // 1. Try to parse JSON (e.g. from QR code in MyPass)
     try {
       const parsed = JSON.parse(query);
       if (parsed.bookingId) searchBookingId = parsed.bookingId;
-      if (parsed.token) searchTokenNumber = parsed.token;
+      if (parsed.tokenNumber) searchTokenNumber = parsed.tokenNumber;
+      if (parsed.queueId) searchQueueId = parsed.queueId;
       if (parsed.mobile) searchMobile = parsed.mobile;
     } catch (e) {
       // Not JSON
@@ -183,10 +204,12 @@ router.post('/verify-scanner', async (req, res) => {
       }
     }
 
-    // 3. Find the booking in the database
     let booking = null;
     if (searchBookingId) {
       booking = await Booking.findById(searchBookingId);
+    }
+    if (!booking && searchQueueId) {
+      booking = await Booking.findOne({ queueId: searchQueueId });
     }
     if (!booking && searchQrCode) {
       booking = await Booking.findOne({ qrCode: searchQrCode });
@@ -208,20 +231,31 @@ router.post('/verify-scanner', async (req, res) => {
       return res.status(404).json({ error: 'No booking found.' });
     }
 
-    // Note: status-specific validation is now processed when committing actions, not when scanning/searching.
+    const bookingObj = {
+      ...booking.toObject(),
+      aadhaarNumber: booking.aadhaarNumber ? maskAadhaar(booking.aadhaarNumber) : undefined,
+    };
 
-    // Find corresponding queue entry to see if a token is assigned
-    const Queue = require('../models/Queue');
-    const queueEntry = await Queue.findOne({ bookingId: booking._id });
-    const tokenNumber = queueEntry ? queueEntry.tokenNumber : (booking.qrCode ? booking.qrCode.split('-')[1] : 'N/A');
+    if (booking.verificationStatus === 'completed' || booking.status === 'completed') {
+      return res.status(400).json({ error: 'This Darshan Pass has already been scanned.', booking: bookingObj });
+    }
+
+    // Date validation
+    const systemDate = new Date();
+    systemDate.setHours(0, 0, 0, 0);
+    const bookingDate = new Date(booking.darshanDate);
+    bookingDate.setHours(0, 0, 0, 0);
+    const bookingDateStr = bookingDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long' });
+
+    if (systemDate < bookingDate) {
+      return res.status(400).json({ error: `This pass is not valid today. Your booking date is ${bookingDateStr}.`, booking: bookingObj });
+    } else if (systemDate > bookingDate) {
+      return res.status(400).json({ error: `This pass has expired. Last booking date: ${bookingDateStr}.`, booking: bookingObj });
+    }
 
     res.json({
       message: 'Devotee verified successfully!',
-      booking: {
-        ...booking.toObject(),
-        aadhaarNumber: booking.aadhaarNumber ? maskAadhaar(booking.aadhaarNumber) : undefined,
-        tokenNumber
-      }
+      booking: bookingObj
     });
   } catch (err) {
     console.error('Verify scanner error:', err);
@@ -270,16 +304,8 @@ router.post('/verify-scanner/action', async (req, res) => {
       const Queue = require('../models/Queue');
       let queueEntry = await Queue.findOne({ bookingId: booking._id });
       if (!queueEntry) {
-        const allQueue = await Queue.find();
-        const allNums = allQueue.map(item => {
-          const clean = item.tokenNumber.replace(/[^0-9]/g, '');
-          return parseInt(clean);
-        }).filter(num => !isNaN(num));
-        const nextNum = allNums.length > 0 ? Math.max(...allNums) + 1 : 1025;
-        const newTokenId = `A${String(nextNum).padStart(3, '0')}`;
-
         queueEntry = new Queue({
-          tokenNumber: newTokenId,
+          tokenNumber: String(booking.tokenNumber || 'N/A'),
           isVip: false,
           bookingId: booking._id,
           userId: booking.userId,

@@ -65,6 +65,14 @@ const bookingSchema = new mongoose.Schema({
   qrCode: {
     type: String,
   },
+  tokenNumber: {
+    type: Number,
+  },
+  queueId: {
+    type: String,
+    unique: true,
+    sparse: true,
+  },
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
