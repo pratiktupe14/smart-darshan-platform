@@ -231,6 +231,10 @@ export default function DashboardLayout() {
                 <span className="material-symbols-outlined">support_agent</span>
                 <span className="text-sm">{t("supportRequests")}</span>
               </Link>
+              <Link to="/dashboard/admin/donation-records" className={getLinkClasses('/dashboard/admin/donation-records')}>
+                <span className="material-symbols-outlined">payments</span>
+                <span className="text-sm">Donation Records</span>
+              </Link>
 
             </nav>
             <div className="mt-auto pb-6 pt-4 flex flex-col gap-2">
