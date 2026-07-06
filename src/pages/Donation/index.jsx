@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useUser } from '../../context/UserContext';
 import { useLanguage } from '../../context/LanguageContext';
+import DonationReceiptModal from './DonationReceiptModal';
 
 export default function Donation() {
   const { user } = useUser();
@@ -20,6 +21,7 @@ export default function Donation() {
   const [donations, setDonations] = useState([]);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
+  const [selectedDonation, setSelectedDonation] = useState(null);
 
   useEffect(() => {
     fetchDonations();
@@ -338,7 +340,7 @@ export default function Donation() {
                         </div>
                       </td>
                       <td className="p-4 text-center space-x-2">
-                        <button className="p-2 hover:bg-surface-container-highest rounded-full text-on-surface-variant" title="View">
+                        <button onClick={() => setSelectedDonation(d)} className="p-2 hover:bg-surface-container-highest rounded-full text-on-surface-variant" title="View">
                           <span className="material-symbols-outlined text-lg">visibility</span>
                         </button>
                         <button className="p-2 hover:bg-surface-container-highest rounded-full text-on-surface-variant" title="Download">
@@ -368,6 +370,14 @@ export default function Donation() {
           {loading ? 'PROCESSING...' : 'DONATE NOW'}
         </button>
       </div>
+
+      {selectedDonation && (
+        <DonationReceiptModal 
+          donation={selectedDonation} 
+          user={user} 
+          onClose={() => setSelectedDonation(null)} 
+        />
+      )}
     </div>
   );
 }
