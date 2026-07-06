@@ -1,9 +1,21 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '../../context/LanguageContext';
+import { useUser } from '../../context/UserContext';
 
 export default function HeroSection() {
   const { t } = useLanguage();
+  const { user } = useUser();
+  const navigate = useNavigate();
+
+  const handleBookDarshan = (e) => {
+    e.preventDefault();
+    if (user) {
+      navigate('/dashboard/book');
+    } else {
+      navigate('/login?redirect=/dashboard/book');
+    }
+  };
 
   return (
     <section className="relative overflow-hidden min-h-[870px] flex items-center px-margin-mobile md:px-margin-desktop py-xxl">
@@ -23,9 +35,9 @@ export default function HeroSection() {
             {t('heroSubtitle')}
           </p>
           <div className="flex flex-col sm:flex-row flex-wrap gap-md w-full">
-            <Link to="/dashboard/book" className="w-full sm:w-auto bg-primary text-on-primary font-button text-button px-8 py-4 rounded-xl shadow-xl shadow-primary/25 hover:translate-y-[-2px] transition-all text-center">
+            <button onClick={handleBookDarshan} className="w-full sm:w-auto bg-primary text-on-primary font-button text-button px-8 py-4 rounded-xl shadow-xl shadow-primary/25 hover:translate-y-[-2px] transition-all text-center cursor-pointer">
               {t('bookDarshan')}
-            </Link>
+            </button>
             <Link to="/dashboard/user-queue" className="w-full sm:w-auto justify-center bg-surface-container-highest text-on-surface font-button text-button px-8 py-4 rounded-xl flex items-center gap-2 hover:bg-surface-variant transition-all text-center">
               <span className="material-symbols-outlined">analytics</span>
               {t('checkQueue')}

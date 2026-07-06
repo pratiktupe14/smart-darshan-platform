@@ -1,12 +1,24 @@
 import { useLanguage } from "../../context/LanguageContext";
 import React, { useState, useRef, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useUser } from '../../context/UserContext';
 export default function Login() {
   const {
     t
   } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const redirectUrl = queryParams.get('redirect');
+
+  const handleRedirect = (userRole) => {
+    if (redirectUrl) {
+      navigate(redirectUrl);
+    } else {
+      navigate(userRole === 'admin' ? '/dashboard/admin' : userRole === 'committee' ? '/dashboard/committee' : '/dashboard');
+    }
+  };
+
   const {
     loginUser
   } = useUser();
@@ -57,7 +69,7 @@ export default function Login() {
       const data = await response.json();
       if (response.ok) {
         loginUser(data.user, data.user.role || role, data.token);
-        navigate(data.user.role === 'admin' ? '/dashboard/admin' : data.user.role === 'committee' ? '/dashboard/committee' : '/dashboard');
+        handleRedirect(data.user.role || role);
       } else {
         alert(data.message || 'Login failed');
       }
@@ -89,7 +101,7 @@ export default function Login() {
       const data = await response.json();
       if (response.ok) {
         loginUser(data.user, data.user.role || role, data.token);
-        navigate(data.user.role === 'admin' ? '/dashboard/admin' : data.user.role === 'committee' ? '/dashboard/committee' : '/dashboard');
+        handleRedirect(data.user.role || role);
       } else {
         alert(data.message || 'Registration failed');
       }
@@ -135,13 +147,7 @@ export default function Login() {
         const data = await res.json();
         console.log('[Login] Mobile login success. User data:', data);
         loginUser(data.user, data.user.role || role, data.token);
-        if (data.user.role === 'admin') {
-          navigate('/dashboard/admin');
-        } else if (data.user.role === 'committee') {
-          navigate('/dashboard/committee');
-        } else {
-          navigate('/dashboard');
-        }
+        handleRedirect(data.user.role || role);
       } else {
         const errData = await res.json().catch(() => null);
         alert(errData?.message || 'Verification failed');
