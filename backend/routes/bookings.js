@@ -292,27 +292,6 @@ router.post('/verify-scanner/action', async (req, res) => {
           await queueEntry.save();
         }
       }
-    } else if (counterNumber === 3) {
-      // Counter 3: Darshan Completion -> Completed
-      if (booking.verificationStatus !== 'in_queue') {
-        if (booking.verificationStatus === 'completed') {
-          return res.status(400).json({ error: 'Darshan is already completed.' });
-        }
-        return res.status(400).json({ error: 'Cannot complete Darshan. Visitor must be in queue (Counter 2) first.' });
-      }
-      booking.verificationStatus = 'completed';
-      booking.status = 'completed';
-      booking.darshanCompletedAt = new Date();
-      statusLabel = 'Darshan Completed';
-      nextVerificationStatus = 'completed';
-
-      // Update corresponding Queue entry
-      const Queue = require('../models/Queue');
-      let queueEntry = await Queue.findOne({ bookingId: booking._id });
-      if (queueEntry) {
-        queueEntry.status = 'completed';
-        await queueEntry.save();
-      }
     } else {
       return res.status(400).json({ error: 'Invalid Counter Number.' });
     }
@@ -387,6 +366,48 @@ router.get('/verify-scanner/recent/:counterNumber', async (req, res) => {
   } catch (err) {
     console.error('Recent scans error:', err);
     res.status(500).json({ error: 'Server Error fetching recent scans.' });
+  }
+});
+
+// Generic endpoint to mark darshan as completed
+router.put('/:id/complete', async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+    if (!booking) {
+      return res.status(404).json({ error: 'Booking not found.' });
+    }
+    
+    if (booking.status === 'completed' || booking.verificationStatus === 'completed') {
+      return res.status(400).json({ error: 'Darshan is already completed.' });
+    }
+
+    booking.verificationStatus = 'completed';
+    booking.status = 'completed';
+    booking.darshanCompletedAt = new Date();
+
+    const Queue = require('../models/Queue');
+    let queueEntry = await Queue.findOne({ bookingId: booking._id });
+    if (queueEntry) {
+      queueEntry.status = 'completed';
+      await queueEntry.save();
+    }
+
+    if (!booking.counterHistory) {
+      booking.counterHistory = [];
+    }
+
+    booking.counterHistory.push({
+      counterNumber: 'Dashboard',
+      status: 'Darshan Completed',
+      timestamp: new Date(),
+      staffName: req.body.staffName || 'Staff Member'
+    });
+
+    await booking.save();
+    res.json({ message: 'Darshan completed successfully.', booking });
+  } catch (err) {
+    console.error('Complete darshan error:', err);
+    res.status(500).json({ error: 'Server Error during darshan completion.' });
   }
 });
 

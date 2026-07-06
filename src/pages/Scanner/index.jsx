@@ -25,9 +25,6 @@ export default function Scanner() {
   } else if (counterId === '2') {
     pageTitle = 'Counter 2 – Queue Management';
     pageSubtitle = 'Scan QR Code or Enter Token Number to mark devotee in queue.';
-  } else if (counterId === '3') {
-    pageTitle = 'Counter 3 – Darshan Completion';
-    pageSubtitle = 'Scan QR Code or Enter Token Number to mark devotee darshan as completed.';
   }
 
   // Search input states
@@ -490,9 +487,7 @@ export default function Scanner() {
               <div className="mt-8 flex flex-col gap-4">
                 {(!counterId || counterId === '1') && ['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) && <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">{t("alreadyProcessedAtThisCounter")}</div>}
                 {(!counterId || counterId === '2') && ['in_queue', 'completed'].includes(scannedDevotee.verificationStatus) && <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">{t("alreadyProcessedAtThisCounter")}</div>}
-                {(!counterId || counterId === '3') && ['completed'].includes(scannedDevotee.verificationStatus) && <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">{t("alreadyProcessedAtThisCounter")}</div>}
                 {counterId === '2' && scannedDevotee.verificationStatus === 'none' && <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">{t("thisBookingIsNotEligibleForThi")}</div>}
-                {counterId === '3' && ['none', 'verified_entry'].includes(scannedDevotee.verificationStatus) && <div className="bg-error/10 border border-error/20 p-3 rounded-lg text-error font-bold text-center">{t("thisBookingIsNotEligibleForThi")}</div>}
 
                 <div className="flex flex-col sm:flex-row gap-4">
                   {(!counterId || counterId === '1') && <button disabled={['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus)} onClick={() => handleCounterAction(1)} className={`w-full sm:flex-1 min-h-[44px] py-3 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-95 transition-all ${['verified_entry', 'in_queue', 'completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}>
@@ -503,8 +498,6 @@ export default function Scanner() {
                       <span className="material-symbols-outlined">hourglass_top</span>
                       {t('markInQueue') || 'Mark In Queue'}
                     </button>}
-                  {(!counterId || counterId === '3') && <button disabled={['completed'].includes(scannedDevotee.verificationStatus)} onClick={() => handleCounterAction(3)} className={`w-full sm:flex-1 min-h-[44px] py-3 border-2 border-outline-variant text-on-surface-variant font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-surface-container-highest active:scale-95 transition-all ${['completed'].includes(scannedDevotee.verificationStatus) ? 'opacity-40 cursor-not-allowed pointer-events-none' : ''}`}>
-                      <span className="material-symbols-outlined">check_circle</span>{t("markDarshanCompleted")}</button>}
                 </div>
               </div>
             </div> : <div className="bg-white border border-outline-variant rounded-xl p-8 text-center text-on-surface-variant font-medium">

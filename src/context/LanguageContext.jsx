@@ -53,7 +53,7 @@ const translations = {
     "qrScannerAmpVerification": "QR Scanner & Verification",
     "counter1TempleEntry": "Counter 1 – Temple Entry",
     "counter2QueueManagement": "Counter 2 – Queue Management",
-    "counter3DarshanCompletion": "Counter 3 – Darshan Completion",
+
     "addNewDevoteeEntry": "Add New Devotee Entry",
     "regularQueue": "Regular Queue",
     "individual": "Individual",
@@ -967,7 +967,7 @@ const translations = {
     "qrScannerAmpVerification": "क्यूआर स्कैनर और सत्यापन",
     "counter1TempleEntry": "काउंटर 1 - मंदिर प्रवेश",
     "counter2QueueManagement": "काउंटर 2 - कतार प्रबंधन",
-    "counter3DarshanCompletion": "काउंटर 3 - दर्शन समापन",
+
     "addNewDevoteeEntry": "नई भक्त प्रविष्टि जोड़ें",
     "regularQueue": "नियमित कतार",
     "individual": "व्यक्तिगत",
@@ -1882,7 +1882,7 @@ const translations = {
     "qrScannerAmpVerification": "क्यूआर स्कॅनर आणि पडताळणी",
     "counter1TempleEntry": "काउंटर 1 - मंदिर प्रवेश",
     "counter2QueueManagement": "काउंटर 2 - रांग व्यवस्थापन",
-    "counter3DarshanCompletion": "काउंटर 3 - दर्शन पूर्ण",
+
     "addNewDevoteeEntry": "नवीन भाविक प्रवेश जोडा",
     "regularQueue": "नियमित रांग",
     "individual": "वैयक्तिक",
@@ -2797,7 +2797,7 @@ const translations = {
     "qrScannerAmpVerification": "QR સ્કેનર અને ચકાસણી",
     "counter1TempleEntry": "કાઉન્ટર 1 - મંદિર પ્રવેશ",
     "counter2QueueManagement": "કાઉન્ટર 2 - કતાર સંચાલન",
-    "counter3DarshanCompletion": "કાઉન્ટર 3 - દર્શન પૂર્ણ",
+
     "addNewDevoteeEntry": "નવી ભક્ત એન્ટ્રી ઉમેરો",
     "regularQueue": "નિયમિત કતાર",
     "individual": "વ્યક્તિગત",

@@ -306,8 +306,7 @@ export default function CommitteeDashboardLayout() {
             <span className="material-symbols-outlined">meeting_room</span>{t("counter1TempleEntry")}</Link>
           <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/counter/2')} to="/dashboard/committee/counter/2">
             <span className="material-symbols-outlined">queue</span>{t("counter2QueueManagement")}</Link>
-          <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/counter/3')} to="/dashboard/committee/counter/3">
-            <span className="material-symbols-outlined">check_circle</span>{t("counter3DarshanCompletion")}</Link>
+
           <Link onClick={() => setIsMobileMenuOpen(false)} className={getSidebarLinkClasses('/dashboard/committee/announcements')} to="/dashboard/committee/announcements">
             <span className="material-symbols-outlined">campaign</span> {t('announcements')}
           </Link>

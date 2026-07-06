@@ -64,14 +64,12 @@ export default function CommitteeDashboard() {
   const handleCompleteDarshan = async bookingId => {
     setIsCompletingDarshan(true);
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/verify-scanner/action`, {
-        method: 'POST',
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/bookings/${bookingId}/complete`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          bookingId,
-          counterNumber: 3,
           staffName: 'Committee Member'
         })
       });
