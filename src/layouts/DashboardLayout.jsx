@@ -258,6 +258,10 @@ export default function DashboardLayout() {
                 <span className="material-symbols-outlined">qr_code</span>
                 <span className="text-sm">{t('myPass')}</span>
               </Link>
+              <Link to="/dashboard/donation" className={getLinkClasses('/dashboard/donation')}>
+                <span className="material-symbols-outlined">volunteer_activism</span>
+                <span className="text-sm">Donations</span>
+              </Link>
               <Link to="/dashboard/user-queue" className={getLinkClasses('/dashboard/user-queue')}>
                 <span className="material-symbols-outlined">speed</span>
                 <span className="text-sm">{t('queueStatus')}</span>

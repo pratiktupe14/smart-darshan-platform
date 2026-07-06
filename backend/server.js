@@ -27,6 +27,7 @@ app.use('/api/settings', require('./routes/settings'));
 app.use('/api/notifications', require('./routes/notifications'));
 app.use('/api/support', require('./routes/support'));
 app.use('/api/reports', require('./routes/reports'));
+app.use('/api/donations', require('./routes/donations'));
 
 // Start server
 app.listen(PORT, () => {

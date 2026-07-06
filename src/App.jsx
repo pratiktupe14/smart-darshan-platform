@@ -15,6 +15,7 @@ import Analytics from './pages/Analytics';
 import MyPass from './pages/MyPass';
 import UserQueueStatus from './pages/UserQueueStatus';
 import Profile from './pages/Profile';
+import Donation from './pages/Donation';
 import Announcements from './pages/Announcements';
 import Scanner from './pages/Scanner';
 import Parking from './pages/Parking';
@@ -51,7 +52,7 @@ function App() {
             <Route path="admin/support" element={<AdminSupport />} />
             <Route path="capacity" element={<CapacityManagement />} />
             <Route path="book" element={<BookDarshan />} />
-
+            <Route path="donation" element={<Donation />} />
 
             <Route path="analytics" element={<Analytics />} />
             <Route path="pass" element={<MyPass />} />
